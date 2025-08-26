@@ -1,0 +1,102 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LexiConnect - Login</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/css/Auth/Index.css"/>
+
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">LexiConnect</div>
+        <nav class="nav-links">
+            <a href="#">University</a>
+            <a href="#">High School</a>
+            <a href="#" class="btn-secondary-top">Sign In</a>
+            <a href="@Url.Action("Signup","Auth")" class="btn-primary-top">Register</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- Left Section -->
+            <div class="left-section">
+                <h1>LexiConnect</h1>
+                <p>Access to thousands of academic resources</p>
+
+                <!-- Geometric Design -->
+                <div class="geometric-design">
+                    <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Main geometric shapes -->
+                        <circle cx="40" cy="40" r="20" fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Complex polygon shape -->
+                        <polygon points="80,60 140,40 180,80 160,140 100,160 60,120"
+                                 fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Triangular shapes -->
+                        <polygon points="180,100 240,80 220,140"
+                                 fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Additional circle -->
+                        <circle cx="240" cy="160" r="25" fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Connecting lines -->
+                        <line x1="60" y1="60" x2="80" y2="80" stroke="white" stroke-width="2" />
+                        <line x1="140" y1="140" x2="180" y2="120" stroke="white" stroke-width="2" />
+
+                        <!-- Bottom dashed lines -->
+                        <line x1="20" y1="180" x2="40" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="50" y1="180" x2="70" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="80" y1="180" x2="100" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="110" y1="180" x2="130" y2="180" stroke="white" stroke-width="3" />
+
+                        <!-- Small dots -->
+                        <circle cx="160" cy="180" r="2" fill="white" />
+                        <circle cx="170" cy="180" r="2" fill="white" />
+                        <circle cx="180" cy="180" r="2" fill="white" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Login Card -->
+            <div class="login-card">
+                <h2>Welcome to LexiConnect</h2>
+
+                <div class="social-login">
+                    <!-- Google -->
+                    <a asp-controller="Auth" asp-action="GoogleLogin" class="social-btn google-btn">
+                        <img src="https://developers.google.com/identity/images/g-logo.png"
+                             alt="Google Logo" width="18" height="18" style="vertical-align: middle; margin-right: 8px;" />
+                        Continue with Google
+                    </a>
+                </div>
+
+                <div class="divider">
+                    <span>OR Continue with Username</span>
+                </div>
+
+                <div class="username-login">
+                    <a href="#" class="username-btn signin-username">
+                        Sign In
+                    </a>
+                    <a href="@Url.Action("Signup","Auth")" class="username-btn register-username">
+                        Register
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>

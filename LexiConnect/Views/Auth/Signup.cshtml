@@ -1,0 +1,417 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LexiConnect - Signup</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        .header {
+            background: white;
+            padding: 12px 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            text-decoration: none;
+        }
+
+            .logo::before {
+                content: "🎓";
+                margin-right: 8px;
+                font-size: 20px;
+            }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+            .nav-links a {
+                text-decoration: none;
+                color: #666;
+                font-size: 14px;
+                font-weight: 400;
+                transition: color 0.3s;
+            }
+
+                .nav-links a:hover {
+                    color: #333;
+                }
+
+        .btn-secondary-top {
+            background: white;
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            margin-right: 8px;
+            transition: all 0.3s;
+        }
+
+            .btn-secondary-top:hover {
+                background: #f5f5f5;
+                border-color: #ccc;
+            }
+
+        .btn-primary-top {
+            background: #9792F1;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            border: none;
+            transition: all 0.3s;
+        }
+
+            .btn-primary-top:hover {
+                background: #8680e8;
+                transform: translateY(-1px);
+            }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .content-wrapper {
+            display: flex;
+            max-width: 1200px;
+            width: 100%;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .left-section {
+            flex: 1;
+            color: white;
+        }
+
+            .left-section h1 {
+                font-size: 48px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+
+            .left-section p {
+                font-size: 18px;
+                opacity: 0.8;
+                margin-bottom: 60px;
+                font-weight: 300;
+            }
+
+        .geometric-design {
+            width: 580px;
+            height: 400px;
+            position: relative;
+        }
+
+            .geometric-design svg {
+                width: 100%;
+                height: 100%;
+            }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 100%;
+        }
+
+            .login-card h2 {
+                text-align: center;
+                font-size: 24px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 32px;
+            }
+
+        /* Form Styles */
+        .signup-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+            .form-group label {
+                font-size: 14px;
+                font-weight: 500;
+                color: #333;
+            }
+
+            .form-group input {
+                padding: 12px 16px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 14px;
+                transition: all 0.3s;
+                background: white;
+            }
+
+                .form-group input:focus {
+                    outline: none;
+                    border-color: #9792F1;
+                    box-shadow: 0 0 0 3px rgba(151, 146, 241, 0.1);
+                }
+
+        .password-input {
+            position: relative;
+        }
+
+            .password-input input {
+                padding-right: 60px;
+            }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+            .password-toggle:hover {
+                background: #f5f5f5;
+            }
+
+        .password-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .signup-btn {
+            background: black;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+
+            .signup-btn:hover {
+                background: #333333;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(151, 146, 241, 0.3);
+            }
+
+        .login-link {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+            .login-link a {
+                color: #9792F1;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+                .login-link a:hover {
+                    text-decoration: underline;
+                }
+
+        /* Mobile Responsive */
+        @@media (max-width: 768px) {
+            .header
+
+        {
+            padding: 12px 16px;
+        }
+
+        .nav-links {
+            gap: 16px;
+        }
+
+            .nav-links a:not(.btn-secondary-top):not(.btn-primary-top) {
+                display: none;
+            }
+
+        .content-wrapper {
+            flex-direction: column;
+            gap: 40px;
+            text-align: center;
+        }
+
+        .left-section h1 {
+            font-size: 36px;
+        }
+
+        .login-card {
+            width: 100%;
+            padding: 30px 20px;
+        }
+
+        .geometric-design {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">LexiConnect</div>
+        <nav class="nav-links">
+            <a href="#">University</a>
+            <a href="#">High School</a>
+            <a href="#" class="btn-secondary-top">Sign In</a>
+            <a href="#" class="btn-primary-top">Register</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- Left Section -->
+            <div class="left-section">
+                <h1>LexiConnect</h1>
+                <p>Access to thousands of academic resources</p>
+
+                <!-- Geometric Design -->
+                <div class="geometric-design">
+                    <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Main geometric shapes -->
+                        <circle cx="40" cy="40" r="20" fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Complex polygon shape -->
+                        <polygon points="80,60 140,40 180,80 160,140 100,160 60,120"
+                                 fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Triangular shapes -->
+                        <polygon points="180,100 240,80 220,140"
+                                 fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Additional circle -->
+                        <circle cx="240" cy="160" r="25" fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Connecting lines -->
+                        <line x1="60" y1="60" x2="80" y2="80" stroke="white" stroke-width="2" />
+                        <line x1="140" y1="140" x2="180" y2="120" stroke="white" stroke-width="2" />
+
+                        <!-- Bottom dashed lines -->
+                        <line x1="20" y1="180" x2="40" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="50" y1="180" x2="70" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="80" y1="180" x2="100" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="110" y1="180" x2="130" y2="180" stroke="white" stroke-width="3" />
+
+                        <!-- Small dots -->
+                        <circle cx="160" cy="180" r="2" fill="white" />
+                        <circle cx="170" cy="180" r="2" fill="white" />
+                        <circle cx="180" cy="180" r="2" fill="white" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Signup Card -->
+            <div class="login-card">
+                <h2>Sign up now</h2>
+
+                <form class="signup-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input">
+                            <input type="password" id="password" name="password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <span class="toggle-text">Show</span>
+                            </button>
+                        </div>
+                        <small class="password-hint">Use 6 or more characters with a mix of letters, numbers & symbols</small>
+                    </div>
+
+                    <button type="submit" class="signup-btn"><b>Sign up</b></button>
+
+                    <div class="login-link">
+                        Already have an account? <a href="@Url.Action("Signin","Auth")">Log in</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleText = document.querySelector('.toggle-text');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleText.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleText.textContent = 'Show';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+﻿@{
+    ViewData["Title"] = "LeadConnect - Connecting Knowledge, Sharing Success";
+    Layout = null;
+}
+<head>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/LexiConnect.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Home/Introduction.css"/>
+</head>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">LexiConnect</div>
+        <nav class="nav-links">
+            <a href="#">University</a>
+            <a href="#">High School</a>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                @* <a href="#" class="btn-secondary">Sign In</a> *@
+                <a href="@Url.Action("Index","Auth")" class="btn-primary">Join us now</a>
+            }
+        </nav>
+    </header>
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Connecting Knowledge, Sharing Success</h1>
+        <p class="hero-subtitle">"A trusted learning platform where students share real study materials to help each other succeed"</p>
+
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search for document">
+            <button class="search-button">
+                <svg width="20" height="20" fill="white" viewBox="0 0 24 24">
+                    <path d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.39zM11 18a7 7 0 1 1 7-7 7 7 0 0 1-7 7z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<main class="content-section">
+    <!-- Universities Section -->
+    <section>
+        <h2 class="section-title">Material for your school</h2>
+        <p class="section-subtitle">Access, share, and collaborate on learning resources with ease.</p>
+
+        <div class="universities-list">
+            <div class="university-item">
+                <div class="university-info">
+                    <h3>Fpt University</h3>
+                    <p>Via document</p>
+                </div>
+            </div>
+            <div class="university-item">
+                <div class="university-info">
+                    <h3>Duy Tan University</h3>
+                    <p>Via document</p>
+                </div>
+            </div>
+            <div class="university-item">
+                <div class="university-info">
+                    <h3>Danang University of technology</h3>
+                    <p>Via document</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Courses Section -->
+    <section class="courses-section">
+        <h2>Popular Course</h2>
+
+        <div class="courses-grid">
+            <div class="course-card">
+                <h3 class="course-title">Programming Fundamentals</h3>
+                <div class="course-details">
+                    # PRF192, #Programming<br>
+                    # fpt University
+                </div>
+                <div class="course-actions">
+                    <button class="btn-outline">+ Add to library</button>
+                </div>
+            </div>
+
+            <div class="course-card">
+                <h3 class="course-title">Programming Fundamentals</h3>
+                <div class="course-details">
+                    # PRF192, #Programming<br>
+                    # fpt University
+                </div>
+                <div class="course-actions">
+                    <button class="btn-outline">+ Add to library</button>
+                </div>
+            </div>
+
+            <div class="course-card">
+                <h3 class="course-title">Programming Fundamentals</h3>
+                <div class="course-details">
+                    # PRF192, #Programming<br>
+                    # fpt University
+                </div>
+                <div class="course-actions">
+                    <button class="btn-outline">+ Add to library</button>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <div class="logo">🎓</div>
+            <div class="social-links">
+                <a href="#">𝕏</a>
+                <a href="#">📷</a>
+                <a href="#">▶</a>
+                <a href="#">🔗</a>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <h4>Use cases</h4>
+            <a href="#">UI design</a>
+            <a href="#">UX design</a>
+            <a href="#">Wireframing</a>
+            <a href="#">Diagramming</a>
+            <a href="#">Brainstorming</a>
+            <a href="#">Online whiteboard</a>
+            <a href="#">Team collaboration</a>
+        </div>
+
+        <div class="footer-section">
+            <h4>Explore</h4>
+            <a href="#">Design</a>
+            <a href="#">Prototyping</a>
+            <a href="#">Development features</a>
+            <a href="#">Design systems</a>
+            <a href="#">Collaboration features</a>
+            <a href="#">Design process</a>
+            <a href="#">FigJam</a>
+        </div>
+
+        <div class="footer-section">
+            <h4>Resources</h4>
+            <a href="#">Blog</a>
+            <a href="#">Best practices</a>
+            <a href="#">Colors</a>
+            <a href="#">Color wheel</a>
+            <a href="#">Support</a>
+            <a href="#">Developers</a>
+            <a href="#">Resource library</a>
+        </div>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@section Scripts {
+    <script>
+        // Enter key search
+        document.querySelector('.search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.querySelector('.search-button').click();
+            }
+        });
+    </script>
+}

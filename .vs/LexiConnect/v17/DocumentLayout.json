@@ -1,0 +1,100 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "E:\\Dotnet\\LexiConnect\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\auth\\signup.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\auth\\signup.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\auth\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\auth\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\home\\introduction.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\home\\introduction.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{fabf9319-47eb-497e-b8f6-d9f73fba5f55}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1074509099:0:{bf84ea66-d821-4dba-b1b1-2777d8574775}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Auth\\Index.cshtml",
+              "RelativeDocumentMoniker": "LexiConnect\\Views\\Auth\\Index.cshtml",
+              "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Auth\\Index.cshtml",
+              "RelativeToolTip": "LexiConnect\\Views\\Auth\\Index.cshtml",
+              "ViewState": "AgIAAEgAAAAAAAAAAAAAAFkAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-08-26T09:39:20.768Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Introduction.cshtml",
+              "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Home\\Introduction.cshtml",
+              "RelativeDocumentMoniker": "LexiConnect\\Views\\Home\\Introduction.cshtml",
+              "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Home\\Introduction.cshtml",
+              "RelativeToolTip": "LexiConnect\\Views\\Home\\Introduction.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-08-26T07:46:57.225Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Signup.cshtml",
+              "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Auth\\Signup.cshtml",
+              "RelativeDocumentMoniker": "LexiConnect\\Views\\Auth\\Signup.cshtml",
+              "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Auth\\Signup.cshtml",
+              "RelativeToolTip": "LexiConnect\\Views\\Auth\\Signup.cshtml",
+              "ViewState": "AgIAAH4BAAAAAAAAAAAMwIYBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-08-26T07:36:00.624Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "LexiConnect\\Controllers\\AuthController.cs",
+              "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "LexiConnect\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-25T13:38:01.932Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
