@@ -1,6 +1,9 @@
 ﻿@{
-    Layout = null;
+    Layout = "_Layout";
+    ViewData["Title"] = "Sign up";
 }
+@model LexiConnect.Models.ViewModels.RegisterViewModel
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,17 +26,17 @@
             flex-direction: column;
         }
 
-        /* Header Styles */
-        .header {
-            background: white;
-            padding: 12px 24px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* Animated background */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="paperclips" patternUnits="userSpaceOnUse" width="50" height="50"><path d="M10,10 L40,10 Q45,10 45,15 L45,35 Q45,40 40,40 L20,40 Q15,40 15,35 L15,25 Q15,20 20,20 L30,20" stroke="%23404040" stroke-width="1" fill="none" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23paperclips)"/></svg>') repeat;
+            animation: float 50s ease-in-out infinite;
+            z-index: 0;
         }
 
         .logo {
@@ -44,12 +47,6 @@
             color: #333;
             text-decoration: none;
         }
-
-            .logo::before {
-                content: "🎓";
-                margin-right: 8px;
-                font-size: 20px;
-            }
 
         .nav-links {
             display: flex;
@@ -164,6 +161,42 @@
                 color: #333;
                 margin-bottom: 32px;
             }
+
+        /* Error Display Styles */
+        .validation-summary {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+        }
+
+            .validation-summary ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .validation-summary li {
+                color: #dc2626;
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+
+                .validation-summary li:last-child {
+                    margin-bottom: 0;
+                }
+
+        .field-validation-error {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .input-validation-error {
+            border-color: #dc2626 !important;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+        }
 
         /* Form Styles */
         .signup-form {
@@ -309,17 +342,6 @@
 </head>
 
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">LexiConnect</div>
-        <nav class="nav-links">
-            <a href="#">University</a>
-            <a href="#">High School</a>
-            <a href="#" class="btn-secondary-top">Sign In</a>
-            <a href="#" class="btn-primary-top">Register</a>
-        </nav>
-    </header>
-
     <!-- Main Content -->
     <div class="main-content">
         <div class="content-wrapper">
@@ -367,32 +389,49 @@
             <div class="login-card">
                 <h2>Sign up now</h2>
 
-                <form class="signup-form">
+                <!-- Display validation summary for general errors -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="validation-summary">
+                        <ul>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <form class="signup-form" asp-action="Register" asp-controller="Auth" method="post">
+                    @Html.AntiForgeryToken()
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input type="text" id="username" name="username" required>
+                        <input type="text" asp-for="Username" id="username" name="username" value="@ViewData["username"]" required>
+                        <span asp-validation-for="Username" class="field-validation-error"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="email">Email address</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" asp-for="Email" id="email" name="email" value="@ViewData["email"]" required>
+                        <span asp-validation-for="Email" class="field-validation-error"></span>
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password</label>
                         <div class="password-input">
-                            <input type="password" id="password" name="password" required>
+                            <input type="password" asp-for="Password" id="password" name="password" required>
                             <button type="button" class="password-toggle" onclick="togglePassword()">
                                 <span class="toggle-text">Show</span>
                             </button>
                         </div>
                         <small class="password-hint">Use 6 or more characters with a mix of letters, numbers & symbols</small>
+                        <span asp-validation-for="Password" class="field-validation-error"></span>
                     </div>
 
                     <button type="submit" class="signup-btn"><b>Sign up</b></button>
 
                     <div class="login-link">
-                        Already have an account? <a href="@Url.Action("Signin","Auth")">Log in</a>
+                        Already have an account? <a href="@Url.Action("Signin", "Auth")">Log in</a>
                     </div>
                 </form>
             </div>

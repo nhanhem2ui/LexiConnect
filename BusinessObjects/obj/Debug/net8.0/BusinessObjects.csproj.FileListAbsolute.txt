@@ -12,3 +12,4 @@ E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\refint\BusinessObjects.dl
 E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.pdb
 E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.genruntimeconfig.cache
 E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\ref\BusinessObjects.dll
+E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.sourcelink.json

@@ -36,7 +36,7 @@ namespace BusinessObjects.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Country");
+                    b.ToTable("Countries");
                 });
 
             modelBuilder.Entity("BusinessObjects.Document", b =>
@@ -146,7 +146,57 @@ namespace BusinessObjects.Migrations
 
                     b.HasIndex("UploaderId");
 
-                    b.ToTable("Document");
+                    b.ToTable("Documents");
+                });
+
+            modelBuilder.Entity("BusinessObjects.DocumentReview", b =>
+                {
+                    b.Property<int>("ReviewId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("review_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ReviewId"));
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("comment");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int")
+                        .HasColumnName("document_id");
+
+                    b.Property<int>("HelpfulCount")
+                        .HasColumnType("int")
+                        .HasColumnName("helpful_count");
+
+                    b.Property<byte>("Rating")
+                        .HasColumnType("tinyint")
+                        .HasColumnName("rating");
+
+                    b.Property<int>("ReviewerId")
+                        .HasColumnType("int")
+                        .HasColumnName("reviewer_id");
+
+                    b.Property<string>("ReviewerId1")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ReviewId");
+
+                    b.HasIndex("DocumentId");
+
+                    b.HasIndex("ReviewerId1");
+
+                    b.ToTable("DocumentReviews");
                 });
 
             modelBuilder.Entity("BusinessObjects.DocumentTag", b =>
@@ -189,7 +239,7 @@ namespace BusinessObjects.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("DocumentTag");
+                    b.ToTable("DocumentTags");
 
                     b.HasData(
                         new
@@ -292,7 +342,91 @@ namespace BusinessObjects.Migrations
                         .IsUnique()
                         .HasFilter("[Code] IS NOT NULL");
 
-                    b.ToTable("Major");
+                    b.ToTable("Majors");
+                });
+
+            modelBuilder.Entity("BusinessObjects.PointTransaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("transaction_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<int>("BalanceAfter")
+                        .HasColumnType("int")
+                        .HasColumnName("balance_after");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("expires_at");
+
+                    b.Property<int>("PointsChange")
+                        .HasColumnType("int")
+                        .HasColumnName("points_change");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("int")
+                        .HasColumnName("reference_id");
+
+                    b.Property<string>("ReferenceType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("reference_type");
+
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasColumnName("transaction_type");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("UserId1")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("PointTransactions");
+                });
+
+            modelBuilder.Entity("BusinessObjects.RecentViewed", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("DocumentId");
+
+                    b.ToTable("RecentVieweds");
                 });
 
             modelBuilder.Entity("BusinessObjects.SubscriptionPlan", b =>
@@ -348,7 +482,7 @@ namespace BusinessObjects.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("SubscriptionPlan");
+                    b.ToTable("SubscriptionPlans");
 
                     b.HasData(
                         new
@@ -418,7 +552,7 @@ namespace BusinessObjects.Migrations
 
                     b.HasIndex("CountryId");
 
-                    b.ToTable("University");
+                    b.ToTable("Universities");
                 });
 
             modelBuilder.Entity("BusinessObjects.UserFavorite", b =>
@@ -438,7 +572,6 @@ namespace BusinessObjects.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<string>("UserId1")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("UserId", "DocumentId");
@@ -447,7 +580,26 @@ namespace BusinessObjects.Migrations
 
                     b.HasIndex("UserId1");
 
-                    b.ToTable("UserFavorite");
+                    b.ToTable("UserFavorites");
+                });
+
+            modelBuilder.Entity("BusinessObjects.UserFollower", b =>
+                {
+                    b.Property<string>("FollowerId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FollowingId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.HasKey("FollowerId", "FollowingId");
+
+                    b.HasIndex("FollowingId");
+
+                    b.ToTable("UserFollowers");
                 });
 
             modelBuilder.Entity("BusinessObjects.Users", b =>
@@ -483,7 +635,7 @@ namespace BusinessObjects.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("MajorId")
+                    b.Property<int?>("MajorId")
                         .HasColumnType("int");
 
                     b.Property<string>("NormalizedEmail")
@@ -512,7 +664,7 @@ namespace BusinessObjects.Migrations
                     b.Property<DateTime?>("SubscriptionEndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SubscriptionPlanId")
+                    b.Property<int?>("SubscriptionPlanId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("SubscriptionStartDate")
@@ -524,7 +676,7 @@ namespace BusinessObjects.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<int>("UniversityId")
+                    b.Property<int?>("UniversityId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserName")
@@ -594,7 +746,7 @@ namespace BusinessObjects.Migrations
                     b.HasIndex("CourseCode", "MajorId")
                         .IsUnique();
 
-                    b.ToTable("Course");
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -743,9 +895,9 @@ namespace BusinessObjects.Migrations
                         .IsRequired();
 
                     b.HasOne("BusinessObjects.Users", "Uploader")
-                        .WithMany()
+                        .WithMany("UploadedDocuments")
                         .HasForeignKey("UploaderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ApprovedByUser");
@@ -753,6 +905,23 @@ namespace BusinessObjects.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("BusinessObjects.DocumentReview", b =>
+                {
+                    b.HasOne("BusinessObjects.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Users", "Reviewer")
+                        .WithMany()
+                        .HasForeignKey("ReviewerId1");
+
+                    b.Navigation("Document");
+
+                    b.Navigation("Reviewer");
                 });
 
             modelBuilder.Entity("BusinessObjects.DocumentTag", b =>
@@ -771,6 +940,34 @@ namespace BusinessObjects.Migrations
                         .IsRequired();
 
                     b.Navigation("University");
+                });
+
+            modelBuilder.Entity("BusinessObjects.PointTransaction", b =>
+                {
+                    b.HasOne("BusinessObjects.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BusinessObjects.RecentViewed", b =>
+                {
+                    b.HasOne("Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Document", "Document")
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("Document");
                 });
 
             modelBuilder.Entity("BusinessObjects.University", b =>
@@ -794,34 +991,46 @@ namespace BusinessObjects.Migrations
 
                     b.HasOne("BusinessObjects.Users", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId1");
 
                     b.Navigation("Document");
 
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("BusinessObjects.UserFollower", b =>
+                {
+                    b.HasOne("BusinessObjects.Users", "Follower")
+                        .WithMany()
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Users", "Following")
+                        .WithMany()
+                        .HasForeignKey("FollowingId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Follower");
+
+                    b.Navigation("Following");
+                });
+
             modelBuilder.Entity("BusinessObjects.Users", b =>
                 {
                     b.HasOne("BusinessObjects.Major", "Major")
                         .WithMany()
-                        .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MajorId");
 
                     b.HasOne("BusinessObjects.SubscriptionPlan", "SubscriptionPlan")
                         .WithMany()
-                        .HasForeignKey("SubscriptionPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("SubscriptionPlanId");
 
                     b.HasOne("BusinessObjects.University", "University")
                         .WithMany()
                         .HasForeignKey("UniversityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Major");
 
@@ -895,6 +1104,11 @@ namespace BusinessObjects.Migrations
             modelBuilder.Entity("BusinessObjects.Document", b =>
                 {
                     b.Navigation("Tags");
+                });
+
+            modelBuilder.Entity("BusinessObjects.Users", b =>
+                {
+                    b.Navigation("UploadedDocuments");
                 });
 
             modelBuilder.Entity("Course", b =>

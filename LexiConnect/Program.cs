@@ -1,5 +1,7 @@
 using BusinessObjects;
 using DataAccess;
+using LexiConnect.Models;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
@@ -10,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 //DAO
 builder.Services.AddScoped<IGenericDAO<Country>, CountryDAO>();
@@ -41,7 +43,9 @@ builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerReposit
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
+builder.Services.AddScoped<ISender, EmailSender>();
 
+// Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
 {
     options.Password.RequiredLength = 6;
@@ -52,16 +56,41 @@ builder.Services.AddIdentity<Users, IdentityRole>(options =>
     options.SignIn.RequireConfirmedPhoneNumber = false;
     options.SignIn.RequireConfirmedEmail = true;
 })
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
-;
+.AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(2));
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(2);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/Auth/Signin";
+    options.LogoutPath = "/Auth/Signout";
+    options.AccessDeniedPath = "/Auth/AccessDenied";
+});
+
+// Configure Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddGoogle(options =>
+{
+    options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
+    options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
+    options.CallbackPath = "/signin-google";
+    options.SaveTokens = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -70,6 +99,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

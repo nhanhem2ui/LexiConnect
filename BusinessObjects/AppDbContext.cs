@@ -38,6 +38,13 @@ namespace BusinessObjects
                 .HasForeignKey(d => d.CourseId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Document>()
+                .HasOne(d => d.Uploader)              
+                .WithMany(u => u.UploadedDocuments)   
+                .HasForeignKey(d => d.UploaderId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+
             modelBuilder.Entity<UserFavorite>()
                 .HasOne(uf => uf.Document)
                 .WithMany()
@@ -159,6 +166,21 @@ namespace BusinessObjects
 
             modelBuilder.Entity<UserFavorite>()
                 .HasKey(uf => new { uf.UserId, uf.DocumentId });
+
+            modelBuilder.Entity<UserFollower>()
+            .HasKey(uf => new { uf.FollowerId, uf.FollowingId });
+
+            modelBuilder.Entity<UserFollower>()
+                .HasOne(uf => uf.Follower)
+                .WithMany()
+                .HasForeignKey(uf => uf.FollowerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<UserFollower>()
+                .HasOne(uf => uf.Following)
+                .WithMany()
+                .HasForeignKey(uf => uf.FollowingId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

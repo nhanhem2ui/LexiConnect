@@ -13,3 +13,4 @@ E:\Dotnet\LexiConnect\DataAccess\bin\Debug\net8.0\BusinessObjects.dll
 E:\Dotnet\LexiConnect\DataAccess\bin\Debug\net8.0\BusinessObjects.pdb
 E:\Dotnet\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.AssemblyReference.cache
 E:\Dotnet\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.Up2Date
+E:\Dotnet\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.sourcelink.json

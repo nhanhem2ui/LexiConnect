@@ -1,103 +1,56 @@
-﻿* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+﻿/* Override layout styles specifically for login page */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-    background: #1a1a1a;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+    background: #1a1a1a !important;
+    margin-bottom: 0 !important;
 }
 
-/* Header Styles */
-.header {
-    background: white;
-    padding: 12px 24px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+.container {
+    flex: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    max-width: none !important;
+    width: 100% !important;
+    padding: 40px 20px !important;
+    position: relative;
+    overflow: hidden;
 }
 
-.logo {
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-    text-decoration: none;
-}
-
-    .logo::before {
-        content: "🎓";
-        margin-right: 8px;
-        font-size: 20px;
+    /* Animated background */
+    .container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="paperclips" patternUnits="userSpaceOnUse" width="50" height="50"><path d="M10,10 L40,10 Q45,10 45,15 L45,35 Q45,40 40,40 L20,40 Q15,40 15,35 L15,25 Q15,20 20,20 L30,20" stroke="%23404040" stroke-width="1" fill="none" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23paperclips)"/></svg>') repeat;
+        animation: float 50s ease-in-out infinite;
+        z-index: 0;
     }
 
-.nav-links {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-    .nav-links a {
-        text-decoration: none;
-        color: #666;
-        font-size: 14px;
-        font-weight: 400;
-        transition: color 0.3s;
+@@keyframes float {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
     }
 
-        .nav-links a:hover {
-            color: #333;
-        }
-
-.btn-secondary-top {
-    background: white;
-    color: #333;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    border: 1px solid #ddd;
-    margin-right: 8px;
-    transition: all 0.3s;
-}
-
-    .btn-secondary-top:hover {
-        background: #f5f5f5;
-        border-color: #ccc;
+    33% {
+        transform: translate(30px, -30px) rotate(120deg);
     }
 
-.btn-primary-top {
-    background: #9792F1;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    border: none;
-    transition: all 0.3s;
+    66% {
+        transform: translate(-20px, 20px) rotate(240deg);
+    }
 }
 
-    .btn-primary-top:hover {
-        background: #8680e8;
-        transform: translateY(-1px);
-    }
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
+main {
+    position: relative !important;
+    z-index: 1 !important;
+    padding-bottom: 0 !important;
+    width: 100% !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
 }
 
 .content-wrapper {
@@ -106,6 +59,8 @@ body {
     width: 100%;
     gap: 80px;
     align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
 .left-section {
@@ -154,11 +109,17 @@ body {
         margin-bottom: 32px;
     }
 
-.social-login {
+    .social-login form {
+        display: inline;
+        margin: 0;
+        padding: 0;
+    }
+
+.social-btn.google-btn {
+    width: 100%;
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 24px;
+    align-items: center;
+    justify-content: center;
 }
 
 .social-btn {
@@ -183,6 +144,8 @@ body {
         background: #f8f9fa;
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: #333;
+        text-decoration: none;
     }
 
 .divider {
@@ -227,6 +190,7 @@ body {
     transition: all 0.3s;
     text-decoration: none;
     text-align: center;
+    display: inline-block;
 }
 
 .signin-username {
@@ -238,6 +202,8 @@ body {
         background: #555;
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        color: white;
+        text-decoration: none;
     }
 
 .register-username {
@@ -251,10 +217,12 @@ body {
         border-color: #ccc;
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        color: #333;
+        text-decoration: none;
     }
 
 /* Mobile Responsive */
-@media (max-width: 768px) {
+@@media (max-width: 768px) {
     .header {
         padding: 12px 16px;
     }
@@ -263,7 +231,7 @@ body {
         gap: 12px;
     }
 
-        .nav-links a:not(.btn-secondary-top):not(.btn-primary-top) {
+        .nav-links a:not(.btn-primary) {
             display: none;
         }
 

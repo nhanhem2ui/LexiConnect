@@ -1,18 +1,375 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessObjects;
+using LexiConnect.Models;
+using LexiConnect.Models.ViewModels;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using System.Security.Claims;
+using System.Text;
 
 namespace LexiConnect.Controllers
 {
     public class AuthController : Controller
     {
+        private readonly UserManager<Users> _userManager;
+        private readonly SignInManager<Users> _signInManager;
+        private readonly ISender _emailSender;
+
+        public AuthController(UserManager<Users> userManager, SignInManager<Users> signInManager, ISender emailSender)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _emailSender = emailSender;
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
             return View();
         }
+
         [HttpGet]
         public IActionResult Signup()
         {
+            return View(new RegisterViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (string.IsNullOrEmpty(model.Username) || string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
+            {
+                ModelState.AddModelError(string.Empty, "All fields are required.");
+                return View("Signup");
+            }
+
+            var user = new Users
+            {
+                UserName = model.Username,
+                FullName = model.Email,
+                Email = model.Email
+            };
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                var callbackUrl = Url.Action(
+                    "ConfirmEmail",
+                    "Auth",
+                    new { userId = user.Id, code },
+                    protocol: Request.Scheme);
+
+                await _emailSender.SendWelcomeEmailAsync(model.Email, model.Username, callbackUrl);
+
+                if (!_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return Ok("User registered and logged in successfully.");
+                }
+                return Ok("User registered successfully. Please check your email to confirm your account.");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View("Signup");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+                return BadRequest("Invalid email confirmation request.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Confirm email successfully";
+                return RedirectToAction("Introduction", "Home");
+            }
+
+            TempData["Error"] = "Error confirming your email.";
+            return RedirectToAction("Introduction", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult Signin()
+        {
+            return View(new LoginViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SigninAsync(LoginViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View("Signin", model);
+            }
+
+            var user = await _userManager.FindByNameAsync(model.Username);
+
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                return View("Signin", model);
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: false);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Introduction", "Home");
+            }
+
+            if (result.IsLockedOut)
+            {
+                TempData["Error"] = "User account is locked out.";
+                return RedirectToAction("Lockout", "Auth");
+            }
+
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View("Signin", model);
+        }
+
+        // Google Authentication Challenge
+        [HttpPost]
+        public IActionResult GoogleLogin(string? returnUrl = null)
+        {
+            // Request a redirect to the external login provider
+            var redirectUrl = Url.Action("GoogleCallback", "Auth", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(GoogleDefaults.AuthenticationScheme, redirectUrl);
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        // Google Authentication Callback
+        [HttpGet]
+        public async Task<IActionResult> GoogleCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            returnUrl = returnUrl ?? Url.Action("Introduction", "Home");
+
+            if (remoteError != null)
+            {
+                TempData["Error"] = $"Error from external provider: {remoteError}";
+                return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["Error"] = "Error loading external login information.";
+                return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+            }
+
+            // Sign in the user with this external login provider if the user already has a login
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            if (result.Succeeded)
+            {
+                // User successfully signed in with existing external login
+                return LocalRedirect(returnUrl);
+            }
+
+            if (result.IsLockedOut)
+            {
+                TempData["Error"] = "User account is locked out.";
+                return RedirectToAction("Lockout");
+            }
+
+            // If the user does not have an account, create one automatically
+            return await CreateUserFromExternalLogin(info, returnUrl);
+        }
+
+        private async Task<IActionResult> CreateUserFromExternalLogin(ExternalLoginInfo info, string returnUrl)
+        {
+            // Extract user information from external provider
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var fullName = info.Principal.FindFirstValue(ClaimTypes.Name);
+            var avatarUrl = info.Principal.FindFirstValue("picture");
+
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["Error"] = "Email not received from external provider.";
+                return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+            }
+
+            // Check if a user with this email already exists
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                // User exists but doesn't have this external login linked
+                // Link the external login to the existing user
+                var addLoginResult = await _userManager.AddLoginAsync(existingUser, info);
+                if (addLoginResult.Succeeded)
+                {
+                    // Update avatar if it's still default and we have a new one
+                    if (existingUser.AvatarUrl == "/image/default-avatar.png" && !string.IsNullOrEmpty(avatarUrl))
+                    {
+                        existingUser.AvatarUrl = avatarUrl;
+                        await _userManager.UpdateAsync(existingUser);
+                    }
+
+                    await _signInManager.SignInAsync(existingUser, isPersistent: false, info.LoginProvider);
+                    return LocalRedirect(returnUrl);
+                }
+                else
+                {
+                    foreach (var error in addLoginResult.Errors)
+                    {
+                        TempData["Error"] = error.Description;
+                    }
+                    return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+                }
+            }
+
+            // Create a new user
+            var user = new Users
+            {
+                UserName = email,
+                Email = email,
+                FullName = fullName ?? "External User",
+                AvatarUrl = avatarUrl ?? "/image/default-avatar.png",
+                EmailConfirmed = true, // External provider users have confirmed emails
+                PointsBalance = 0,
+                TotalPointsEarned = 0
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            if (createResult.Succeeded)
+            {
+                var addLoginResult = await _userManager.AddLoginAsync(user, info);
+                if (addLoginResult.Succeeded)
+                {
+                    // Optionally send welcome email (if email confirmation is required)
+                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                    {
+                        var userId = await _userManager.GetUserIdAsync(user);
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                        var callbackUrl = Url.Action(
+                            "ConfirmEmail",
+                            "Auth",
+                            new { userId = userId, code = code },
+                            protocol: Request.Scheme);
+
+                        await _emailSender.SendWelcomeEmailAsync(email, user.FullName, callbackUrl);
+                    }
+
+                    // Sign in the user
+                    await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                    return LocalRedirect(returnUrl);
+                }
+            }
+
+            // If we got this far, something failed
+            foreach (var error in createResult.Errors)
+            {
+                TempData["Error"] = error.Description;
+            }
+
+            return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignoutAsync()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction("Signin");
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email is required.");
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                return Ok("If an account with that email exists, we have sent a password reset link.");
+            }
+
+            var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+            var callbackUrl = Url.Action(
+                "ResetPassword",
+                "Auth",
+                new { userId = user.Id, code },
+                protocol: Request.Scheme);
+
+            await _emailSender.SendPasswordResetEmailAsync(email, user.UserName, callbackUrl);
+
+            return Ok("If an account with that email exists, we have sent a password reset link.");
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                return BadRequest("Invalid password reset request.");
+            }
+
+            ViewData["UserId"] = userId;
+            ViewData["Code"] = code;
+
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(string userId, string code, string newPassword)
+        {
+            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code) || string.IsNullOrEmpty(newPassword))
+            {
+                return BadRequest("All fields are required.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return BadRequest("Invalid password reset request.");
+            }
+
+            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            var result = await _userManager.ResetPasswordAsync(user, code, newPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok("Your password has been reset successfully.");
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return BadRequest(ModelState);
         }
     }
 }

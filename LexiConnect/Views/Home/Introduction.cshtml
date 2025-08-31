@@ -1,26 +1,27 @@
 ﻿@{
-    ViewData["Title"] = "LeadConnect - Connecting Knowledge, Sharing Success";
-    Layout = null;
+    ViewData["Title"] = "Introduction";
+    Layout = "_Layout";
 }
+@model LexiConnect.Models.ViewModels.IntroductionViewModel
 <head>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/LexiConnect.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/Home/Introduction.css"/>
+    <link rel="stylesheet" href="~/css/Home/Introduction.css" />
 </head>
 
-    <!-- Header -->
-    <header class="header">
-        <div class="logo">LexiConnect</div>
-        <nav class="nav-links">
-            <a href="#">University</a>
-            <a href="#">High School</a>
-            @if (!User.Identity.IsAuthenticated)
-            {
-                @* <a href="#" class="btn-secondary">Sign In</a> *@
-                <a href="@Url.Action("Index","Auth")" class="btn-primary">Join us now</a>
-            }
-        </nav>
-    </header>
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success mt-3">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-3">
+        @TempData["Error"]
+    </div>
+}
+
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-content">
@@ -46,24 +47,16 @@
         <p class="section-subtitle">Access, share, and collaborate on learning resources with ease.</p>
 
         <div class="universities-list">
-            <div class="university-item">
-                <div class="university-info">
-                    <h3>Fpt University</h3>
-                    <p>Via document</p>
+            @foreach (var uni in Model.Universities)
+            {
+                <div class="university-item">
+                    <div class="university-info">
+                        <img src="@Url.Content(uni.LogoUrl)" style="max-width: 48px; max-height: 36px"/>
+                        <h3>@uni.Name - @uni.ShortName</h3>
+                        <p>Via document</p>
                 </div>
             </div>
-            <div class="university-item">
-                <div class="university-info">
-                    <h3>Duy Tan University</h3>
-                    <p>Via document</p>
-                </div>
-            </div>
-            <div class="university-item">
-                <div class="university-info">
-                    <h3>Danang University of technology</h3>
-                    <p>Via document</p>
-                </div>
-            </div>
+            }
         </div>
     </section>
 
@@ -107,58 +100,6 @@
         </div>
     </section>
 </main>
-
-<!-- Footer -->
-<footer class="footer">
-    <div class="footer-content">
-        <div class="footer-section">
-            <div class="logo">🎓</div>
-            <div class="social-links">
-                <a href="#">𝕏</a>
-                <a href="#">📷</a>
-                <a href="#">▶</a>
-                <a href="#">🔗</a>
-            </div>
-        </div>
-
-        <div class="footer-section">
-            <h4>Use cases</h4>
-            <a href="#">UI design</a>
-            <a href="#">UX design</a>
-            <a href="#">Wireframing</a>
-            <a href="#">Diagramming</a>
-            <a href="#">Brainstorming</a>
-            <a href="#">Online whiteboard</a>
-            <a href="#">Team collaboration</a>
-        </div>
-
-        <div class="footer-section">
-            <h4>Explore</h4>
-            <a href="#">Design</a>
-            <a href="#">Prototyping</a>
-            <a href="#">Development features</a>
-            <a href="#">Design systems</a>
-            <a href="#">Collaboration features</a>
-            <a href="#">Design process</a>
-            <a href="#">FigJam</a>
-        </div>
-
-        <div class="footer-section">
-            <h4>Resources</h4>
-            <a href="#">Blog</a>
-            <a href="#">Best practices</a>
-            <a href="#">Colors</a>
-            <a href="#">Color wheel</a>
-            <a href="#">Support</a>
-            <a href="#">Developers</a>
-            <a href="#">Resource library</a>
-        </div>
-    </div>
-</footer>
-
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
 @section Scripts {
     <script>
         // Enter key search

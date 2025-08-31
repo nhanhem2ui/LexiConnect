@@ -1,0 +1,496 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Signin";
+}
+@model LexiConnect.Models.ViewModels.LoginViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LexiConnect - Signin</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .content-wrapper {
+            display: flex;
+            max-width: 1200px;
+            width: 100%;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .left-section {
+            flex: 1;
+            color: white;
+        }
+
+            .left-section h1 {
+                font-size: 48px;
+                font-weight: bold;
+                margin-bottom: 20px;
+            }
+
+            .left-section p {
+                font-size: 18px;
+                opacity: 0.8;
+                margin-bottom: 60px;
+                font-weight: 300;
+            }
+
+        .geometric-design {
+            width: 580px;
+            height: 400px;
+            position: relative;
+        }
+
+            .geometric-design svg {
+                width: 100%;
+                height: 100%;
+            }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 100%;
+        }
+
+            .login-card h2 {
+                text-align: center;
+                font-size: 24px;
+                font-weight: 600;
+                color: #333;
+                margin-bottom: 32px;
+            }
+
+        /* Error Display Styles */
+        .validation-summary {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-bottom: 24px;
+        }
+
+            .validation-summary ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .validation-summary li {
+                color: #dc2626;
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+
+                .validation-summary li:last-child {
+                    margin-bottom: 0;
+                }
+
+        .field-validation-error {
+            color: #dc2626;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .input-validation-error {
+            border-color: #dc2626 !important;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+        }
+
+        /* Form Styles */
+        .signin-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+            .form-group label {
+                font-size: 14px;
+                font-weight: 500;
+                color: #333;
+            }
+
+            .form-group input {
+                padding: 12px 16px;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 14px;
+                transition: all 0.3s;
+                background: white;
+            }
+
+                .form-group input:focus {
+                    outline: none;
+                    border-color: #9792F1;
+                    box-shadow: 0 0 0 3px rgba(151, 146, 241, 0.1);
+                }
+
+        .password-input {
+            position: relative;
+        }
+
+            .password-input input {
+                padding-right: 60px;
+            }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+            .password-toggle:hover {
+                background: #f5f5f5;
+            }
+
+        /* Remember Me and Forgot Password Container */
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: -8px;
+            margin-bottom: 8px;
+        }
+
+        /* Fixed Remember Me Checkbox Styles */
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+            .checkbox-wrapper input[type="checkbox"] {
+                position: absolute;
+                opacity: 0;
+                cursor: pointer;
+                height: 0;
+                width: 0;
+                z-index: -1;
+            }
+
+            .checkbox-wrapper .checkmark {
+                display: block;
+                height: 18px;
+                width: 18px;
+                background-color: #f8f9fa;
+                border: 2px solid #e0e0e0;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .checkbox-wrapper:hover .checkmark {
+                border-color: #9792F1;
+            }
+
+            .checkbox-wrapper.checked .checkmark {
+                background-color: #9792F1;
+                border-color: #9792F1;
+            }
+
+            .checkbox-wrapper .checkmark:after {
+                content: "";
+                position: absolute;
+                display: none;
+                left: 5px;
+                top: 1px;
+                width: 6px;
+                height: 10px;
+                border: solid white;
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg);
+            }
+
+            .checkbox-wrapper.checked .checkmark:after {
+                display: block;
+            }
+
+        .remember-me-label {
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .forgot-password {
+            text-align: right;
+        }
+
+            .forgot-password a {
+                color: #9792F1;
+                text-decoration: none;
+                font-size: 12px;
+            }
+
+                .forgot-password a:hover {
+                    text-decoration: underline;
+                }
+
+        .signin-btn {
+            background: black;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+
+            .signin-btn:hover {
+                background: #333333;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(151, 146, 241, 0.3);
+            }
+
+        .signup-link {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+            .signup-link a {
+                color: #9792F1;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+                .signup-link a:hover {
+                    text-decoration: underline;
+                }
+
+        /* Mobile Responsive */
+        @@media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .left-section h1 {
+                font-size: 36px;
+            }
+
+            .login-card {
+                width: 100%;
+                padding: 30px 20px;
+            }
+
+            .geometric-design {
+                width: 100%;
+                max-width: 400px;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .forgot-password {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-wrapper">
+            <!-- Left Section -->
+            <div class="left-section">
+                <h1>LexiConnect</h1>
+                <p>Access to thousands of academic resources</p>
+
+                <!-- Geometric Design -->
+                <div class="geometric-design">
+                    <svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Main geometric shapes -->
+                        <circle cx="40" cy="40" r="20" fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Complex polygon shape -->
+                        <polygon points="80,60 140,40 180,80 160,140 100,160 60,120"
+                                 fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Triangular shapes -->
+                        <polygon points="180,100 240,80 220,140"
+                                 fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Additional circle -->
+                        <circle cx="240" cy="160" r="25" fill="none" stroke="white" stroke-width="2" />
+
+                        <!-- Connecting lines -->
+                        <line x1="60" y1="60" x2="80" y2="80" stroke="white" stroke-width="2" />
+                        <line x1="140" y1="140" x2="180" y2="120" stroke="white" stroke-width="2" />
+
+                        <!-- Bottom dashed lines -->
+                        <line x1="20" y1="180" x2="40" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="50" y1="180" x2="70" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="80" y1="180" x2="100" y2="180" stroke="white" stroke-width="3" />
+                        <line x1="110" y1="180" x2="130" y2="180" stroke="white" stroke-width="3" />
+
+                        <!-- Small dots -->
+                        <circle cx="160" cy="180" r="2" fill="white" />
+                        <circle cx="170" cy="180" r="2" fill="white" />
+                        <circle cx="180" cy="180" r="2" fill="white" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Signin Card -->
+            <div class="login-card">
+                <h2>Sign in with Username</h2>
+
+                <!-- Display validation summary for general errors -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="validation-summary">
+                        <ul>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        </ul>
+                    </div>
+                }
+
+                <form class="signin-form" asp-action="Signin" asp-controller="Auth" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" asp-for="Username" id="username" name="username" required>
+                        <span class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input">
+                            <input type="password" asp-for="Password" id="password" name="password" required>
+                            <button type="button" class="password-toggle" onclick="togglePassword()">
+                                <span class="toggle-text">Show</span>
+                            </button>
+                        </div>
+                        <span class="field-validation-error"></span>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="remember-me" onclick="toggleRememberMe()">
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" asp-for="RememberMe" id="rememberMe" name="rememberMe">
+                                <span class="checkmark"></span>
+                            </div>
+                            <span class="remember-me-label">Remember me</span>
+                        </div>
+                        <div class="forgot-password">
+                            <a href="@Url.Action("ForgotPassword","Auth")">Forgot Password</a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="signin-btn"><b>Sign In</b></button>
+
+                    <div class="signup-link">
+                        Don't have account yet? <a href="@Url.Action("Signup","Auth")" return false;">Sign up for free</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleText = document.querySelector('.toggle-text');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleText.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                toggleText.textContent = 'Show';
+            }
+        }
+
+        function toggleRememberMe() {
+            const checkbox = document.getElementById('rememberMe');
+            const wrapper = checkbox.parentElement;
+
+            checkbox.checked = !checkbox.checked;
+
+            // Update visual state
+            if (checkbox.checked) {
+                wrapper.classList.add('checked');
+            } else {
+                wrapper.classList.remove('checked');
+            }
+        }
+
+        // Initialize checkbox state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('rememberMe');
+            const wrapper = checkbox.parentElement;
+
+            if (checkbox.checked) {
+                wrapper.classList.add('checked');
+            }
+        });
+
+    </script>
+</body>
+</html>

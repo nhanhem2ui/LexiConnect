@@ -3,6 +3,8 @@ wwwroot\css\Home\Introduction.css
 wwwroot\css\site.css
 wwwroot\favicon.ico
 wwwroot\image\introductionBackground.png
+wwwroot\image\LexiConnect_logo.png
+wwwroot\image\LexiConnect_logo_NoText.png
 wwwroot\image\logo_FPT.png
 wwwroot\image\logo_VNU.jpg
 wwwroot\image\logo_VNUHCM.png
