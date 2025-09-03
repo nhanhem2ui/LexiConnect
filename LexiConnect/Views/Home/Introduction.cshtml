@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="~/LexiConnect.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Home/Introduction.css" />
 </head>
-
 @if (TempData["Success"] != null)
 {
     <div class="alert alert-success mt-3">
@@ -21,13 +20,11 @@
         @TempData["Error"]
     </div>
 }
-
 <!-- Hero Section -->
 <section class="hero-section">
     <div class="hero-content">
         <h1 class="hero-title">Connecting Knowledge, Sharing Success</h1>
         <p class="hero-subtitle">"A trusted learning platform where students share real study materials to help each other succeed"</p>
-
         <div class="search-container">
             <input type="text" class="search-input" placeholder="Search for document">
             <button class="search-button">
@@ -38,75 +35,66 @@
         </div>
     </div>
 </section>
-
 <!-- Main Content -->
 <main class="content-section">
     <!-- Universities Section -->
     <section>
         <h2 class="section-title">Material for your school</h2>
         <p class="section-subtitle">Access, share, and collaborate on learning resources with ease.</p>
-
         <div class="universities-list">
             @foreach (var uni in Model.Universities)
             {
-                <div class="university-item">
-                    <div class="university-info">
-                        <img src="@Url.Content(uni.LogoUrl)" style="max-width: 48px; max-height: 36px"/>
-                        <h3>@uni.Name - @uni.ShortName</h3>
-                        <p>Via document</p>
-                </div>
-            </div>
+                <a href="@Url.Action("UniversityDetails", "University", new { id = uni.Id })" class="university-item-link">
+                    <div class="university-item">
+                        <div class="university-info">
+                            <img src="@Url.Content(uni.LogoUrl)" style="max-width: 48px; max-height: 36px" />
+                            <h3>@uni.Name - @uni.ShortName</h3>
+                        </div>
+                        <div class="university-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                <g id="SVGRepo_bgCarrier" stroke-width="0">
+
+                                </g>
+                                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round">
+
+                                </g>
+                                <g id="SVGRepo_iconCarrier">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12.2929 4.29289C12.6834 3.90237 13.3166 3.90237 13.7071 4.29289L20.7071 11.2929C21.0976 11.6834 21.0976 12.3166 20.7071 12.7071L13.7071 19.7071C13.3166 20.0976 12.6834 20.0976 12.2929 19.7071C11.9024 19.3166 11.9024 18.6834 12.2929 18.2929L17.5858 13H4C3.44772 13 3 12.5523 3 12C3 11.4477 3.44772 11 4 11H17.5858L12.2929 5.70711C11.9024 5.31658 11.9024 4.68342 12.2929 4.29289Z" fill="#000000">
+
+                                    </path>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </a>
             }
         </div>
     </section>
-
     <!-- Popular Courses Section -->
     <section class="courses-section">
         <h2>Popular Course</h2>
-
         <div class="courses-grid">
-            <div class="course-card">
-                <h3 class="course-title">Programming Fundamentals</h3>
-                <div class="course-details">
-                    # PRF192, #Programming<br>
-                    # fpt University
+            @foreach (var course in Model.Courses)
+            {
+                <div class="course-card">
+                    <h3 class="course-title">@course.CourseName</h3>
+                    <div class="course-details">
+                        #@course.CourseCode, #@course.Major.University.Name<br>
+                    </div>
+                    <div class="course-actions">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <a href="#" class="btn-outline">+ Add to library</a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Signin", "Auth")" class="btn-outline">+ Add to library</a>
+                        }
+                    </div>
                 </div>
-                <div class="course-actions">
-                    <button class="btn-outline">+ Add to library</button>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <h3 class="course-title">Programming Fundamentals</h3>
-                <div class="course-details">
-                    # PRF192, #Programming<br>
-                    # fpt University
-                </div>
-                <div class="course-actions">
-                    <button class="btn-outline">+ Add to library</button>
-                </div>
-            </div>
-
-            <div class="course-card">
-                <h3 class="course-title">Programming Fundamentals</h3>
-                <div class="course-details">
-                    # PRF192, #Programming<br>
-                    # fpt University
-                </div>
-                <div class="course-actions">
-                    <button class="btn-outline">+ Add to library</button>
-                </div>
-            </div>
+            }
         </div>
     </section>
 </main>
-@section Scripts {
-    <script>
-        // Enter key search
-        document.querySelector('.search-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.querySelector('.search-button').click();
-            }
-        });
-    </script>
-}
+
+<script src="~/js/Home/Introduction.js" asp-append-version="true"></script>

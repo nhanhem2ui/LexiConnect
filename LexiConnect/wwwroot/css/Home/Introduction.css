@@ -4,6 +4,10 @@ body {
     margin-bottom: 0 !important;
 }
 
+.universities-list * {
+    color: inherit !important;
+}
+
 .container {
     max-width: none !important;
     width: 100% !important;
@@ -112,6 +116,41 @@ main {
     box-shadow: 0 4px 6px rgba(0,0,0,0.07);
     margin-bottom: 48px;
 }
+/* Enhanced styles for university links - add this to your Introduction.css */
+.university-item-link,
+.university-item-link:link,
+.university-item-link:visited,
+.university-item-link:hover,
+.university-item-link:active,
+.university-item-link:focus {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block;
+    transition: all 0.2s ease;
+}
+
+    /* Ensure all text inside the link inherits the proper color */
+    .university-item-link * {
+        color: inherit !important;
+    }
+
+    /* Specific overrides for university name */
+    .university-item-link .university-info h3 {
+        color: #1f2937 !important;
+    }
+
+    .university-item-link .university-info p {
+        color: #6b7280 !important;
+    }
+
+    /* Hover states */
+    .university-item-link:hover .university-info h3 {
+        color: #1f2937 !important;
+    }
+
+    .university-item-link:hover .university-info p {
+        color: #6b7280 !important;
+    }
 
 .university-item {
     padding: 20px 24px;
@@ -119,11 +158,30 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
 }
 
     .university-item:last-child {
         border-bottom: none;
     }
+
+.university-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.university-text {
+    flex: 1;
+}
+
+.university-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
 
 .university-info h3 {
     margin: 0;
@@ -133,10 +191,66 @@ main {
 }
 
 .university-info p {
-    margin: 4px 0 0 0;
+    margin: 0;
     color: #6b7280;
     font-size: 14px;
 }
+
+/* Important university styles */
+.university-important {
+    background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 5%, #ffffff 5%, #ffffff 100%);
+    border-left: 4px solid #f59e0b;
+    position: relative;
+    overflow: hidden;
+}
+
+    .university-important::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #f59e0b, #fbbf24, #fef3c7);
+    }
+
+.important-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+    .important-badge svg {
+        width: 12px;
+        height: 12px;
+    }
+
+.university-item-link:hover .university-important {
+    background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 8%, #f9fafb 8%, #f9fafb 100%);
+    transform: translateX(6px);
+}
+
+.university-arrow {
+    color: #9ca3af;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.university-item-link:hover .university-arrow {
+    color: #4f46e5;
+    opacity: 1;
+    transform: translateX(4px);
+}
+
 .courses-section h2 {
     font-size: 24px;
     font-weight: 600;
@@ -222,5 +336,177 @@ main {
     .courses-grid {
         grid-template-columns: 1fr;
     }
+
+    .university-info {
+        gap: 12px;
+    }
+
+        .university-info h3 {
+            font-size: 16px;
+        }
+}
+/* Enhanced search styles - Add to your Introduction.css */
+
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    z-index: 1000;
+    max-height: 350px;
+    overflow-y: auto;
+    margin-top: 4px;
+    animation: slideDown 0.2s ease-out;
 }
 
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.suggestion-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f5f5f5;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+    .suggestion-item:hover,
+    .suggestion-item.selected {
+        background-color: #f8f9fa;
+        border-left: 3px solid #007bff;
+    }
+
+    .suggestion-item:last-child {
+        border-bottom: none;
+    }
+
+.suggestion-content {
+    flex: 1;
+    min-width: 0; /* Allows text truncation */
+}
+
+.suggestion-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.suggestion-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.suggestion-title {
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .suggestion-title strong {
+        background-color: #fff3cd;
+        padding: 1px 3px;
+        border-radius: 3px;
+        color: #856404;
+    }
+
+.suggestion-meta {
+    font-size: 12px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Loading, empty, and error states */
+.suggestion-loading,
+.suggestion-empty,
+.suggestion-error {
+    padding: 20px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.suggestion-loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.suggestion-error {
+    color: #dc3545;
+}
+
+/* Scrollbar styling for suggestions */
+.search-suggestions::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+    .search-suggestions::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+/* Focus states */
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .search-suggestions {
+        max-height: 280px;
+        margin-top: 2px;
+    }
+
+    .suggestion-item {
+        padding: 10px 12px;
+    }
+
+    .suggestion-title {
+        font-size: 13px;
+    }
+
+    .suggestion-meta {
+        font-size: 11px;
+    }
+}
