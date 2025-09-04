@@ -1,6 +1,17 @@
 ﻿USE [LexiConnect]
 GO
 
+SET IDENTITY_INSERT [dbo].[Countries] ON;
+INSERT INTO [dbo].[Countries] ([Id],[CountryName])
+VALUES 
+    (1,N'Vietnam'),
+    (2, N'United States'),
+    (3, N'Japan'),
+    (4, N'France'),
+    (5, N'Germany');
+SET IDENTITY_INSERT [dbo].[Contries] OFF;
+
+GO
 SET IDENTITY_INSERT [dbo].[Universities] ON;
 INSERT INTO [dbo].[Universities]
            ([Id], [Name], [ShortName], [CountryId], [City], [IsVerified], [LogoUrl], [CreatedAt])
