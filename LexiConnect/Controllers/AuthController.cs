@@ -137,7 +137,7 @@ namespace LexiConnect.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Introduction", "Home");
+                return RedirectToAction("Homepage", "Home");
             }
 
             if (result.IsLockedOut)
@@ -184,7 +184,7 @@ namespace LexiConnect.Controllers
             if (result.Succeeded)
             {
                 // User successfully signed in with existing external login
-                return LocalRedirect(returnUrl ?? "/Home/Introduction");
+                return LocalRedirect(returnUrl ?? "/Home/Homepage");
             }
 
             if (result.IsLockedOut)
@@ -194,7 +194,7 @@ namespace LexiConnect.Controllers
             }
 
             // If the user does not have an account, create one automatically
-            return await CreateUserFromExternalLogin(info, "/Home/Introduction");
+            return await CreateUserFromExternalLogin(info, "/Home/Homepage");
         }
 
         private async Task<IActionResult> CreateUserFromExternalLogin(ExternalLoginInfo info, string returnUrl)
@@ -207,7 +207,7 @@ namespace LexiConnect.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 TempData["Error"] = "Email not received from external provider.";
-                return View("Signin");
+                return RedirectToAction("Signin");
             }
 
             // Check if a user with this email already exists
@@ -235,7 +235,7 @@ namespace LexiConnect.Controllers
                     {
                         TempData["Error"] = error.Description;
                     }
-                    return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+                    return RedirectToAction("Signin");
                 }
             }
 
@@ -284,7 +284,7 @@ namespace LexiConnect.Controllers
                 TempData["Error"] = error.Description;
             }
 
-            return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+            return RedirectToAction("Signin");
         }
 
         [HttpPost]
@@ -302,6 +302,7 @@ namespace LexiConnect.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -340,28 +341,32 @@ namespace LexiConnect.Controllers
                 return BadRequest("Invalid password reset request.");
             }
 
-            ViewData["UserId"] = userId;
-            ViewData["Code"] = code;
+            var model = new ResetPasswordViewModel
+            {
+                Code = code,
+                UserId = userId
+            };
 
-            return View();
+            return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(string userId, string code, string newPassword)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code) || string.IsNullOrEmpty(newPassword))
+            if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.Code) || string.IsNullOrEmpty(model.NewPassword))
             {
                 return BadRequest("All fields are required.");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 return BadRequest("Invalid password reset request.");
             }
 
-            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-            var result = await _userManager.ResetPasswordAsync(user, code, newPassword);
+            model.Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Code));
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
 
             if (result.Succeeded)
             {

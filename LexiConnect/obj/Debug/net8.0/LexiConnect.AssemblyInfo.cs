@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LexiConnect")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4df9929381494afb04738b409e4dffc88e37d58")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+60a0de5adc40ec0025730579cf3acbc6a7e03c4b")]
 [assembly: System.Reflection.AssemblyProductAttribute("LexiConnect")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LexiConnect")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

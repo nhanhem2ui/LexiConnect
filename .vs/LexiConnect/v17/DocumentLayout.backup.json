@@ -7,16 +7,16 @@
       "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\controllers\\homecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\home\\userprofile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\home\\userprofile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\auth\\resetpassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\auth\\resetpassword.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\home\\introduction.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\home\\introduction.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\home\\userprofile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|solutionrelative:lexiconnect\\views\\home\\userprofile.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{5EACEBD8-AEF2-4387-A770-8F9E32DE63FD}|LexiConnect\\LexiConnect.csproj|e:\\dotnet\\lexiconnect\\lexiconnect\\views\\home\\homepage.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
@@ -30,7 +30,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -46,13 +46,26 @@
             },
             {
               "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ResetPassword.cshtml",
+              "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Auth\\ResetPassword.cshtml",
+              "RelativeDocumentMoniker": "LexiConnect\\Views\\Auth\\ResetPassword.cshtml",
+              "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Auth\\ResetPassword.cshtml",
+              "RelativeToolTip": "LexiConnect\\Views\\Auth\\ResetPassword.cshtml",
+              "ViewState": "AgIAAHwAAAAAAAAAAAAAAJIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-09-08T13:30:00.082Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
               "DocumentIndex": 0,
               "Title": "AuthController.cs",
               "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "LexiConnect\\Controllers\\AuthController.cs",
               "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Controllers\\AuthController.cs",
               "RelativeToolTip": "LexiConnect\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAALQAAAAAAAAAAAAAAMMAAABNAAAAAAAAAA==",
+              "ViewState": "AgIAAF0BAAAAAAAAAAAAAGcBAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-09-05T06:41:21.454Z",
               "EditorCaption": ""
@@ -60,18 +73,6 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "HomeController.cs",
-              "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Controllers\\HomeController.cs",
-              "RelativeDocumentMoniker": "LexiConnect\\Controllers\\HomeController.cs",
-              "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Controllers\\HomeController.cs",
-              "RelativeToolTip": "LexiConnect\\Controllers\\HomeController.cs",
-              "ViewState": "AgIAAFQAAAAAAAAAAAAowDoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-05T06:40:09.892Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
               "Title": "UserProfile.cshtml",
               "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Home\\UserProfile.cshtml",
               "RelativeDocumentMoniker": "LexiConnect\\Views\\Home\\UserProfile.cshtml",
@@ -79,19 +80,21 @@
               "RelativeToolTip": "LexiConnect\\Views\\Home\\UserProfile.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-05T06:39:26.727Z"
+              "WhenOpened": "2025-09-05T06:39:26.727Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "Introduction.cshtml",
               "DocumentMoniker": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Home\\Introduction.cshtml",
               "RelativeDocumentMoniker": "LexiConnect\\Views\\Home\\Introduction.cshtml",
               "ToolTip": "E:\\Dotnet\\LexiConnect\\LexiConnect\\Views\\Home\\Introduction.cshtml",
               "RelativeToolTip": "LexiConnect\\Views\\Home\\Introduction.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAHAAAAAAAAAA==",
+              "ViewState": "AgIAABoAAAAAAAAAAAAAAFcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-05T06:39:26.137Z"
+              "WhenOpened": "2025-09-05T06:39:26.137Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -103,7 +106,8 @@
               "RelativeToolTip": "LexiConnect\\Views\\Home\\Homepage.cshtml",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAADoBAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-09-05T06:39:25.583Z"
+              "WhenOpened": "2025-09-05T06:39:25.583Z",
+              "EditorCaption": ""
             }
           ]
         }
