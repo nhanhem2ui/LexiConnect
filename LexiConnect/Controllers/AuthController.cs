@@ -68,9 +68,11 @@ namespace LexiConnect.Controllers
                 if (!_userManager.Options.SignIn.RequireConfirmedAccount)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return Ok("User registered and logged in successfully.");
+                    TempData["Success"] = "User registered and logged in successfully.";
+                    return View("Signin");
                 }
-                return Ok("User registered successfully. Please check your email to confirm your account.");
+                TempData["Success"] = "User registered successfully. Please check your email to confirm your account.";
+                return View("Signin");
             }
 
             foreach (var error in result.Errors)
@@ -182,7 +184,7 @@ namespace LexiConnect.Controllers
             if (result.Succeeded)
             {
                 // User successfully signed in with existing external login
-                return LocalRedirect(returnUrl);
+                return LocalRedirect(returnUrl ?? "/Home/Introduction");
             }
 
             if (result.IsLockedOut)
@@ -192,7 +194,7 @@ namespace LexiConnect.Controllers
             }
 
             // If the user does not have an account, create one automatically
-            return await CreateUserFromExternalLogin(info, returnUrl);
+            return await CreateUserFromExternalLogin(info, "/Home/Introduction");
         }
 
         private async Task<IActionResult> CreateUserFromExternalLogin(ExternalLoginInfo info, string returnUrl)
@@ -205,7 +207,7 @@ namespace LexiConnect.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 TempData["Error"] = "Email not received from external provider.";
-                return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+                return View("Signin");
             }
 
             // Check if a user with this email already exists
@@ -311,7 +313,8 @@ namespace LexiConnect.Controllers
 
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
-                return Ok("If an account with that email exists, we have sent a password reset link.");
+                TempData["Success"] = "If an account with that email exists, we have sent a password reset link.";
+                return RedirectToAction("Signin");
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -325,7 +328,8 @@ namespace LexiConnect.Controllers
 
             await _emailSender.SendPasswordResetEmailAsync(email, user.UserName, callbackUrl);
 
-            return Ok("If an account with that email exists, we have sent a password reset link.");
+            TempData["Success"] = "If an account with that email exists, we have sent a password reset link.";
+            return RedirectToAction("Signin");
         }
 
         [HttpGet]
@@ -361,7 +365,8 @@ namespace LexiConnect.Controllers
 
             if (result.Succeeded)
             {
-                return Ok("Your password has been reset successfully.");
+                TempData["Success"] = "Your password has been reset successfully.";
+                return RedirectToAction("Signin");
             }
 
             foreach (var error in result.Errors)

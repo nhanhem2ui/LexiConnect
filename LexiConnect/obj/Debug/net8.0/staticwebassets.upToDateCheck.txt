@@ -8,6 +8,7 @@ wwwroot\image\LexiConnect_logo_NoText.png
 wwwroot\image\logo_FPT.png
 wwwroot\image\logo_VNU.jpg
 wwwroot\image\logo_VNUHCM.png
+wwwroot\js\Home\Introduction.js
 wwwroot\js\site.js
 wwwroot\lib\bootstrap\dist\css\bootstrap.css
 wwwroot\lib\bootstrap\dist\css\bootstrap.css.map

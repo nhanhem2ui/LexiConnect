@@ -77,9 +77,8 @@ namespace LexiConnect.Controllers
                 // Limit total suggestions
                 suggestions = suggestions.Take(10).ToList();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Log error
                 return Json(new List<object>());
             }
 
