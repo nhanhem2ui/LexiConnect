@@ -14,3 +14,19 @@ E:\Dotnet\LexiConnect\DataAccess\bin\Debug\net8.0\BusinessObjects.pdb
 E:\Dotnet\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.AssemblyReference.cache
 E:\Dotnet\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.Up2Date
 E:\Dotnet\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.sourcelink.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\bin\Debug\net8.0\DataAccess.deps.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\bin\Debug\net8.0\DataAccess.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\bin\Debug\net8.0\DataAccess.pdb
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\bin\Debug\net8.0\BusinessObjects.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\bin\Debug\net8.0\BusinessObjects.pdb
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.AssemblyReference.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.GeneratedMSBuildEditorConfig.editorconfig
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.AssemblyInfoInputs.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.AssemblyInfo.cs
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.CoreCompileInputs.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.sourcelink.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.csproj.Up2Date
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\refint\DataAccess.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\DataAccess.pdb
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\DataAccess\obj\Debug\net8.0\ref\DataAccess.dll

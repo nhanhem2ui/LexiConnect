@@ -18,13 +18,17 @@ namespace LexiConnect.Controllers
         private readonly IGenericRepository<University> _universityRepository;
         private readonly IGenericRepository<Course> _courseRepository;
         private readonly IGenericRepository<Major> _majorRepository;
-        public HomeController(ILogger<HomeController> logger, UserManager<Users> userManager, IGenericRepository<University> universityRepository, IGenericRepository<Course> courseRepository, IGenericRepository<Major> majorRepository)
+        private readonly IGenericRepository<RecentViewed> _recentviewedRepository;
+        private readonly IGenericRepository<Document> _documentRepository;
+        public HomeController(ILogger<HomeController> logger, UserManager<Users> userManager, IGenericRepository<University> universityRepository, IGenericRepository<Course> courseRepository, IGenericRepository<Major> majorRepository , IGenericRepository<RecentViewed> recentViewedRepository, IGenericRepository<Document> documentRepository)
         {
             _logger = logger;
             _userManager = userManager;
             _universityRepository = universityRepository;
             _courseRepository = courseRepository;
             _majorRepository = majorRepository;
+            _recentviewedRepository = recentViewedRepository;
+            _documentRepository = documentRepository;
         }
 
         [HttpGet]
@@ -46,6 +50,39 @@ namespace LexiConnect.Controllers
             {
                 Universities = universities,
                 Courses = courses
+            };
+
+            return View(model);
+        }
+
+        //[HttpGet]
+        //public IActionResult Homepage()
+        //{
+        //    return View();
+        //}
+
+        [HttpGet]
+        public async Task<IActionResult> Homepage()
+        {
+            var recentvieweds = _recentviewedRepository
+                .GetAllQueryable()
+                .OrderBy(u => Guid.NewGuid())
+                .Take(3);
+
+            var topdocuments = _documentRepository
+                .GetAllQueryable()
+                .Include(c => c.Course)
+                .Include(c => c.Uploader)
+                .Include (c => c.ApprovedByUser)
+                .ThenInclude(m => m.University)
+                .OrderByDescending(c => c.ViewCount)
+                .Take(3)
+                ;
+
+            var model = new HomePageViewModel
+            {
+                RecentVieweds = recentvieweds,
+                TopDocuments = topdocuments
             };
 
             return View(model);

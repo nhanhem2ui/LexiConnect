@@ -13,3 +13,18 @@ E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.pdb
 E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.genruntimeconfig.cache
 E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\ref\BusinessObjects.dll
 E:\Dotnet\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.sourcelink.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\bin\Debug\net8.0\BusinessObjects.deps.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\bin\Debug\net8.0\BusinessObjects.runtimeconfig.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\bin\Debug\net8.0\BusinessObjects.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\bin\Debug\net8.0\BusinessObjects.pdb
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.csproj.AssemblyReference.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.GeneratedMSBuildEditorConfig.editorconfig
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.AssemblyInfoInputs.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.AssemblyInfo.cs
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.csproj.CoreCompileInputs.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.sourcelink.json
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\refint\BusinessObjects.dll
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.pdb
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\BusinessObjects.genruntimeconfig.cache
+D:\Semester\Ky 8(FA25)\PRN2\Project\LexiConnect\BusinessObjects\obj\Debug\net8.0\ref\BusinessObjects.dll

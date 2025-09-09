@@ -3149,9 +3149,9 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v8.0",
         "dependencies": {
-          "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.19",
-          "Microsoft.EntityFrameworkCore": "9.0.8",
-          "Microsoft.EntityFrameworkCore.SqlServer": "9.0.8"
+          "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "8.0.8",
+          "Microsoft.EntityFrameworkCore": "8.0.8",
+          "Microsoft.EntityFrameworkCore.SqlServer": "8.0.8"
         },
         "compile": {
           "bin/placeholder/BusinessObjects.dll": {}
@@ -8572,23 +8572,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Admin\\.nuget\\packages\\": {},
+    "C:\\Users\\84822\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\Dotnet\\LexiConnect\\LexiConnect\\LexiConnect.csproj",
+      "projectUniqueName": "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\LexiConnect\\LexiConnect.csproj",
       "projectName": "LexiConnect",
-      "projectPath": "E:\\Dotnet\\LexiConnect\\LexiConnect\\LexiConnect.csproj",
-      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-      "outputPath": "E:\\Dotnet\\LexiConnect\\LexiConnect\\obj\\",
+      "projectPath": "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\LexiConnect\\LexiConnect.csproj",
+      "packagesPath": "C:\\Users\\84822\\.nuget\\packages\\",
+      "outputPath": "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\LexiConnect\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\84822\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -8604,14 +8604,14 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "E:\\Dotnet\\LexiConnect\\BusinessObjects\\BusinessObjects.csproj": {
-              "projectPath": "E:\\Dotnet\\LexiConnect\\BusinessObjects\\BusinessObjects.csproj"
+            "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\BusinessObjects\\BusinessObjects.csproj": {
+              "projectPath": "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\BusinessObjects\\BusinessObjects.csproj"
             },
-            "E:\\Dotnet\\LexiConnect\\DataAccess\\DataAccess.csproj": {
-              "projectPath": "E:\\Dotnet\\LexiConnect\\DataAccess\\DataAccess.csproj"
+            "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\DataAccess\\DataAccess.csproj": {
+              "projectPath": "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\DataAccess\\DataAccess.csproj"
             },
-            "E:\\Dotnet\\LexiConnect\\Repositories\\Repositories.csproj": {
-              "projectPath": "E:\\Dotnet\\LexiConnect\\Repositories\\Repositories.csproj"
+            "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\Repositories\\Repositories.csproj": {
+              "projectPath": "D:\\Semester\\Ky 8(FA25)\\PRN2\\Project\\LexiConnect\\Repositories\\Repositories.csproj"
             }
           }
         }
