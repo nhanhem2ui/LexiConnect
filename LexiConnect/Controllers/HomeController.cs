@@ -30,6 +30,11 @@ namespace LexiConnect.Controllers
         [HttpGet]
         public IActionResult Introduction()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Homepage");
+            }
+
             var universities = _universityRepository
                 .GetAllQueryable(u => u.IsVerified)
                 .OrderBy(u => Guid.NewGuid())
@@ -72,7 +77,7 @@ namespace LexiConnect.Controllers
                 {
                     User = user,
                 };
-                return View();
+                return View(model);
             }
             return NotFound("An error has occured");
         }

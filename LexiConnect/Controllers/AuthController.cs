@@ -164,7 +164,7 @@ namespace LexiConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> GoogleCallback(string? returnUrl = null, string? remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Action("Introduction", "Home");
+            returnUrl = returnUrl ?? Url.Action("Homepage", "Home");
 
             if (remoteError != null)
             {

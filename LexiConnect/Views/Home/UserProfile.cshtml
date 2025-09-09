@@ -1,1 +1,193 @@
-﻿
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "UserProfile";
+}
+@model LexiConnect.Models.ViewModels.UserProfileViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Home/UserProfile.css"/>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="user-profile">
+                <div class="user-avatar">B</div>
+                <h3 class="user-name">@Model.User.FullName</h3>
+                <p class="user-affiliation">🎓 @Model.User.University</p>
+            </div>
+
+            <ul class="sidebar-nav">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">🏠</span>
+                        Home
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📚</span>
+                        My Library
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📝</span>
+                        AI Notes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">🤖</span>
+                        Ask AI
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📊</span>
+                        AI Quiz
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">🕒</span>
+                        Recent
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📖</span>
+                        Courses
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📚</span>
+                        Books
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📋</span>
+                        Studylists
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">❓</span>
+                        Questions
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar-large">B</div>
+                <div class="profile-info">
+                    <h1>@Model.User.FullName</h1>
+                    <p class="affiliation">🎓 @Model.User.University</p>
+                    <div class="profile-stats-row">
+                        <div class="stat-card">
+                            <span class="number">0</span>
+                            <span class="label">Uploads</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="number">0</span>
+                            <span class="label">Upvotes</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="number">0</span>
+                            <span class="label">Comments</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="number">0</span>
+                            <span class="label">Students Helped</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-edit">Edit Profile</button>
+            </div>
+
+            <!-- Profile Sections -->
+            <div class="profile-sections">
+                <!-- My Uploads Section -->
+                <div class="profile-section">
+                    <h2 class="section-title">
+                        <span>📚</span>
+                        My Uploads
+                    </h2>
+                    <div class="uploads-list">
+                        <div class="upload-item">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-details">
+                                <h4>Hướng DẪN THI THỰC HÀNH</h4>
+                                <p>This use something</p>
+                                <p style="color: #999; font-size: 11px;">Your document was already on the website.</p>
+                            </div>
+                            <div class="upload-stats">
+                                <div class="views">0 views</div>
+                                <div class="rating">⭐ None</div>
+                            </div>
+                        </div>
+                        <div class="upload-item">
+                            <div class="upload-icon">📄</div>
+                            <div class="upload-details">
+                                <h4>Hướng dẫn cài đặt gói hỗ trợ ngôn ngữ và bộ gõ trên Windows</h4>
+                                <p>Programming guide</p>
+                                <p style="color: #999; font-size: 11px;">Your document was already on the website.</p>
+                            </div>
+                            <div class="upload-stats">
+                                <div class="views">0 views</div>
+                                <div class="rating">⭐ None</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Section -->
+                <div class="profile-section">
+                    <h2 class="section-title">
+                        <span>⚡</span>
+                        Recent Activity
+                    </h2>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">📤</div>
+                            <div class="activity-content">
+                                <h4>Uploaded new document</h4>
+                                <p>Hướng DẪN THI THỰC HÀNH - This use something</p>
+                            </div>
+                            <div class="activity-time">2h ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">📤</div>
+                            <div class="activity-content">
+                                <h4>Uploaded new document</h4>
+                                <p>Hướng dẫn cài đặt gói hỗ trợ ngôn ngữ và bộ gõ trên Windows</p>
+                            </div>
+                            <div class="activity-time">3h ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">👤</div>
+                            <div class="activity-content">
+                                <h4>Joined LexiConnect</h4>
+                                <p>Welcome to the community!</p>
+                            </div>
+                            <div class="activity-time">1 day ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
