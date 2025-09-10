@@ -71,4 +71,37 @@ VALUES
 GO
 SET IDENTITY_INSERT [dbo].[Courses] OFF;
 
+
+SET IDENTITY_INSERT [dbo].[Documents] ON;
+
+INSERT INTO [dbo].[Documents]
+    ([DocumentId], [Title], [Description], [DocumentType], [FilePath], [FileSize], [FileType],
+     [ThumbnailUrl], [UploaderId], [CourseId], [ApprovedBy], [PointsAwarded], [PointsToDownload],
+     [DownloadCount], [ViewCount], [LikeCount], [IsPremiumOnly], [IsAiGenerated], [AiConfidenceScore],
+     [Status], [RejectionReason], [ApprovedAt], [LanguageCode], [PageCount], [CreatedAt], [UpdatedAt])
+VALUES
+-- Example Document 1
+(1, N'PRF192 Lecture Notes', N'Full lecture notes for Programming Fundamentals.',
+ 'notes', N'/uploads/docs/PRF192_notes.pdf', 524288, 'pdf',
+ N'/uploads/thumbnails/PRF192_notes.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 1, NULL, 
+ 10, 5, 0, 0, 0, 0, 0, NULL, 
+ 'approved', NULL, GETDATE(), 'en', 120, GETDATE(), GETDATE()),
+
+-- Example Document 2
+(2, N'OOP with Java Assignment', N'Assignment 1 for Java OOP course.',
+ 'assignment', N'/uploads/docs/PRO201_assignment1.docx', 1048576, 'docx',
+ N'/uploads/thumbnails/PRO201_assignment1.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 2, NULL,
+ 15, 10, 0, 0, 0, 0, 1, 0.95,
+ 'pending', NULL, NULL, 'en', 15, GETDATE(), GETDATE()),
+
+-- Example Document 3
+(3, N'Database Systems Quiz', N'Quiz with answers for DBI202.',
+ 'quiz', N'/uploads/docs/DBI202_quiz.pdf', 256000, 'pdf',
+ N'/uploads/thumbnails/DBI202_quiz.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 3, NULL,
+ 5, 3, 0, 0, 0, 0, 0, NULL,
+ 'approved', NULL, GETDATE(), 'en', 10, GETDATE(), GETDATE());
+
+SET IDENTITY_INSERT [dbo].[Documents] OFF;
+GO
+
 GO
