@@ -68,9 +68,11 @@ namespace LexiConnect.Controllers
                 if (!_userManager.Options.SignIn.RequireConfirmedAccount)
                 {
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return Ok("User registered and logged in successfully.");
+                    TempData["Success"] = "User registered and logged in successfully.";
+                    return View("Signin");
                 }
-                return Ok("User registered successfully. Please check your email to confirm your account.");
+                TempData["Success"] = "User registered successfully. Please check your email to confirm your account.";
+                return View("Signin");
             }
 
             foreach (var error in result.Errors)
@@ -135,7 +137,7 @@ namespace LexiConnect.Controllers
 
             if (result.Succeeded)
             {
-                return RedirectToAction("Introduction", "Home");
+                return RedirectToAction("Homepage", "Home");
             }
 
             if (result.IsLockedOut)
@@ -162,7 +164,7 @@ namespace LexiConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> GoogleCallback(string? returnUrl = null, string? remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Action("Introduction", "Home");
+            returnUrl = returnUrl ?? Url.Action("Homepage", "Home");
 
             if (remoteError != null)
             {
@@ -182,7 +184,7 @@ namespace LexiConnect.Controllers
             if (result.Succeeded)
             {
                 // User successfully signed in with existing external login
-                return LocalRedirect(returnUrl);
+                return LocalRedirect(returnUrl ?? "/Home/Homepage");
             }
 
             if (result.IsLockedOut)
@@ -192,7 +194,7 @@ namespace LexiConnect.Controllers
             }
 
             // If the user does not have an account, create one automatically
-            return await CreateUserFromExternalLogin(info, returnUrl);
+            return await CreateUserFromExternalLogin(info, "/Home/Homepage");
         }
 
         private async Task<IActionResult> CreateUserFromExternalLogin(ExternalLoginInfo info, string returnUrl)
@@ -205,7 +207,7 @@ namespace LexiConnect.Controllers
             if (string.IsNullOrEmpty(email))
             {
                 TempData["Error"] = "Email not received from external provider.";
-                return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+                return RedirectToAction("Signin");
             }
 
             // Check if a user with this email already exists
@@ -233,7 +235,7 @@ namespace LexiConnect.Controllers
                     {
                         TempData["Error"] = error.Description;
                     }
-                    return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+                    return RedirectToAction("Signin");
                 }
             }
 
@@ -282,7 +284,7 @@ namespace LexiConnect.Controllers
                 TempData["Error"] = error.Description;
             }
 
-            return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
+            return RedirectToAction("Signin");
         }
 
         [HttpPost]
@@ -300,6 +302,7 @@ namespace LexiConnect.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -311,7 +314,8 @@ namespace LexiConnect.Controllers
 
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
-                return Ok("If an account with that email exists, we have sent a password reset link.");
+                TempData["Success"] = "If an account with that email exists, we have sent a password reset link.";
+                return RedirectToAction("Signin");
             }
 
             var code = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -325,7 +329,8 @@ namespace LexiConnect.Controllers
 
             await _emailSender.SendPasswordResetEmailAsync(email, user.UserName, callbackUrl);
 
-            return Ok("If an account with that email exists, we have sent a password reset link.");
+            TempData["Success"] = "If an account with that email exists, we have sent a password reset link.";
+            return RedirectToAction("Signin");
         }
 
         [HttpGet]
@@ -336,32 +341,37 @@ namespace LexiConnect.Controllers
                 return BadRequest("Invalid password reset request.");
             }
 
-            ViewData["UserId"] = userId;
-            ViewData["Code"] = code;
+            var model = new ResetPasswordViewModel
+            {
+                Code = code,
+                UserId = userId
+            };
 
-            return View();
+            return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(string userId, string code, string newPassword)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(code) || string.IsNullOrEmpty(newPassword))
+            if (string.IsNullOrEmpty(model.UserId) || string.IsNullOrEmpty(model.Code) || string.IsNullOrEmpty(model.NewPassword))
             {
                 return BadRequest("All fields are required.");
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 return BadRequest("Invalid password reset request.");
             }
 
-            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-            var result = await _userManager.ResetPasswordAsync(user, code, newPassword);
+            model.Code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(model.Code));
+            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.NewPassword);
 
             if (result.Succeeded)
             {
-                return Ok("Your password has been reset successfully.");
+                TempData["Success"] = "Your password has been reset successfully.";
+                return RedirectToAction("Signin");
             }
 
             foreach (var error in result.Errors)
