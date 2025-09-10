@@ -1,6 +1,8 @@
 ﻿@{
     ViewData["Title"] = "Dashboard - LexiConnect";
 }
+@model LexiConnect.Models.ViewModels.HomePageViewModel
+
 <head>
     <link rel="stylesheet" href="~/css/Home/Homepage.css"/>
 </head>
@@ -101,83 +103,25 @@
             <div class="content-section">
                 <h2 class="section-title">Recently Viewed</h2>
                 <div class="documents-grid">
-                    <div class="document-card">
-                        <div class="document-header">
-                            <div>
-                                <h3 class="document-title">Programming Fundamentals</h3>
-                                <p class="document-meta"># PRF192, #Programming</p>
-                                <p class="document-meta">100 Document</p>
-                            </div>
-                        </div>
-                        <div class="document-actions">
-                            <button class="btn-add">+ Add to library</button>
-                        </div>
-                    </div>
 
-                    <div class="document-card">
-                        <div class="document-header">
-                            <div>
-                                <h3 class="document-title">Programming Fundamentals</h3>
-                                <p class="document-meta"># PRF192, #Programming</p>
-                                <p class="document-meta">100 Document</p>
+                    @foreach (var recent in Model.RecentVieweds)
+                    {
+                        <div class="document-card">
+                            <div class="document-header">
+                                <div>
+                                    <h3 class="document-title">@recent.Document.Title</h3>
+                                    <p class="document-meta"># PRF192, #Programming</p>
+                                    <p class="document-meta">100 Document</p>
+                                </div>
+                            </div>
+                            <div class="document-actions">
+                                <button class="btn-add">+ Add to library</button>
                             </div>
                         </div>
-                        <div class="document-actions">
-                            <button class="btn-add">+ Add to library</button>
-                        </div>
-                    </div>
+                    }
 
-                    <div class="document-card">
-                        <div class="document-header">
-                            <div>
-                                <h3 class="document-title">Programming Fundamentals</h3>
-                                <p class="document-meta"># PRF192, #Programming</p>
-                                <p class="document-meta">100 Document</p>
-                            </div>
-                        </div>
-                        <div class="document-actions">
-                            <button class="btn-add">+ Add to library</button>
-                        </div>
-                    </div>
 
-                    <div class="document-card">
-                        <div class="document-header">
-                            <div>
-                                <h3 class="document-title">Programming Fundamentals</h3>
-                                <p class="document-meta"># PRF192, #Programming</p>
-                                <p class="document-meta">100 Document</p>
-                            </div>
-                        </div>
-                        <div class="document-actions">
-                            <button class="btn-add">+ Add to library</button>
-                        </div>
-                    </div>
 
-                    <div class="document-card">
-                        <div class="document-header">
-                            <div>
-                                <h3 class="document-title">Programming Fundamentals</h3>
-                                <p class="document-meta"># PRF192, #Programming</p>
-                                <p class="document-meta">100 Document</p>
-                            </div>
-                        </div>
-                        <div class="document-actions">
-                            <button class="btn-add">+ Add to library</button>
-                        </div>
-                    </div>
-
-                    <div class="document-card">
-                        <div class="document-header">
-                            <div>
-                                <h3 class="document-title">Programming Fundamentals</h3>
-                                <p class="document-meta"># PRF192, #Programming</p>
-                                <p class="document-meta">100 Document</p>
-                            </div>
-                        </div>
-                        <div class="document-actions">
-                            <button class="btn-add">+ Add to library</button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -185,41 +129,22 @@
             <div class="content-section">
                 <h2 class="section-title">Top Documents</h2>
                 <div class="top-documents">
-                    <div class="top-document-card">
-                        <div class="document-preview">
-                            <div class="document-preview-title">Document Control</div>
-                        </div>
-                        <h3 class="document-title">Document Control</h3>
-                        <p class="document-meta"># PRF192, #Programming</p>
-                        <div class="completion-badge">
-                            <span>📊</span>
-                            <span class="completion-percentage">80%</span>
-                        </div>
-                    </div>
 
-                    <div class="top-document-card">
-                        <div class="document-preview">
-                            <div class="document-preview-title">Document Control</div>
-                        </div>
-                        <h3 class="document-title">Document Control</h3>
-                        <p class="document-meta"># PRF192, #Programming</p>
-                        <div class="completion-badge">
-                            <span>📊</span>
-                            <span class="completion-percentage">80%</span>
-                        </div>
-                    </div>
+                    @foreach (var doc in Model.TopDocuments)
+                    {
+                        <div class="top-document-card">
+                            <div class="document-preview">
+                                <div class="document-preview-title">@doc.Title</div>
+                            </div>
+                            <h3 class="document-title">@doc.Description</h3>
+                            <div class="completion-badge">
+                                <span>👍🏼</span>
 
-                    <div class="top-document-card">
-                        <div class="document-preview">
-                            <div class="document-preview-title">Document Control</div>
+                                <span class="completion-percentage">@doc.LikeCount</span>
+                            </div>
                         </div>
-                        <h3 class="document-title">Document Control</h3>
-                        <p class="document-meta"># PRF192, #Programming</p>
-                        <div class="completion-badge">
-                            <span>📊</span>
-                            <span class="completion-percentage">80%</span>
-                        </div>
-                    </div>
+
+                    }
                 </div>
             </div>
         </div>
