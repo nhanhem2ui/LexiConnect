@@ -60,14 +60,8 @@ namespace LexiConnect.Controllers
             return View(model);
         }
 
-        //[HttpGet]
-        //public IActionResult Homepage()
-        //{
-        //    return View();
-        //}
-
         [HttpGet]
-        public async Task<IActionResult> Homepage()
+        public IActionResult Homepage()
         {
             var recentvieweds = _recentviewedRepository
                 .GetAllQueryable()
@@ -78,7 +72,7 @@ namespace LexiConnect.Controllers
                 .GetAllQueryable()
                 .Include(c => c.Course)
                 .Include(c => c.Uploader)
-                .Include (c => c.ApprovedByUser)
+                .Include(c => c.ApprovedByUser)
                 .ThenInclude(m => m.University)
                 .OrderByDescending(c => c.ViewCount)
                 .Take(3)
@@ -91,12 +85,6 @@ namespace LexiConnect.Controllers
             };
 
             return View(model);
-        }
-
-        [HttpGet]
-        public IActionResult Homepage()
-        {
-            return View();
         }
 
         [HttpGet]
