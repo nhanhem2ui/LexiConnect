@@ -28,8 +28,13 @@ namespace LexiConnect.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Introduction()
+        public IActionResult Introduction()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Homepage");
+            }
+
             var universities = _universityRepository
                 .GetAllQueryable(u => u.IsVerified)
                 .OrderBy(u => Guid.NewGuid())
@@ -37,7 +42,7 @@ namespace LexiConnect.Controllers
 
             var courses = _courseRepository
                 .GetAllQueryable(c => c.IsActive)
-                .Include(c => c.Major)   
+                .Include(c => c.Major)
                 .ThenInclude(m => m.University)
                 .OrderBy(u => Guid.NewGuid())
                 .Take(3);
@@ -49,6 +54,12 @@ namespace LexiConnect.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpGet]
+        public IActionResult Homepage()
+        {
+            return View();
         }
 
         [HttpGet]
@@ -66,7 +77,7 @@ namespace LexiConnect.Controllers
                 {
                     User = user,
                 };
-                return View();
+                return View(model);
             }
             return NotFound("An error has occured");
         }

@@ -9,7 +9,7 @@ VALUES
     (3, N'Japan'),
     (4, N'France'),
     (5, N'Germany');
-SET IDENTITY_INSERT [dbo].[Contries] OFF;
+SET IDENTITY_INSERT [dbo].[Countries] OFF;
 
 GO
 SET IDENTITY_INSERT [dbo].[Universities] ON;
