@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Repositories;
 using System.Security.Claims;
 using System.Text;
 
@@ -15,12 +16,14 @@ namespace LexiConnect.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
         private readonly ISender _emailSender;
+        private readonly IGenericRepository<University> _universityRepository;
 
-        public AuthController(UserManager<Users> userManager, SignInManager<Users> signInManager, ISender emailSender)
+        public AuthController(UserManager<Users> userManager, SignInManager<Users> signInManager, ISender emailSender, IGenericRepository<University> universityRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _universityRepository = universityRepository;
         }
 
         [HttpGet]
@@ -49,12 +52,19 @@ namespace LexiConnect.Controllers
             {
                 UserName = model.Username,
                 FullName = model.Email,
-                Email = model.Email
+                Email = model.Email,
+                UniversityId = 0,
+                MajorId = 0,
+                PointsBalance = 0,
+                TotalPointsEarned = 0
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
+                // Assign default role
+                await _userManager.AddToRoleAsync(user, "User");
+
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Action(
@@ -137,6 +147,16 @@ namespace LexiConnect.Controllers
 
             if (result.Succeeded)
             {
+                // Add claims
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.Name, user.FullName ?? user.UserName),
+                    new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
+                    new("UniversityName", user.University.Name ?? "Chưa rõ"),
+                    new(ClaimTypes.Role, "User")
+                };
+
+                await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
                 return RedirectToAction("Homepage", "Home");
             }
 
@@ -181,9 +201,28 @@ namespace LexiConnect.Controllers
 
             // Sign in the user with this external login provider if the user already has a login
             var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
             if (result.Succeeded)
             {
-                // User successfully signed in with existing external login
+                // Fetch the user again
+                var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+                if(user.University == null)
+                {
+                    user.University = await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
+                }
+
+                // Build your custom claims
+                var claims = new List<Claim>
+                {
+                        new(ClaimTypes.Name, user.FullName ?? user.UserName),
+                        new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
+                        new("UniversityName", user.University.Name ?? "Chưa rõ"),
+                        new(ClaimTypes.Role, "User")
+                };
+
+                // Re-sign in with claims
+                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
+
                 return LocalRedirect(returnUrl ?? "/Home/Homepage");
             }
 
@@ -196,7 +235,6 @@ namespace LexiConnect.Controllers
             // If the user does not have an account, create one automatically
             return await CreateUserFromExternalLogin(info, "/Home/Homepage");
         }
-
         private async Task<IActionResult> CreateUserFromExternalLogin(ExternalLoginInfo info, string returnUrl)
         {
             // Extract user information from external provider
@@ -220,13 +258,22 @@ namespace LexiConnect.Controllers
                 if (addLoginResult.Succeeded)
                 {
                     // Update avatar if it's still default and we have a new one
-                    if (existingUser.AvatarUrl == "/image/default-avatar.png" && !string.IsNullOrEmpty(avatarUrl))
+                    if (existingUser.AvatarUrl == "~/image/default-avatar.png" && !string.IsNullOrEmpty(avatarUrl))
                     {
                         existingUser.AvatarUrl = avatarUrl;
                         await _userManager.UpdateAsync(existingUser);
                     }
 
-                    await _signInManager.SignInAsync(existingUser, isPersistent: false, info.LoginProvider);
+                    var claims = new List<Claim>
+                    {
+                        new(ClaimTypes.Name, existingUser.FullName ?? existingUser.UserName),
+                        new("AvatarUrl", existingUser.AvatarUrl ?? "~/image/default-avatar.png"),
+                        new("UniversityName", existingUser.University?.Name ?? "Chưa rõ"),
+                        new(ClaimTypes.Role, "User")
+                    };
+
+                    await _signInManager.SignInWithClaimsAsync(existingUser, isPersistent: false, claims);
+
                     return LocalRedirect(returnUrl);
                 }
                 else
@@ -245,7 +292,9 @@ namespace LexiConnect.Controllers
                 UserName = email,
                 Email = email,
                 FullName = fullName ?? "External User",
-                AvatarUrl = avatarUrl ?? "/image/default-avatar.png",
+                AvatarUrl = avatarUrl ?? "~/image/default-avatar.png",
+                UniversityId = 0,
+                MajorId = 0,
                 EmailConfirmed = true, // External provider users have confirmed emails
                 PointsBalance = 0,
                 TotalPointsEarned = 0
@@ -254,6 +303,9 @@ namespace LexiConnect.Controllers
             var createResult = await _userManager.CreateAsync(user);
             if (createResult.Succeeded)
             {
+                // Assign default role
+                await _userManager.AddToRoleAsync(user, "User");
+
                 var addLoginResult = await _userManager.AddLoginAsync(user, info);
                 if (addLoginResult.Succeeded)
                 {
@@ -272,8 +324,15 @@ namespace LexiConnect.Controllers
                         await _emailSender.SendWelcomeEmailAsync(email, user.FullName, callbackUrl);
                     }
 
-                    // Sign in the user
-                    await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+                    var claims = new List<Claim>
+                    {
+                        new(ClaimTypes.Name, user.FullName ?? user.UserName),
+                        new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
+                        new("UniversityName", user.University.Name ?? "Chưa rõ"),
+                        new(ClaimTypes.Role, "User")
+                    };
+
+                    await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
                     return LocalRedirect(returnUrl);
                 }
             }

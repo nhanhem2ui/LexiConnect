@@ -1,34 +1,34 @@
 using BusinessObjects;
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using System.Diagnostics;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace LexiConnect.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly UserManager<Users> _userManager;
         private readonly IGenericRepository<University> _universityRepository;
         private readonly IGenericRepository<Course> _courseRepository;
-        private readonly IGenericRepository<Major> _majorRepository;
-        private readonly IGenericRepository<RecentViewed> _recentviewedRepository;
         private readonly IGenericRepository<Document> _documentRepository;
-        public HomeController(ILogger<HomeController> logger, UserManager<Users> userManager, IGenericRepository<University> universityRepository, IGenericRepository<Course> courseRepository, IGenericRepository<Major> majorRepository , IGenericRepository<RecentViewed> recentViewedRepository, IGenericRepository<Document> documentRepository)
+        private readonly IGenericRepository<Users> _userRepository;
+        private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
+
+        public HomeController(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
+            IGenericRepository<Course> courseRepository, IGenericRepository<Document> documentRepository,
+            IGenericRepository<Users> userRepository, IGenericRepository<RecentViewed> recentViewedRepository)
         {
             _logger = logger;
-            _userManager = userManager;
             _universityRepository = universityRepository;
-            _courseRepository = courseRepository;
-            _majorRepository = majorRepository;
-            _recentviewedRepository = recentViewedRepository;
             _documentRepository = documentRepository;
+            _courseRepository = courseRepository;
+            _userRepository = userRepository;
+            _documentRepository = documentRepository;
+            _recentViewedRepository = recentViewedRepository;
         }
 
         [HttpGet]
@@ -63,7 +63,7 @@ namespace LexiConnect.Controllers
         [HttpGet]
         public IActionResult Homepage()
         {
-            var recentvieweds = _recentviewedRepository
+            var recentvieweds = _recentViewedRepository
                 .GetAllQueryable()
                 .OrderBy(u => Guid.NewGuid())
                 .Take(3);
@@ -95,16 +95,32 @@ namespace LexiConnect.Controllers
             {
                 return NotFound("Invalid operant");
             }
-            var user = await _userManager.FindByIdAsync(userId);
+
+            var user = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+            var identity = User;
+
             if (user != null)
             {
+                var uploadedDocuments = _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(userId)).ToList();
+                var upvotes = 0;
+                foreach (var document in uploadedDocuments)
+                {
+                    upvotes += document.LikeCount;
+                }
                 var model = new UserProfileViewModel
                 {
                     User = user,
+                    UploadedNum = uploadedDocuments.Count,
+                    Upvotes = upvotes
                 };
                 return View(model);
             }
             return NotFound("An error has occured");
+        }
+        [HttpGet]
+        public IActionResult EditProfile()
+        {
+            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

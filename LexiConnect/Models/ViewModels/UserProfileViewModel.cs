@@ -5,5 +5,7 @@ namespace LexiConnect.Models.ViewModels
     public class UserProfileViewModel
     {
         public required Users User { get; set; }
+        public int UploadedNum {  get; set; }
+        public int Upvotes {  get; set; }
     }
 }

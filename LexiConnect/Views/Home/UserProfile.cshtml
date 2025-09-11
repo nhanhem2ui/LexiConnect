@@ -10,17 +10,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile - LexiConnect</title>
-    <link rel="stylesheet" href="~/css/Home/UserProfile.css"/>
+    <link rel="stylesheet" href="~/css/Home/UserProfile.css" />
 </head>
 
 <body>
     <div class="dashboard-container">
+
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="user-profile">
-                <div class="user-avatar">B</div>
+                <div class="user-avatar">
+                    <img style="max-width:40px;max-height:40px" src="@Url.Content(Model.User.AvatarUrl)" />
+                </div>
                 <h3 class="user-name">@Model.User.FullName</h3>
-                <p class="user-affiliation">🎓 @Model.User.University</p>
+                <p class="user-affiliation">@Model.User.University.Name</p>
             </div>
 
             <ul class="sidebar-nav">
@@ -94,27 +97,23 @@
                 <div class="profile-avatar-large">B</div>
                 <div class="profile-info">
                     <h1>@Model.User.FullName</h1>
-                    <p class="affiliation">🎓 @Model.User.University</p>
+                    <p class="affiliation">@Model.User.University</p>
                     <div class="profile-stats-row">
                         <div class="stat-card">
-                            <span class="number">0</span>
+                            <span class="number">@Model.UploadedNum</span>
                             <span class="label">Uploads</span>
                         </div>
                         <div class="stat-card">
                             <span class="number">0</span>
+                            <span class="label">Follows</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="number">@Model.Upvotes</span>
                             <span class="label">Upvotes</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="number">0</span>
-                            <span class="label">Comments</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="number">0</span>
-                            <span class="label">Students Helped</span>
                         </div>
                     </div>
                 </div>
-                <button class="btn-edit">Edit Profile</button>
+                <a href="@Url.Action("EditProfile, Home")" class="btn-edit">Edit Profile</a>
             </div>
 
             <!-- Profile Sections -->

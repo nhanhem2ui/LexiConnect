@@ -40,13 +40,17 @@
             </button>
 
             @{
-                var avatarUrl = User.FindFirst("AvatarUrl")?.Value;
+                var avatarUrl = User.FindFirst("AvatarUrl")?.Value ?? "~/image/default-avatar.png";
             }
+
             <div class="user-profile" id="userProfile">
-                <img src="~@avatarUrl" alt="User Avatar" class="user-avatar" />
+                <img src="@Url.Content(avatarUrl)" alt="User Avatar" class="user-avatar" />
                 <div class="user-info">
                     <span class="user-name">@User.Identity.Name</span>
-                    <span class="user-institution">FPT University</span>
+                    <span class="user-institution">
+                        @User.FindFirst("UniversityName")?.Value
+                    </span>
+
                 </div>
                 <svg class="dropdown-arrow" viewBox="0 0 24 24">
                     <path d="M7 10l5 5 5-5z" />
@@ -55,10 +59,12 @@
                 <!-- User Dropdown Menu -->
                 <div class="user-dropdown" id="userDropdown">
                     <div class="dropdown-header">
-                        <img src="~@avatarUrl" alt="User Avatar" class="user-avatar-small" />
+                        <img src="@Url.Content(avatarUrl)" alt="User Avatar" class="user-avatar-small" />
                         <div class="user-info-small">
                             <span class="user-name-small">@User.Identity.Name</span>
-                            <span class="user-institution-small">FPT University</span>
+                            <span class="user-institution-small">
+                                @User.FindFirst("UniversityName")?.Value
+                            </span>
                         </div>
                         <button class="upgrade-btn">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">

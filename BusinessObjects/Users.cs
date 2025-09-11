@@ -7,7 +7,7 @@ namespace BusinessObjects
     {
         [Required]
         public string? FullName { get; set; }
-        public string AvatarUrl { get; set; } = "default-avatar.png";
+        public string AvatarUrl { get; set; } = "~/image/default-avatar.png";
 
         public int? UniversityId { get; set; }
         public virtual University University { get; set; }

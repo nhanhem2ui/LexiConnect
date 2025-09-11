@@ -27,6 +27,7 @@ builder.Services.AddScoped<IGenericDAO<University>, UniversityDAO>();
 builder.Services.AddScoped<IGenericDAO<UserFavorite>, UserFavoriteDAO>();
 builder.Services.AddScoped<IGenericDAO<UserFollower>, UserFollowerDAO>();
 builder.Services.AddScoped<IGenericDAO<RecentViewed>, RecentViewedDAO>();
+builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
 
 //Repository
 builder.Services.AddScoped<IGenericRepository<Country>, CountryRepository>();
@@ -41,6 +42,7 @@ builder.Services.AddScoped<IGenericRepository<University>, UniversityRepository>
 builder.Services.AddScoped<IGenericRepository<UserFavorite>, UserFavoriteRepository>();
 builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerRepository>();
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
+builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();
@@ -85,7 +87,26 @@ builder.Services.AddAuthentication(options =>
     options.SaveTokens = true;
 });
 
+static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
+{
+    string[] roleNames = { "Admin", "User", "Moderator" };
+
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+}
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    await SeedRoles(roleManager);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
