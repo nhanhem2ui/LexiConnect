@@ -15,7 +15,7 @@ namespace BusinessObjects
 
         [Required]
         [Column("reviewer_id")]
-        public int ReviewerId { get; set; }
+        public string ReviewerId { get; set; } = string.Empty;
 
         [Required]
         [Column("rating")]

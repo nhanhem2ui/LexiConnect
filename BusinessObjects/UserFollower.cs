@@ -1,12 +1,17 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessObjects
 {
     public class UserFollower
     {
-        public string FollowerId { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        public string FollowingId { get; set; }
+        public string FollowerId { get; set; } = string.Empty;
+
+        public string FollowingId { get; set; } = string.Empty;
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
