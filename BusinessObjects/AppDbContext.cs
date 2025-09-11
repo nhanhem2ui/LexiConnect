@@ -21,17 +21,30 @@ namespace BusinessObjects
         public DbSet<UserFavorite> UserFavorites { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<RecentViewed> RecentVieweds { get; set; }
-        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // =============== USER RELATIONSHIPS ===============
             modelBuilder.Entity<Users>()
                 .HasOne(u => u.University)
                 .WithMany()
                 .HasForeignKey(u => u.UniversityId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Users>()
+                .HasOne(u => u.Major)
+                .WithMany()
+                .HasForeignKey(u => u.MajorId)
+                .OnDelete(DeleteBehavior.SetNull); // SetNull since MajorId is nullable
+
+            modelBuilder.Entity<Users>()
+                .HasOne(u => u.SubscriptionPlan)
+                .WithMany()
+                .HasForeignKey(u => u.SubscriptionPlanId)
+                .OnDelete(DeleteBehavior.SetNull); // SetNull since SubscriptionPlanId is nullable
+
+            // =============== DOCUMENT RELATIONSHIPS ===============
             modelBuilder.Entity<Document>()
                 .HasOne(d => d.Course)
                 .WithMany(c => c.Documents)
@@ -39,11 +52,68 @@ namespace BusinessObjects
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Document>()
-                .HasOne(d => d.Uploader)              
-                .WithMany(u => u.UploadedDocuments)   
+                .HasOne(d => d.Uploader)
+                .WithMany(u => u.UploadedDocuments)
                 .HasForeignKey(d => d.UploaderId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Document>()
+                .HasOne(d => d.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(d => d.ApprovedBy)
+                .OnDelete(DeleteBehavior.SetNull); // SetNull since ApprovedBy is nullable
+
+            // Document <-> DocumentTag many-to-many relationship
+            modelBuilder.Entity<Document>()
+                .HasMany(d => d.Tags)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("DocumentDocumentTags"));
+
+            // =============== ACADEMIC STRUCTURE RELATIONSHIPS ===============
+            modelBuilder.Entity<Major>()
+                .HasOne(m => m.University)
+                .WithMany()
+                .HasForeignKey(m => m.UniversityId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Course>()
+                .HasOne(c => c.Major)
+                .WithMany()
+                .HasForeignKey(c => c.MajorId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<University>()
+                .HasOne(u => u.Country)
+                .WithMany()
+                .HasForeignKey(u => u.CountryId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // =============== REVIEW AND TRANSACTION RELATIONSHIPS ===============
+            modelBuilder.Entity<DocumentReview>()
+                .HasOne(dr => dr.Document)
+                .WithMany()
+                .HasForeignKey(dr => dr.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DocumentReview>()
+                .HasOne(dr => dr.Reviewer)
+                .WithMany()
+                .HasForeignKey(dr => dr.ReviewerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<PointTransaction>()
+                .HasOne(pt => pt.User)
+                .WithMany()
+                .HasForeignKey(pt => pt.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
+            // =============== USER ACTIVITY RELATIONSHIPS ===============
+            modelBuilder.Entity<UserFavorite>()
+                .HasOne(uf => uf.User)
+                .WithMany()
+                .HasForeignKey(uf => uf.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<UserFavorite>()
                 .HasOne(uf => uf.Document)
@@ -51,6 +121,38 @@ namespace BusinessObjects
                 .HasForeignKey(uf => uf.DocumentId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<UserFollower>()
+                .HasOne(uf => uf.Follower)
+                .WithMany()
+                .HasForeignKey(uf => uf.FollowerId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<UserFollower>()
+                .HasOne(uf => uf.Following)
+                .WithMany()
+                .HasForeignKey(uf => uf.FollowingId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<RecentViewed>()
+                .HasOne(rv => rv.Document)
+                .WithMany()
+                .HasForeignKey(rv => rv.DocumentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RecentViewed>()
+                .HasOne(rv => rv.Course)
+                .WithMany()
+                .HasForeignKey(rv => rv.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Add this if you added UserId to RecentViewed (recommended)
+            modelBuilder.Entity<RecentViewed>()
+                .HasOne(rv => rv.User)
+                .WithMany()
+                .HasForeignKey(rv => rv.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =============== INDEXES ===============
             modelBuilder.Entity<Major>()
                 .HasIndex(m => new { m.Code, m.UniversityId })
                 .IsUnique();
@@ -63,7 +165,19 @@ namespace BusinessObjects
                 .HasIndex(p => p.Name)
                 .IsUnique();
 
-            // Use static CreatedAt values (not DateTime.UtcNow)
+            modelBuilder.Entity<DocumentTag>()
+                .HasIndex(t => t.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<UserFavorite>()
+                .HasIndex(uf => new { uf.UserId, uf.DocumentId })
+                .IsUnique();
+
+            modelBuilder.Entity<UserFollower>()
+                .HasIndex(uf => new { uf.FollowerId, uf.FollowingId })
+                .IsUnique();
+
+            // =============== DATA SEEDING ===============
             modelBuilder.Entity<SubscriptionPlan>().HasData(
                 new SubscriptionPlan
                 {
@@ -96,10 +210,6 @@ namespace BusinessObjects
                     CreatedAt = new DateTime(2025, 01, 01, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
-
-            modelBuilder.Entity<DocumentTag>()
-                .HasIndex(t => t.Name)
-                .IsUnique();
 
             modelBuilder.Entity<DocumentTag>().HasData(
                 new DocumentTag
@@ -163,24 +273,6 @@ namespace BusinessObjects
                     CreatedAt = new DateTime(2025, 01, 01, 0, 0, 0, DateTimeKind.Utc)
                 }
             );
-
-            modelBuilder.Entity<UserFavorite>()
-                .HasKey(uf => new { uf.UserId, uf.DocumentId });
-
-            modelBuilder.Entity<UserFollower>()
-            .HasKey(uf => new { uf.FollowerId, uf.FollowingId });
-
-            modelBuilder.Entity<UserFollower>()
-                .HasOne(uf => uf.Follower)
-                .WithMany()
-                .HasForeignKey(uf => uf.FollowerId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<UserFollower>()
-                .HasOne(uf => uf.Following)
-                .WithMany()
-                .HasForeignKey(uf => uf.FollowingId)
-                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

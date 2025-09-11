@@ -5,10 +5,12 @@ namespace BusinessObjects
 {
     public class UserFavorite
     {
-        [Key, Column("user_id", Order = 0)]
-        public int UserId { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
-        [Key, Column("document_id", Order = 1)]
+        public string UserId { get; set; } = string.Empty;
+
         public int DocumentId { get; set; }
 
         [Column("created_at")]
