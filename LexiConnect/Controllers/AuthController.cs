@@ -140,19 +140,26 @@ namespace LexiConnect.Controllers
             }
 
             var result = await _signInManager.PasswordSignInAsync(
-                user.UserName,
-                model.Password,
-                model.RememberMe,
-                lockoutOnFailure: false);
+                user.UserName, model.Password, model.RememberMe, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-                // Add claims
+                // ✅ Clear all existing authentication first
+                await _signInManager.SignOutAsync();
+
+                // Ensure University is loaded
+                if (user.University == null)
+                    user.University = await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
+
+                // Use consistent claim naming and avoid duplicates
                 var claims = new List<Claim>
                 {
-                    new(ClaimTypes.Name, user.FullName ?? user.UserName),
+                    new(ClaimTypes.NameIdentifier, user.Id),
+                    new("FullName", user.FullName),
+                    new(ClaimTypes.Email, user.Email),
+                    new("UserName", user.UserName),
                     new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
-                    new("UniversityName", user.University.Name ?? "Chưa rõ"),
+                    new("UniversityName", user.University?.Name ?? "Unknown"),
                     new(ClaimTypes.Role, "User")
                 };
 
@@ -170,21 +177,18 @@ namespace LexiConnect.Controllers
             return View("Signin", model);
         }
 
-        // Google Authentication Challenge
         [HttpPost]
         public IActionResult GoogleLogin(string? returnUrl = null)
         {
-            // Request a redirect to the external login provider
             var redirectUrl = Url.Action("GoogleCallback", "Auth", new { returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(GoogleDefaults.AuthenticationScheme, redirectUrl);
             return Challenge(properties, GoogleDefaults.AuthenticationScheme);
         }
 
-        // Google Authentication Callback
         [HttpGet]
         public async Task<IActionResult> GoogleCallback(string? returnUrl = null, string? remoteError = null)
         {
-            returnUrl = returnUrl ?? Url.Action("Homepage", "Home");
+            returnUrl ??= Url.Action("Homepage", "Home");
 
             if (remoteError != null)
             {
@@ -199,31 +203,21 @@ namespace LexiConnect.Controllers
                 return RedirectToAction("Signin", new { ReturnUrl = returnUrl });
             }
 
-            // Sign in the user with this external login provider if the user already has a login
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+            var result = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
 
             if (result.Succeeded)
             {
-                // Fetch the user again
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-                if(user.University == null)
-                {
+                if (user.University == null)
                     user.University = await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
-                }
 
-                // Build your custom claims
-                var claims = new List<Claim>
-                {
-                        new(ClaimTypes.Name, user.FullName ?? user.UserName),
-                        new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
-                        new("UniversityName", user.University.Name ?? "Chưa rõ"),
-                        new(ClaimTypes.Role, "User")
-                };
+                // Clear existing authentication completely
+                await _signInManager.SignOutAsync();
 
-                // Re-sign in with claims
-                await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
-
-                return LocalRedirect(returnUrl ?? "/Home/Homepage");
+                // Create clean, consistent claims
+                await SignInUserWithClaims(user, false);
+                return LocalRedirect(returnUrl);
             }
 
             if (result.IsLockedOut)
@@ -232,12 +226,11 @@ namespace LexiConnect.Controllers
                 return RedirectToAction("Lockout");
             }
 
-            // If the user does not have an account, create one automatically
             return await CreateUserFromExternalLogin(info, "/Home/Homepage");
         }
+
         private async Task<IActionResult> CreateUserFromExternalLogin(ExternalLoginInfo info, string returnUrl)
         {
-            // Extract user information from external provider
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             var fullName = info.Principal.FindFirstValue(ClaimTypes.Name);
             var avatarUrl = info.Principal.FindFirstValue("picture");
@@ -248,45 +241,35 @@ namespace LexiConnect.Controllers
                 return RedirectToAction("Signin");
             }
 
-            // Check if a user with this email already exists
             var existingUser = await _userManager.FindByEmailAsync(email);
             if (existingUser != null)
             {
-                // User exists but doesn't have this external login linked
-                // Link the external login to the existing user
                 var addLoginResult = await _userManager.AddLoginAsync(existingUser, info);
                 if (addLoginResult.Succeeded)
                 {
-                    // Update avatar if it's still default and we have a new one
+                    // Update avatar if it's default and we have a better one
                     if (existingUser.AvatarUrl == "~/image/default-avatar.png" && !string.IsNullOrEmpty(avatarUrl))
                     {
                         existingUser.AvatarUrl = avatarUrl;
                         await _userManager.UpdateAsync(existingUser);
                     }
 
-                    var claims = new List<Claim>
-                    {
-                        new(ClaimTypes.Name, existingUser.FullName ?? existingUser.UserName),
-                        new("AvatarUrl", existingUser.AvatarUrl ?? "~/image/default-avatar.png"),
-                        new("UniversityName", existingUser.University?.Name ?? "Chưa rõ"),
-                        new(ClaimTypes.Role, "User")
-                    };
+                    // Load university relationship
+                    if (existingUser.University == null)
+                        existingUser.University = await _universityRepository.GetAsync(u => u.Id == existingUser.UniversityId);
 
-                    await _signInManager.SignInWithClaimsAsync(existingUser, isPersistent: false, claims);
-
+                    await _signInManager.SignOutAsync();
+                    await SignInUserWithClaims(existingUser, false);
                     return LocalRedirect(returnUrl);
                 }
-                else
-                {
-                    foreach (var error in addLoginResult.Errors)
-                    {
-                        TempData["Error"] = error.Description;
-                    }
-                    return RedirectToAction("Signin");
-                }
+
+                foreach (var error in addLoginResult.Errors)
+                    TempData["Error"] = error.Description;
+
+                return RedirectToAction("Signin");
             }
 
-            // Create a new user
+            // Create new user
             var user = new Users
             {
                 UserName = email,
@@ -295,7 +278,7 @@ namespace LexiConnect.Controllers
                 AvatarUrl = avatarUrl ?? "~/image/default-avatar.png",
                 UniversityId = 0,
                 MajorId = 0,
-                EmailConfirmed = true, // External provider users have confirmed emails
+                EmailConfirmed = true,
                 PointsBalance = 0,
                 TotalPointsEarned = 0
             };
@@ -303,47 +286,41 @@ namespace LexiConnect.Controllers
             var createResult = await _userManager.CreateAsync(user);
             if (createResult.Succeeded)
             {
-                // Assign default role
                 await _userManager.AddToRoleAsync(user, "User");
-
                 var addLoginResult = await _userManager.AddLoginAsync(user, info);
+
                 if (addLoginResult.Succeeded)
                 {
-                    // Optionally send welcome email (if email confirmation is required)
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                    {
-                        var userId = await _userManager.GetUserIdAsync(user);
-                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
-                        var callbackUrl = Url.Action(
-                            "ConfirmEmail",
-                            "Auth",
-                            new { userId = userId, code = code },
-                            protocol: Request.Scheme);
-
-                        await _emailSender.SendWelcomeEmailAsync(email, user.FullName, callbackUrl);
-                    }
-
-                    var claims = new List<Claim>
-                    {
-                        new(ClaimTypes.Name, user.FullName ?? user.UserName),
-                        new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
-                        new("UniversityName", user.University.Name ?? "Chưa rõ"),
-                        new(ClaimTypes.Role, "User")
-                    };
-
-                    await _signInManager.SignInWithClaimsAsync(user, isPersistent: false, claims);
+                    await _signInManager.SignOutAsync();
+                    await SignInUserWithClaims(user, false);
                     return LocalRedirect(returnUrl);
                 }
             }
 
-            // If we got this far, something failed
             foreach (var error in createResult.Errors)
-            {
                 TempData["Error"] = error.Description;
-            }
 
             return RedirectToAction("Signin");
+        }
+
+        private async Task SignInUserWithClaims(Users user, bool isPersistent)
+        {
+            // Ensure University is loaded
+            if (user.University == null)
+                user.University = await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
+
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, user.Id),
+                new("FullName", user.FullName),
+                new(ClaimTypes.Email, user.Email),
+                new("UserName", user.UserName),
+                new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
+                new("UniversityName", user.University?.Name ?? "Unknown"),
+                new(ClaimTypes.Role, "User")
+            };
+
+            await _signInManager.SignInWithClaimsAsync(user, isPersistent, claims);
         }
 
         [HttpPost]
