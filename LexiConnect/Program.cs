@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,7 @@ builder.Services.AddScoped<ISender, EmailSender>();
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
 {
+    options.ClaimsIdentity.UserNameClaimType = ClaimTypes.Name;
     options.Password.RequiredLength = 6;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;

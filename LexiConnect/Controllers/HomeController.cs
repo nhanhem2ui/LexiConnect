@@ -99,6 +99,9 @@ namespace LexiConnect.Controllers
             var user = await _userRepository.GetAsync(u => u.Id.Equals(userId));
             var identity = User;
 
+            var userClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}");
+            Console.WriteLine(string.Join("\n", userClaims));
+
             if (user != null)
             {
                 var uploadedDocuments = _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(userId)).ToList();
