@@ -16,7 +16,7 @@ SET IDENTITY_INSERT [dbo].[Universities] ON;
 INSERT INTO [dbo].[Universities]
            ([Id], [Name], [ShortName], [CountryId], [City], [IsVerified], [LogoUrl], [CreatedAt])
 VALUES
-(0, N'Chưa rõ', N'', 1, N'', 1, N'', SYSDATETIME()),
+(0, N'Not provided', N'', 1, N'', 1, N'', SYSDATETIME()),
 
 (1, N'Đại học Quốc gia Hà Nội', N'VNU', 1, N'Hà Nội', 1, N'/image/logo_VNU.jpg', SYSDATETIME()),
 
@@ -31,7 +31,7 @@ SET IDENTITY_INSERT [dbo].[Majors] ON;
 INSERT INTO [dbo].[Majors]
            ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
 VALUES
-    (0, N'Chưa rõ', '', 0, N'', 1, GETDATE()),
+    (0, N'Not provided', '', 0, N'', 1, GETDATE()),
     (1, N'Software Engineering', 'SE', 3, N'Study of software design, development, and testing.', 1, GETDATE()),
     (2, N'Information Security', 'IS', 3, N'Study of cybersecurity, cryptography, and secure systems.', 1, GETDATE()),
     (3, N'Artificial Intelligence', 'AI', 3, N'Focus on machine learning, data science, and AI applications.', 1, GETDATE()),

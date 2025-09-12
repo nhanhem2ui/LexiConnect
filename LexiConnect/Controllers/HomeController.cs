@@ -1,6 +1,7 @@
 using BusinessObjects;
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
@@ -43,12 +44,12 @@ namespace LexiConnect.Controllers
             }
 
             var universities = _universityRepository
-                .GetAllQueryable(u => u.IsVerified)
+                .GetAllQueryable(u => u.IsVerified && u.Id != 0)
                 .OrderBy(u => Guid.NewGuid())
                 .Take(3);
 
             var courses = _courseRepository
-                .GetAllQueryable(c => c.IsActive)
+                .GetAllQueryable(c => c.IsActive && c.CourseId != 0)
                 .Include(c => c.Major)
                 .ThenInclude(m => m.University)
                 .OrderBy(u => Guid.NewGuid())
@@ -78,8 +79,7 @@ namespace LexiConnect.Controllers
                 .Include(c => c.ApprovedByUser)
                 .ThenInclude(m => m.University)
                 .OrderByDescending(c => c.ViewCount)
-                .Take(3)
-                ;
+                .Take(3);
 
             var model = new HomePageViewModel
             {
@@ -91,6 +91,7 @@ namespace LexiConnect.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> UserProfile()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -110,10 +111,18 @@ namespace LexiConnect.Controllers
                     upvotes += document.LikeCount;
                 }
                 var follower = _userFollowerRepository.GetAllQueryable(u => u.FollowingId == user.Id);
+
                 var recentActivities = _recentViewedRepository
                     .GetAllQueryable(c => c.UserId.Equals(user.Id))
                     .Include(c => c.Document)
                     .Include(c => c.Course);
+
+                var activeSubscription = true;
+
+                if (user.SubscriptionPlan.PlanId != 1 && user.SubscriptionEndDate > DateTime.Now)
+                {
+                    activeSubscription = false;
+                }
 
                 var model = new UserProfileViewModel
                 {
@@ -121,6 +130,7 @@ namespace LexiConnect.Controllers
                     Documents = uploadedDocuments,
                     RecentActivities = recentActivities,
                     FollowerNum = follower.Count(),
+                    ActiveSubscription = activeSubscription,
                     Upvotes = upvotes
                 };
 
@@ -129,9 +139,18 @@ namespace LexiConnect.Controllers
             return NotFound("An error has occured");
         }
         [HttpGet]
+        [Authorize]
         public IActionResult EditProfile()
         {
             return View();
+        }
+
+        [HttpPost]
+        [Authorize]
+        public IActionResult EditProfile(EditProfileViewModel model)
+        {
+
+            return RedirectToAction("UserProfile");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
