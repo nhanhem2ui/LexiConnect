@@ -17,10 +17,12 @@ namespace LexiConnect.Controllers
         private readonly IGenericRepository<Document> _documentRepository;
         private readonly IGenericRepository<Users> _userRepository;
         private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
+        private readonly IGenericRepository<UserFollower> _userFollowerRepository;
 
         public HomeController(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
             IGenericRepository<Course> courseRepository, IGenericRepository<Document> documentRepository,
-            IGenericRepository<Users> userRepository, IGenericRepository<RecentViewed> recentViewedRepository)
+            IGenericRepository<Users> userRepository, IGenericRepository<RecentViewed> recentViewedRepository,
+            IGenericRepository<UserFollower> userFollowerRepository)
         {
             _logger = logger;
             _universityRepository = universityRepository;
@@ -29,6 +31,7 @@ namespace LexiConnect.Controllers
             _userRepository = userRepository;
             _documentRepository = documentRepository;
             _recentViewedRepository = recentViewedRepository;
+            _userFollowerRepository = userFollowerRepository;
         }
 
         [HttpGet]
@@ -97,25 +100,30 @@ namespace LexiConnect.Controllers
             }
 
             var user = await _userRepository.GetAsync(u => u.Id.Equals(userId));
-            var identity = User;
-
-            var userClaims = User.Claims.Select(c => $"{c.Type}: {c.Value}");
-            Console.WriteLine(string.Join("\n", userClaims));
 
             if (user != null)
             {
-                var uploadedDocuments = _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(userId)).ToList();
+                var uploadedDocuments = _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(userId));
                 var upvotes = 0;
                 foreach (var document in uploadedDocuments)
                 {
                     upvotes += document.LikeCount;
                 }
+                var follower = _userFollowerRepository.GetAllQueryable(u => u.FollowingId == user.Id);
+                var recentActivities = _recentViewedRepository
+                    .GetAllQueryable(c => c.UserId.Equals(user.Id))
+                    .Include(c => c.Document)
+                    .Include(c => c.Course);
+
                 var model = new UserProfileViewModel
                 {
                     User = user,
-                    UploadedNum = uploadedDocuments.Count,
+                    Documents = uploadedDocuments,
+                    RecentActivities = recentActivities,
+                    FollowerNum = follower.Count(),
                     Upvotes = upvotes
                 };
+
                 return View(model);
             }
             return NotFound("An error has occured");

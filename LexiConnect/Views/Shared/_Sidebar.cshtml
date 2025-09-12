@@ -1,0 +1,73 @@
+﻿<!-- Sidebar -->
+<div class="sidebar">
+    <div class="user-profile">
+        <div class="user-avatar">
+            <img style="max-width:40px;max-height:40px" src="@Url.Content(User.FindFirst("AvatarUrl")?.Value ?? "~/image/default-avatar.png")" />
+        </div>
+        <h3 class="user-name">@User.FindFirst("FullName")?.Value</h3>
+        <p class="user-affiliation">@User.FindFirst("UniversityName")?.Value</p>
+    </div>
+
+    <ul class="sidebar-nav">
+        <li class="nav-item">
+            <a href="@Url.Action("Homepage", "Home")" class="nav-link">
+                <span class="nav-icon">🏠</span>
+                Home
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📚</span>
+                My Library
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📝</span>
+                AI Notes
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">🤖</span>
+                Ask AI
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📊</span>
+                AI Quiz
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">🕒</span>
+                Recent
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📖</span>
+                Courses
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📚</span>
+                Books
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">📋</span>
+                Studylists
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="#" class="nav-link">
+                <span class="nav-icon">❓</span>
+                Questions
+            </a>
+        </li>
+    </ul>
+</div>
