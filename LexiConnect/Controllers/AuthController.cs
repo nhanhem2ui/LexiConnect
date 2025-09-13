@@ -312,9 +312,9 @@ namespace LexiConnect.Controllers
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id),
-                new("FullName", user.FullName),
-                new(ClaimTypes.Email, user.Email),
-                new("UserName", user.UserName),
+                new("FullName", user.FullName ?? "DefaultName"),
+                new(ClaimTypes.Email, user.Email ?? "EditThisEmail@gmail.com"),
+                new("UserName", user.UserName ?? "DefaultUserName"),
                 new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
                 new("UniversityName", user.University?.Name ?? "Unknown"),
                 new(ClaimTypes.Role, "User")

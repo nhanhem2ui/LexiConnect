@@ -1,0 +1,263 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Edit Profile";
+}
+@using BusinessObjects
+@model LexiConnect.Models.ViewModels.EditProfileViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Home/EditProfile.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-content">
+                    <h1>Edit Profile</h1>
+                    <p>Update your personal information and preferences</p>
+                </div>
+                <div class="header-actions">
+                    <a href="@Url.Action("UserProfile", "Home")" class="btn-secondary">Cancel</a>
+                </div>
+            </div>
+
+            <form asp-action="EditProfile" asp-controller="Home" method="post" enctype="multipart/form-data" class="edit-profile-form">
+                <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+                <!-- Profile Picture Section -->
+                <div class="profile-picture-section">
+                    <div class="current-avatar">
+                        @if (!string.IsNullOrEmpty(Model.AvatarUrl) && Model.AvatarUrl != "~/image/default-avatar.png")
+                        {
+                            <img id="avatar-preview" src="@Model.AvatarUrl" alt="Current Avatar" />
+                        }
+                        else
+                        {
+                            <div id="avatar-preview" class="avatar-placeholder">
+                                @Model.FullName?.Substring(0, 1).ToUpper()
+                            </div>
+                        }
+                    </div>
+                    <div class="avatar-controls">
+                        <h3>Profile Picture</h3>
+                        <p>Choose a profile picture to represent yourself</p>
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="avatar-upload" name="AvatarFile" accept="image/*" class="file-input" />
+                            <label for="avatar-upload" class="btn-upload">
+                                <span>📸</span>
+                                Choose Photo
+                            </label>
+                        </div>
+                        <small class="upload-note">Recommended: Square image, max 5MB</small>
+                    </div>
+                </div>
+
+                <!-- Personal Information Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>👤</span>
+                            Personal Information
+                        </h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="FullName" class="form-label">Full Name *</label>
+                            <input asp-for="FullName" class="form-input" placeholder="Enter your full name" />
+                            <span asp-validation-for="FullName" class="validation-message"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Email" class="form-label">Email Address *</label>
+                            <input asp-for="Email" class="form-input" placeholder="Enter your email address" readonly />
+                            <small class="form-note">Email cannot be changed. Contact support if needed.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                            <input asp-for="PhoneNumber" class="form-input" placeholder="Enter your phone number" />
+                            <span asp-validation-for="PhoneNumber" class="validation-message"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Information Section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>🎓</span>
+                            Academic Information
+                        </h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label asp-for="UniversityId" class="form-label">University</label>
+                            <select asp-for="UniversityId" class="form-select" asp-items="ViewBag.Universities">
+                                <option value="">Select your university</option>
+                            </select>
+                            <span asp-validation-for="UniversityId" class="validation-message"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="MajorId" class="form-label">Major</label>
+                            <select asp-for="MajorId" class="form-select" asp-items="ViewBag.Majors">
+                                <option value="">Select your major</option>
+                            </select>
+                            <span asp-validation-for="MajorId" class="validation-message"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Statistics (Read-only) -->
+                <div class="form-section stats-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>📊</span>
+                            Account Statistics
+                        </h2>
+                        <p class="section-description">Your current account status and achievements</p>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-icon">💰</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Current Points Balance</span>
+                                <span class="stat-value points-balance">@Model.PointsBalance</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Total Points Earned</span>
+                                <span class="stat-value points-earned">@Model.TotalPointsEarned</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-item">
+                            <div class="stat-icon">📄</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Documents Uploaded</span>
+                                <span class="stat-value">@Model.DocumentCount</span>
+                            </div>
+                        </div>
+
+                        @if (Model.SubscriptionPlan != null && Model.SubscriptionPlan.PlanId != 1)
+                        {
+                            <div class="stat-item subscription-stat">
+                                <div class="stat-icon">💎</div>
+                                <div class="stat-content">
+                                    <span class="stat-label">Current Plan</span>
+                                    <span class="stat-value subscription-plan">@Model.SubscriptionPlan.DisplayName</span>
+                                    @if (Model.SubscriptionEndDate.HasValue)
+                                    {
+                                        <small class="plan-expiry">
+                                            Expires: @Model.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")
+                                        </small>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="@Url.Action("UserProfile", "Home")" class="btn-secondary">Cancel</a>
+                    <button type="submit" class="btn-primary">
+                        <span>💾</span>
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+            // Dynamically reload majors when university changes
+        document.querySelector('select[name="UniversityId"]').addEventListener('change', function () {
+            const selectedUniversity = this.value;
+            const majorSelect = document.querySelector('select[name="MajorId"]');
+
+            if (!selectedUniversity) {
+                majorSelect.innerHTML = '<option value="">Select your major</option>';
+                return;
+            }
+
+            fetch(`/Home/GetMajorsByUniversity?universityId=${selectedUniversity}`)
+                .then(response => response.json())
+                .then(majors => {
+                    // Clear current options
+                    majorSelect.innerHTML = '<option value="">Select your major</option>';
+
+                    // Populate with filtered majors
+                    majors.forEach(major => {
+                        const option = document.createElement('option');
+                        option.value = major.majorId;
+                        option.textContent = major.name;
+                        majorSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching majors:', error);
+                });
+        });
+
+        // Avatar preview functionality
+        document.getElementById('avatar-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('avatar-preview');
+                    if (preview.tagName === 'IMG') {
+                        preview.src = e.target.result;
+                    } else {
+                        // Replace placeholder div with img element
+                        const img = document.createElement('img');
+                        img.id = 'avatar-preview';
+                        img.src = e.target.result;
+                        img.alt = 'Avatar Preview';
+                        preview.parentNode.replaceChild(img, preview);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Form validation enhancement
+        document.querySelector('.edit-profile-form').addEventListener('submit', function(e) {
+            const fullName = document.querySelector('input[name="FullName"]');
+            const email = document.querySelector('input[name="Email"]');
+
+            if (!fullName.value.trim()) {
+                e.preventDefault();
+                fullName.focus();
+                alert('Full name is required.');
+                return false;
+            }
+
+            if (!email.value.trim()) {
+                e.preventDefault();
+                email.focus();
+                alert('Email is required.');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -34,14 +34,14 @@
                 </div>
                 <div class="profile-info">
                     <h1>@Model.User.FullName</h1>
-                    <p class="affiliation">@Model.User.University?.Name</p>
+                    <p class="affiliation">University: @Model.User.University?.Name</p>
                     @if (Model.User.Major != null)
                     {
                         <p class="major">Major: @Model.User.Major.Name</p>
                     }
                     <div class="profile-stats-row">
                         <div class="stat-card">
-                            <span class="number">@Model.Documents.Count()</span>
+                            <span class="number">@Model.Documents?.Count()</span>
                             <span class="label">Uploads</span>
                         </div>
                         <div class="stat-card">
@@ -104,7 +104,7 @@
                 </div>
 
                 <!-- Subscription Plan Card -->
-                @if (Model.User.SubscriptionPlan != null && Model.User.SubscriptionStartDate.HasValue)
+                @if (Model.User.SubscriptionPlan != null && Model.User.SubscriptionPlan.PlanId != 1)
                 {
                     <a href="@Url.Action("ManageSubscription", "Home")" class="subscription-card-link">
                         <div class="subscription-card @(Model.ActiveSubscription ? "active" : "expired")">
@@ -218,7 +218,7 @@
                         My Uploads
                     </h2>
                     <div class="uploads-list">
-                        @if (Model.Documents.Any())
+                        @if (Model.Documents?.Count() > 0)
                         {
                             @foreach (var document in Model.Documents)
                             {
@@ -260,7 +260,7 @@
                         Recent Activity
                     </h2>
                     <div class="activity-list">
-                        @if (Model.RecentActivities.Any())
+                        @if (Model.RecentActivities?.Count() > 0)
                         {
                             @foreach (var activity in Model.RecentActivities)
                             {
