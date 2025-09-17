@@ -1,17 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using BusinessObjects;
-using DataAccess;
-using System.ComponentModel.DataAnnotations;
+﻿using BusinessObjects;
 using LexiConnect.Models.ViewModels;
-using Repositories;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Repositories;
+using System.ComponentModel.DataAnnotations;
 
 namespace LexiConnect.Controllers
 {
@@ -27,7 +20,7 @@ namespace LexiConnect.Controllers
         private readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
         private readonly string[] _allowedExtensions = { ".pdf", ".doc", ".docx" };
 
-        public UploadController(IWebHostEnvironment environment, IGenericRepository<Document> documentRepository, UserManager<Users> userManager , IGenericRepository<Course> courseRepository)
+        public UploadController(IWebHostEnvironment environment, IGenericRepository<Document> documentRepository, UserManager<Users> userManager, IGenericRepository<Course> courseRepository)
         {
             _environment = environment;
             _documentRepository = documentRepository;
@@ -44,7 +37,6 @@ namespace LexiConnect.Controllers
             return View();
         }
 
-        // POST: Upload/UploadDocuments
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UploadDocuments(List<IFormFile> files)
@@ -122,33 +114,78 @@ namespace LexiConnect.Controllers
         }
 
         [HttpPost]
-
-        public async Task<IActionResult> DeleteDocument( int id)
+        public async Task<IActionResult> DeleteDocument(int id)
         {
             Console.WriteLine($"DeleteDocument called with id = {id}");
-            
-            var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
-            if (document == null)
-                return NotFound();
 
-            await _documentRepository.DeleteAsync(document.DocumentId);
-            return Json(new { success = true });
+            try
+            {
+                var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                if (document == null)
+                    return Json(new { success = false, error = "Document not found" });
+
+                // Delete the physical file if it exists
+                if (!string.IsNullOrEmpty(document.FilePath))
+                {
+                    string fullPath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        System.IO.File.Delete(fullPath);
+                    }
+                }
+
+                // Delete from database
+                await _documentRepository.DeleteAsync(document.DocumentId);
+
+                // Update TempData to remove the deleted document ID
+                if (TempData["DocumentIds"] != null)
+                {
+                    var documentIdsString = TempData["DocumentIds"].ToString();
+                    var documentIds = documentIdsString.Split(',').Select(int.Parse).ToList();
+                    documentIds.Remove(id);
+
+                    if (documentIds.Any())
+                    {
+                        TempData["DocumentIds"] = string.Join(",", documentIds);
+                        TempData.Keep("DocumentIds"); // Keep for the next request
+                    }
+                    else
+                    {
+                        TempData.Remove("DocumentIds");
+                    }
+                }
+
+                Console.WriteLine($"Document {id} deleted successfully");
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting document {id}: {ex.Message}");
+                return Json(new { success = false, error = ex.Message });
+            }
         }
 
-        
-        // GET: Upload/Details
+        [HttpGet]
         public async Task<IActionResult> Details()
         {
             if (TempData["DocumentIds"] == null)
             {
+                TempData["Info"] = "No documents found. Please upload some documents first.";
                 return RedirectToAction("Index");
-            } 
+            }
 
             try
             {
                 // Get document IDs from TempData
                 var documentIdsString = TempData["DocumentIds"].ToString();
-                var documentIds = documentIdsString.Split(',').Select(int.Parse).ToList();
+                var documentIds = documentIdsString.Split(',').Where(id => !string.IsNullOrWhiteSpace(id)).Select(int.Parse).ToList();
+
+                // Check if we have any valid document IDs
+                if (!documentIds.Any())
+                {
+                    TempData["Info"] = "No valid documents found. Please upload some documents first.";
+                    return RedirectToAction("Index");
+                }
 
                 // Get documents from database
                 var documents = new List<SingleDocumentModel>();
@@ -169,6 +206,13 @@ namespace LexiConnect.Controllers
                     }
                 }
 
+                // Check if we found any documents
+                if (!documents.Any())
+                {
+                    TempData["Warning"] = "No documents were found in the database. They may have been deleted.";
+                    return RedirectToAction("Index");
+                }
+
                 var model = new DocumentDetailsViewModel { Documents = documents };
 
                 ViewBag.SuccessfulUploads = TempData["SuccessfulUploads"];
@@ -184,15 +228,24 @@ namespace LexiConnect.Controllers
             }
         }
 
-        // POST: Upload/SaveDetails
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveDetails(DocumentDetailsViewModel model)
         {
+            // Check if we have any documents to process
+            if (model.Documents == null || !model.Documents.Any())
+            {
+                TempData["Error"] = "No documents found to save. Please upload some documents first.";
+                return RedirectToAction("Index");
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    int updatedCount = 0;
+                    var errors = new List<string>();
+
                     // Update documents with additional details
                     foreach (var documentModel in model.Documents)
                     {
@@ -214,11 +267,28 @@ namespace LexiConnect.Controllers
                             document.Status = "pending";
 
                             await _documentRepository.UpdateAsync(document);
+                            updatedCount++;
+                        }
+                        else
+                        {
+                            errors.Add($"Document '{documentModel.FileName}' was not found in the database.");
                         }
                     }
 
-                    TempData["Success"] = "Your documents have been uploaded successfully! You now have 6 weeks of Premium access.";
-                    return RedirectToAction("Complete");
+                    if (updatedCount > 0)
+                    {
+                        TempData["Success"] = $"Your documents have been uploaded successfully! {updatedCount} document(s) processed.";
+                        if (errors.Any())
+                        {
+                            TempData["Warning"] = "Some documents could not be processed: " + string.Join(", ", errors);
+                        }
+                        return RedirectToAction("Complete");
+                    }
+                    else
+                    {
+                        TempData["Error"] = "No documents could be processed. " + string.Join(", ", errors);
+                        return RedirectToAction("Index");
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -476,7 +546,7 @@ namespace LexiConnect.Controllers
         public string ErrorMessage { get; set; } = string.Empty;
     }
 
-    
+
 
     public class SingleDocumentModel
     {
