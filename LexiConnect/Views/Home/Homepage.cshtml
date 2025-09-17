@@ -4,19 +4,32 @@
 @model LexiConnect.Models.ViewModels.HomePageViewModel
 
 <head>
-    <link rel="stylesheet" href="~/css/Home/Homepage.css"/>
+    <link rel="stylesheet" href="~/css/Home/Homepage.css" />
 </head>
 
 <div class="dashboard-page">
     <div class="dashboard-container">
         <!-- Sidebar -->
         <div class="sidebar">
+            @if (User.Identity.IsAuthenticated) { 
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img style="max-width:40px;max-height:40px;" src="@Url.Content(User.FindFirst("AvatarUrl")?.Value)" alt="User Avatar" class="avatar-image" />
+                </div>
+                    <h3 class="user-name">@User.FindFirst("FullName")?.Value</h3>
+                <p class="user-affiliation">
+                    <svg fill="#000000" viewBox="0 0 50 50" width="50" height="50" version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" overflow="inherit"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M24.999 27.381c-5.406 0-9.999 1.572-12.999 4.036v4.583h26v-4.583c-3-2.464-7.594-4.036-13.001-4.036zm23.871-2.352l-23.934-11.029-23.924 11.029 3.988 1.825v2.807c-1 .207-1.003.731-1.003 1.354 0 .368.122.799.354 1.057l-1.368 2.928h4.88l-1.356-2.93c.228-.258.415-.638.415-1.006 0-.622-.922-1.197-.922-1.404v-2.337l5 2.246v-.199c3-2.609 8.271-4.265 13.998-4.265 5.729 0 11.002 1.656 14.002 4.265v.199l9.87-4.54z"></path></g></svg>
+                        @User.FindFirst("UniversityName")?.Value
+                </p>
+            </div>
+            }
+            else{
             <div class="user-profile">
                 <div class="user-avatar">M</div>
                 <h3 class="user-name">Mazi</h3>
                 <p class="user-affiliation">🎓 FPT University</p>
             </div>
-
+            }
             <ul class="sidebar-nav">
                 <li class="nav-item">
                     <a href="#" class="nav-link active">
@@ -80,73 +93,80 @@
                 </li>
             </ul>
         </div>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="#" class="btn-action">
+                        <span>❓</span>
+                        Create a quiz
+                    </a>
+                    <a href="#" class="btn-action">
+                        <span>💬</span>
+                        Ask a Question
+                    </a>
+                    <a href="#" class="btn-action">
+                        <span>📝</span>
+                        Summarize Notes
+                    </a>
+                </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <a href="#" class="btn-action">
-                    <span>❓</span>
-                    Create a quiz
-                </a>
-                <a href="#" class="btn-action">
-                    <span>💬</span>
-                    Ask a Question
-                </a>
-                <a href="#" class="btn-action">
-                    <span>📝</span>
-                    Summarize Notes
-                </a>
-            </div>
+                <!-- Recently Viewed Section -->
+                <div class="content-section">
+                    <h2 class="section-title">Recently Viewed</h2>
+                    <div class="documents-grid">
 
-            <!-- Recently Viewed Section -->
-            <div class="content-section">
-                <h2 class="section-title">Recently Viewed</h2>
-                <div class="documents-grid">
-
-                    @foreach (var recent in Model.RecentVieweds)
-                    {
-                        <div class="document-card">
-                            <div class="document-header">
-                                <div>
-                                    <h3 class="document-title">@recent.Document.Title</h3>
-                                    <p class="document-meta"># PRF192, #Programming</p>
-                                    <p class="document-meta">100 Document</p>
+                        @foreach (var recent in Model.RecentVieweds)
+                        {
+                            <div class="document-card">
+                                <div class="document-header">
+                                    <div>
+                                        <h3 class="document-title">@recent.Document.Title</h3>
+                                        <p class="document-meta"># PRF192, #Programming</p>
+                                        <p class="document-meta">100 Document</p>
+                                    </div>
+                                </div>
+                                <div class="document-actions">
+                                    <button class="btn-add">+ Add to library</button>
                                 </div>
                             </div>
-                            <div class="document-actions">
-                                <button class="btn-add">+ Add to library</button>
-                            </div>
-                        </div>
-                    }
+                        }
 
 
 
+                    </div>
                 </div>
-            </div>
 
-            <!-- Top Documents Section -->
-            <div class="content-section">
-                <h2 class="section-title">Top Documents</h2>
-                <div class="top-documents">
+                <!-- Top Documents Section -->
+                <div class="content-section">
+                    <h2 class="section-title">Top Documents</h2>
+                    <div class="top-documents">
 
-                    @foreach (var doc in Model.TopDocuments)
-                    {
-                        <div class="top-document-card">
-                            <div class="document-preview">
-                                <div class="document-preview-title">@doc.Title</div>
+                        @foreach (var doc in Model.TopDocuments)
+                        {
+                            <div class="top-document-card">
+                                <div class="document-preview">
+                                    <div class="document-preview-title">@doc.Title</div>
+                                </div>
+                                <h3 class="document-title">@doc.Description</h3>
+                                <div class="completion-badge">
+                                    <span>👍🏼</span>
+
+                                    <span class="completion-percentage">@doc.LikeCount</span>
+                                </div>
                             </div>
-                            <h3 class="document-title">@doc.Description</h3>
-                            <div class="completion-badge">
-                                <span>👍🏼</span>
 
-                                <span class="completion-percentage">@doc.LikeCount</span>
-                            </div>
-                        </div>
-
-                    }
+                        }
+                    </div>
                 </div>
+
             </div>
-        </div>
+        }
+        else
+        {
+            <h1>cut dit con me m</h1>
+        }
     </div>
 </div>

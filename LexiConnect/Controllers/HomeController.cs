@@ -1,6 +1,7 @@
 using BusinessObjects;
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
@@ -13,22 +14,19 @@ namespace LexiConnect.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IGenericRepository<University> _universityRepository;
+        private readonly IGenericRepository<Users> _userRepository;
         private readonly IGenericRepository<Course> _courseRepository;
         private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Users> _userRepository;
         private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
-
-        public HomeController(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
-            IGenericRepository<Course> courseRepository, IGenericRepository<Document> documentRepository,
-            IGenericRepository<Users> userRepository, IGenericRepository<RecentViewed> recentViewedRepository)
+        public HomeController(ILogger<HomeController> logger, IGenericRepository<Users> userRepository, IGenericRepository<University> universityRepository, IGenericRepository<Course> courseRepository, IGenericRepository<Major> majorRepository , IGenericRepository<RecentViewed> recentViewedRepository, IGenericRepository<Document> documentRepository)
         {
             _logger = logger;
             _universityRepository = universityRepository;
-            _documentRepository = documentRepository;
             _courseRepository = courseRepository;
             _userRepository = userRepository;
             _documentRepository = documentRepository;
             _recentViewedRepository = recentViewedRepository;
+
         }
 
         [HttpGet]
@@ -75,17 +73,21 @@ namespace LexiConnect.Controllers
                 .Include(c => c.ApprovedByUser)
                 .ThenInclude(m => m.University)
                 .OrderByDescending(c => c.ViewCount)
-                .Take(3)
-                ;
+                .Take(3);
+
+
 
             var model = new HomePageViewModel
             {
-                RecentVieweds = recentvieweds,
-                TopDocuments = topdocuments
+                RecentVieweds = recentvieweds ,
+                TopDocuments = topdocuments ,
             };
+
 
             return View(model);
         }
+
+
 
         [HttpGet]
         public async Task<IActionResult> UserProfile()

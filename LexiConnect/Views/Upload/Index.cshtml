@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Upload Documents";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/Upload/UploadDocument.css" />
+
+
+<div class="upload-page">
+    <!-- Header -->
+    <div class="upload-header">
+        <h1>Share <span style="color: #007bff;">3 mandatory assi</span> to see Premium content</h1>
+        <p class="upload-subtitle">You will receive <strong>6 weeks</strong> of Premium and get unlimited downloads/views.</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="upload-progress-bar">
+        <div class="upload-progress-step">
+            <div class="upload-step-circle active">1</div>
+            <span class="upload-step-text">Upload</span>
+        </div>
+        <div class="upload-step-line active"></div>
+        <div class="upload-progress-step">
+            <div class="upload-step-circle inactive">2</div>
+            <span class="upload-step-text">Details</span>
+        </div>
+        <div class="upload-step-line inactive"></div>
+        <div class="upload-progress-step">
+            <div class="upload-step-circle inactive">3</div>
+            <span class="upload-step-text">Done</span>
+        </div>
+    </div>
+
+    <!-- Upload Info -->
+    <div class="upload-info">
+        <div class="upload-info-number">3</div>
+        <div class="upload-info-text">
+            Upload <strong>3 documents</strong> or more<br>
+            to earn free Premium access
+        </div>
+    </div>
+
+    <!-- Upload Section -->
+    <form asp-action="UploadDocuments" asp-controller="Upload" method="post" enctype="multipart/form-data">
+        <div class="upload-box" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Drag & Drop files</div>
+            <div class="upload-subtext">Or if you prefer</div>
+            <button type="button" class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                Browse my files
+            </button>
+            <div class="upload-file-types">Supported files: pdf, doc, docx</div>
+            <input type="file" id="fileInput" name="files" multiple accept=".pdf,.doc,.docx" class="upload-file-input">
+        </div>
+
+        <div class="upload-file-list" id="uploadedFiles"></div>
+
+        <div class="text-center" style="margin-top: 30px;">
+            <button type="submit" class="upload-btn" style="padding: 15px 40px; font-size: 18px;">
+                Continue to Details
+            </button>
+        </div>
+    </form>
+
+    <!-- No Documents Section -->
+    <div class="upload-no-docs">
+        <span style="color: #666;">No documents to share? That's not a problem</span>
+        <button class="upload-trial-btn">⚙️ Get a free 30 day trial</button>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="upload-disclaimer">
+        By uploading documents to Studocu, you declare that you own the copyrights to the documents or have
+        express permission from the copyright owners to use and upload the documents. We make use of third
+        party AI chatbots, their terms and conditions may apply.
+    </div>
+
+
+    <script src="~/js/Upload/UploadDocument.js"></script>
+
+</div>
