@@ -1,6 +1,7 @@
 using BusinessObjects;
 using DataAccess;
 using LexiConnect.Models;
+using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,7 @@ builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();
+builder.Services.AddScoped<IVnPayService, VnPayService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>

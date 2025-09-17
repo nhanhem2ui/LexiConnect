@@ -9,5 +9,6 @@ namespace LexiConnect.Models.ViewModels
         public IQueryable<RecentViewed>? RecentActivities { get; set; }
         public int Upvotes {  get; set; }
         public int FollowerNum { get; set; }
+        public bool ActiveSubscription { get; set; }
     }
 }

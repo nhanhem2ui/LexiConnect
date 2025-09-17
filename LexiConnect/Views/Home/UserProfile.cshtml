@@ -15,20 +15,33 @@
 
 <body>
     <div class="dashboard-container">
-        
-        <partial name="_Sidebar"/>
+
+        <partial name="_Sidebar" />
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Profile Header -->
             <div class="profile-header">
-                <div class="profile-avatar-large">B</div>
+                <div class="profile-avatar-large">
+                    @if (!string.IsNullOrEmpty(Model.User.AvatarUrl) && Model.User.AvatarUrl != "~/image/default-avatar.png")
+                    {
+                        <img src="@Model.User.AvatarUrl" alt="@Model.User.FullName" />
+                    }
+                    else
+                    {
+                        @Model.User.FullName?.Substring(0, 1).ToUpper()
+                    }
+                </div>
                 <div class="profile-info">
                     <h1>@Model.User.FullName</h1>
-                    <p class="affiliation">@Model.User.University.Name</p>
+                    <p class="affiliation">University: @Model.User.University?.Name</p>
+                    @if (Model.User.Major != null)
+                    {
+                        <p class="major">Major: @Model.User.Major.Name</p>
+                    }
                     <div class="profile-stats-row">
                         <div class="stat-card">
-                            <span class="number">@Model.Documents.Count()</span>
+                            <span class="number">@Model.Documents?.Count()</span>
                             <span class="label">Uploads</span>
                         </div>
                         <div class="stat-card">
@@ -39,9 +52,161 @@
                             <span class="number">@Model.Upvotes</span>
                             <span class="label">Upvotes</span>
                         </div>
+                        <div class="stat-card points-card">
+                            <span class="number">@Model.User.PointsBalance</span>
+                            <span class="label">Points</span>
+                        </div>
+                        <div class="stat-card total-points-card">
+                            <span class="number">@Model.User.TotalPointsEarned</span>
+                            <span class="label">Total Earned</span>
+                        </div>
                     </div>
                 </div>
-                <a href="@Url.Action("EditProfile, Home")" class="btn-edit">Edit Profile</a>
+                <div class="profile-actions">
+                    <a href="@Url.Action("EditProfile", "Home")" class="btn-edit">Edit Profile</a>
+                </div>
+            </div>
+
+            <!-- User Details & Subscription Section -->
+            <div class="user-details-section">
+                <!-- User Information Card -->
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <span>👤</span>
+                        User Information
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span>@Model.User.Email</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Phone:</label>
+                            <span>@(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "Not provided" : Model.User.PhoneNumber)</span>
+                        </div>
+                        <div class="info-item">
+                            <label>University:</label>
+                            <span>@(Model.User.University?.Name ?? "Not specified")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Major:</label>
+                            <span>@(Model.User.Major?.Name ?? "Not specified")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Points Balance:</label>
+                            <span class="points-balance">@Model.User.PointsBalance points</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Total Points Earned:</label>
+                            <span class="points-earned">@Model.User.TotalPointsEarned points</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription Plan Card -->
+                @if (Model.User.SubscriptionPlan != null && Model.User.SubscriptionPlan.PlanId != 1)
+                {
+                    <a href="@Url.Action("ManageSubscription", "Home")" class="subscription-card-link">
+                        <div class="subscription-card @(Model.ActiveSubscription ? "active" : "expired")">
+                            <div class="subscription-header">
+                                <h3 class="card-title">
+                                    <span>💎</span>
+                                    Current Subscription
+                                </h3>
+                                <div class="subscription-status @(Model.ActiveSubscription ? "status-active" : "status-expired")">
+                                    @(Model.ActiveSubscription ? "ACTIVE" : "EXPIRED")
+                                </div>
+                            </div>
+                            <div class="subscription-details">
+                                <div class="plan-info">
+                                    <h4 class="plan-name">@Model.User.SubscriptionPlan.DisplayName</h4>
+                                    <p class="plan-type">@Model.User.SubscriptionPlan.Name</p>
+                                </div>
+                                <div class="subscription-dates">
+                                    @if (Model.User.SubscriptionStartDate.HasValue)
+                                    {
+                                        <div class="date-item">
+                                            <label>Started:</label>
+                                            <span>@Model.User.SubscriptionStartDate.Value.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                    }
+                                    @if (Model.User.SubscriptionEndDate.HasValue)
+                                    {
+                                        <div class="date-item">
+                                            <label>@(Model.User.SubscriptionEndDate < DateTime.Now ? "Expired:" : "Expires:")</label>
+                                            <span>@Model.User.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        @if (Model.User.SubscriptionStartDate.HasValue)
+                                        {
+                                            <div class="date-item">
+                                                <label>Duration:</label>
+                                                <span>
+                                                    @{
+                                                        var duration = Model.User.SubscriptionEndDate.Value - Model.User.SubscriptionStartDate.Value;
+                                                        var days = duration.Days;
+                                                        if (days >= 365)
+                                                        {
+                                                            var years = days / 365;
+                                                            <text>@years year@(years > 1 ? "s" : "")</text>
+                                                        }
+                                                        else if (days >= 30)
+                                                        {
+                                                            var months = days / 30;
+                                                            <text>@months month@(months > 1 ? "s" : "")</text>
+                                                        }
+                                                        else
+                                                        {
+                                                            <text>@days day@(days > 1 ? "s" : "")</text>
+                                                        }
+                                                    }
+                                                </span>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="date-item">
+                                            <label>Status:</label>
+                                            <span>No end date specified</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="subscription-footer">
+                                <span class="manage-text">Click to manage subscription</span>
+                                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("SubscriptionPlans", "Home")" class="subscription-card-link">
+                        <div class="subscription-card no-subscription">
+                            <div class="subscription-header">
+                                <h3 class="card-title">
+                                    <span>📦</span>
+                                    Subscription Plan
+                                </h3>
+                                <div class="subscription-status status-none">
+                                    NO PLAN
+                                </div>
+                            </div>
+                            <div class="subscription-details">
+                                <p class="no-plan-text">You don't have an active subscription plan.</p>
+                                <p class="upgrade-text">Upgrade to access premium features and exclusive content.</p>
+                            </div>
+                            <div class="subscription-footer">
+                                <span class="manage-text">View available plans</span>
+                                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                }
             </div>
 
             <!-- Profile Sections -->
@@ -53,16 +218,19 @@
                         My Uploads
                     </h2>
                     <div class="uploads-list">
-                        @foreach (var document in Model.Documents)
+                        @if (Model.Documents?.Count() > 0)
                         {
-                            <a href="#" style="text-decoration: none;">
-                                <div class="upload-item">
-                                    <div class="upload-icon">📄</div>
-                                    <div class="upload-details">
-                                        <h4>@document.Title</h4><p>
-                                            @(document.Description?.Length > 35
-                                                                                    ? document.Description.Substring(0, 35) + "..."
-                                                                                    : document.Description)
+                            @foreach (var document in Model.Documents)
+                            {
+                                <a href="#" style="text-decoration: none;">
+                                    <div class="upload-item">
+                                        <div class="upload-icon">📄</div>
+                                        <div class="upload-details">
+                                            <h4>@document.Title</h4>
+                                            <p>
+                                                @(document.Description?.Length > 35
+                                                                                        ? document.Description.Substring(0, 35) + "..."
+                                                                                        : document.Description)
                                     </p>
                                 </div>
                                 <div class="upload-stats">
@@ -75,6 +243,13 @@
                             </div>
                         </a>
                                                 }
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <p>No uploads yet. Start sharing your documents!</p>
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -85,40 +260,47 @@
                         Recent Activity
                     </h2>
                     <div class="activity-list">
-                        @foreach (var activity in Model.RecentActivities)
+                        @if (Model.RecentActivities?.Count() > 0)
                         {
-                            if (activity.CourseId > 0 && activity.Course != null)
+                            @foreach (var activity in Model.RecentActivities)
                             {
-                                <div class="activity-item">
-                                    <div class="activity-icon">📤</div>
-                                    <div class="activity-content">
-                                        <h4>@activity.Course.CourseName</h4>
-                                        <p>
-                                            @activity.Course.Description?.Length > 35
-                                            ? @activity.Course.Description?.Substring(0, 35) + "..."
-                                            : @activity.Course.Description
-                                        </p>
-
-                                    </div>
-                                    <div class="activity-time">Academic year: @activity.Course.AcademicYear</div>
-                                </div>
+                                if (activity.CourseId > 0 && activity.Course != null)
+                                {
+                                    <div class="activity-item">
+                                        <div class="activity-icon">📤</div>
+                                        <div class="activity-content">
+                                            <h4>@activity.Course.CourseName</h4>
+                                            <p>
+                                                @(activity.Course.Description?.Length > 35
+                                                                                    ? activity.Course.Description?.Substring(0, 35) + "..."
+                                                                                    : activity.Course.Description)
+                                </p>
+                            </div>
+                            <div class="activity-time">Academic year: @activity.Course.AcademicYear</div>
+                        </div>
+                                                }
+                                if (activity.DocumentId > 0 && activity.Document != null)
+                                {
+                                    <div class="activity-item">
+                                        <div class="activity-icon">📤</div>
+                                        <div class="activity-content">
+                                            <h4>@activity.Document.Title</h4>
+                                            <p>
+                                                @(activity.Document.Description?.Length > 35
+                                                                                    ? activity.Document.Description?.Substring(0, 35) + "..."
+                                                                                    : activity.Document.Description)
+                                </p>
+                            </div>
+                            <div class="activity-time">Created at: @activity.Document.CreatedAt</div>
+                        </div>
+                                                }
                             }
-                            if (activity.DocumentId > 0 && activity.Document != null)
-                            {
-                                <div class="activity-item">
-                                    <div class="activity-icon">📤</div>
-                                    <div class="activity-content">
-                                        <h4>@activity.Document.Title</h4>
-                                        <p>
-                                            @activity.Document.Description?.Length > 35
-                                            ? @activity.Document.Description?.Substring(0, 35) + "..."
-                                            : @activity.Document.Description
-                                        </p>
-
-                                    </div>
-                                    <div class="activity-time">Create at: @activity.Document.CreatedAt</div>
-                                </div>
-                            }
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <p>No recent activity to display.</p>
+                            </div>
                         }
                     </div>
                 </div>

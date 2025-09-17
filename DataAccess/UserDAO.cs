@@ -32,6 +32,8 @@ namespace DataAccess
             return await _db.Users
                 .AsNoTracking() // Use AsNoTracking for read-only queries
                 .Include(u => u.University)
+                .Include(u => u.SubscriptionPlan)
+                .Include(u => u.Major)
                 .FirstOrDefaultAsync(predicate); // Return the first matching User or null if none found
         }
 
