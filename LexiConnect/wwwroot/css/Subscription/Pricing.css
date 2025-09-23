@@ -130,6 +130,60 @@
             animation: pulse 2s infinite;
         }
 
+    /* Current Plan Card Styles - Higher Specificity */
+    .pricing-card.current-plan {
+        border: 3px solid #3b82f6 !important; /* Bright Blue border */
+        box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3) !important;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(255, 255, 255, 0.98)) !important;
+    }
+
+        .pricing-card.current-plan:hover {
+            transform: scale(1.03) translateY(-5px) !important;
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4) !important;
+        }
+
+        /* Current Plan Badge */
+        .pricing-card.current-plan::before {
+            content: 'Your Current Plan' !important;
+            position: absolute !important;
+            top: -12px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important; /* Deep Blue */
+            color: white !important;
+            padding: 6px 20px !important;
+            border-radius: 20px !important;
+            font-size: 13px !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.5px !important;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+            animation: currentPlanPulse 3s ease-in-out infinite !important;
+        }
+
+        /* Current Plan Typography */
+        .pricing-card.current-plan .plan-name {
+            color: #1d4ed8 !important;
+            font-weight: 800 !important;
+        }
+
+        .pricing-card.current-plan .price-currency,
+        .pricing-card.current-plan .price-amount {
+            color: #2563eb !important;
+        }
+
+/* Button for Current Plan */
+.btn-current {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+    color: white !important;
+    border: 2px solid #1e3a8a !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
 @keyframes pulse {
     0%, 100% {
         box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
@@ -137,6 +191,16 @@
 
     50% {
         box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
+    }
+}
+
+@keyframes currentPlanPulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3), 0 0 0 0 rgba(34, 197, 94, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3), 0 0 0 8px rgba(34, 197, 94, 0);
     }
 }
 
@@ -238,6 +302,7 @@
     overflow: hidden;
 }
 
+    /* Default shimmer effect for non-current plan buttons */
     .plan-button::before {
         content: '';
         position: absolute;
@@ -289,6 +354,86 @@
         transform: translateY(-2px);
         box-shadow: 0 12px 35px rgba(31, 41, 55, 0.4);
     }
+
+/* Current Plan Button Styles - Most Prominent */
+.btn-current {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+    color: white !important;
+    border: 2px solid #15803d !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4) !important;
+    opacity: 1 !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+    .btn-current:hover,
+    .btn-current:focus {
+        background: linear-gradient(135deg, #16a34a, #15803d) !important;
+        color: white !important;
+        box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Custom shimmer for current plan button */
+    .btn-current::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: -100% !important;
+        width: 100% !important;
+        height: 100% !important;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent) !important;
+        transition: left 0.6s ease !important;
+        display: block !important;
+    }
+
+    .btn-current:hover::before {
+        left: 100% !important;
+    }
+
+    /* Checkmark icon for current plan button */
+    .btn-current::after {
+        content: '✓' !important;
+        position: absolute !important;
+        right: 15px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: white !important;
+    }
+
+/* General disabled button styles */
+.plan-button:disabled {
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+    transform: none !important;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb) !important;
+    color: #6b7280 !important;
+    border: 2px solid #d1d5db !important;
+}
+
+    .plan-button:disabled:hover {
+        cursor: not-allowed !important;
+        transform: none !important;
+        box-shadow: none !important;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb) !important;
+        color: #6b7280 !important;
+    }
+
+    .plan-button:disabled::before {
+        display: none !important;
+    }
+
+/* Override hover effects for cards with disabled buttons */
+.pricing-card:has(.plan-button:disabled) .plan-button:hover {
+    transform: none !important;
+    box-shadow: inherit !important;
+    cursor: not-allowed !important;
+}
 
 .guarantee-text {
     text-align: center;

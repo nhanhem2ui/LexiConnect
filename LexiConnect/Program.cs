@@ -29,6 +29,7 @@ builder.Services.AddScoped<IGenericDAO<University>, UniversityDAO>();
 builder.Services.AddScoped<IGenericDAO<UserFavorite>, UserFavoriteDAO>();
 builder.Services.AddScoped<IGenericDAO<UserFollower>, UserFollowerDAO>();
 builder.Services.AddScoped<IGenericDAO<RecentViewed>, RecentViewedDAO>();
+builder.Services.AddScoped<IGenericDAO<PaymentRecord>, PaymentRecordDAO>();
 builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
 
 //Repository
@@ -44,6 +45,7 @@ builder.Services.AddScoped<IGenericRepository<University>, UniversityRepository>
 builder.Services.AddScoped<IGenericRepository<UserFavorite>, UserFavoriteRepository>();
 builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerRepository>();
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
+builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepository>();
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
@@ -67,6 +69,14 @@ builder.Services.AddIdentity<Users, IdentityRole>(options =>
 
 builder.Services.Configure<DataProtectionTokenProviderOptions>(opt =>
     opt.TokenLifespan = TimeSpan.FromHours(2));
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30); // Adjust timeout as needed
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true; // Required for GDPR compliance
+});
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -121,6 +131,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseSession();
 
 app.UseRouting();
 

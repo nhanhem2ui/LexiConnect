@@ -21,6 +21,7 @@ namespace BusinessObjects
         public DbSet<UserFavorite> UserFavorites { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<RecentViewed> RecentVieweds { get; set; }
+        public DbSet<PaymentRecord> PaymentRecords { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -145,8 +146,13 @@ namespace BusinessObjects
                 .HasForeignKey(rv => rv.CourseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Add this if you added UserId to RecentViewed (recommended)
             modelBuilder.Entity<RecentViewed>()
+                .HasOne(rv => rv.User)
+                .WithMany()
+                .HasForeignKey(rv => rv.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentRecord>()
                 .HasOne(rv => rv.User)
                 .WithMany()
                 .HasForeignKey(rv => rv.UserId)

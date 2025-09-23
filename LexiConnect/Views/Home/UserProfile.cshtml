@@ -107,14 +107,14 @@
                 @if (Model.User.SubscriptionPlan != null && Model.User.SubscriptionPlan.PlanId != 1)
                 {
                     <a href="@Url.Action("ManageSubscription", "Home")" class="subscription-card-link">
-                        <div class="subscription-card @(Model.ActiveSubscription ? "active" : "expired")">
+                        <div class="subscription-card @(Model.ActiveSubscription ? "expired" : "active")">
                             <div class="subscription-header">
                                 <h3 class="card-title">
                                     <span>💎</span>
                                     Current Subscription
                                 </h3>
                                 <div class="subscription-status @(Model.ActiveSubscription ? "status-active" : "status-expired")">
-                                    @(Model.ActiveSubscription ? "ACTIVE" : "EXPIRED")
+                                    @(Model.ActiveSubscription ? "EXPIRED" : "ACTIVE")
                                 </div>
                             </div>
                             <div class="subscription-details">

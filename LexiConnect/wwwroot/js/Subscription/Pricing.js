@@ -26,13 +26,29 @@ document.addEventListener('DOMContentLoaded', function () {
         cardObserver.observe(card);
     });
 
-    // Add interactive hover effects
+    // Add interactive hover effects - but skip cards with disabled buttons
     document.querySelectorAll('.pricing-card').forEach(card => {
         const button = card.querySelector('.plan-button');
 
+        // Check if the button is disabled or has current plan class - if so, skip hover effects
+        if (button && (button.disabled || button.classList.contains('btn-current'))) {
+            card.style.cursor = 'default';
+            // Add special styling for current plan cards
+            if (card.classList.contains('current-plan')) {
+                card.addEventListener('mouseenter', function () {
+                    this.style.transform = 'scale(1.02)';
+                    this.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.2)';
+                });
+                card.addEventListener('mouseleave', function () {
+                    this.style.transform = 'scale(1.02)';
+                    this.style.boxShadow = '0 8px 25px rgba(34, 197, 94, 0.15)';
+                });
+            }
+            return; // Skip adding normal hover effects for disabled/current plan cards
+        }
+
         card.addEventListener('mouseenter', function () {
             this.style.transform += ' rotateY(5deg)';
-
             // Add subtle glow effect
             this.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2), 0 0 30px rgba(25, 118, 210, 0.1)';
         });
@@ -46,9 +62,15 @@ document.addEventListener('DOMContentLoaded', function () {
             this.style.boxShadow = '0 25px 50px rgba(0, 0, 0, 0.2)';
         });
 
-        // Button click effects
+        // Button click effects - only for enabled buttons
         if (button) {
             button.addEventListener('click', function (e) {
+                // Skip effects for disabled buttons or current plan buttons
+                if (this.disabled || this.classList.contains('loading') || this.classList.contains('btn-current')) {
+                    e.preventDefault();
+                    return false;
+                }
+
                 // Create ripple effect
                 const ripple = document.createElement('span');
                 const rect = this.getBoundingClientRect();
@@ -72,9 +94,24 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.style.position = 'relative';
                 this.appendChild(ripple);
 
+                // Add loading state
+                this.classList.add('loading');
+                const originalText = this.textContent;
+                this.textContent = 'Processing...';
+
+                // Clean up ripple
                 setTimeout(() => {
                     ripple.remove();
                 }, 600);
+
+                // Let the form submit naturally after a short delay for visual feedback
+                setTimeout(() => {
+                    // If for some reason the form doesn't submit, restore the button
+                    this.classList.remove('loading');
+                    this.textContent = originalText;
+                }, 2000);
+
+                // Don't prevent default - let the form submit naturally
             });
         }
     });
@@ -101,14 +138,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 3000);
     });
 
-    // Plan comparison functionality
+    // Plan comparison functionality - exclude disabled cards and current plan cards
     function initPlanComparison() {
         const cards = document.querySelectorAll('.pricing-card');
         let activeCard = null;
 
         cards.forEach(card => {
+            const button = card.querySelector('.plan-button');
+
+            // Skip disabled cards and current plan cards for comparison functionality
+            if (button && (button.disabled || button.classList.contains('btn-current'))) {
+                return;
+            }
+
             card.addEventListener('click', function (e) {
-                if (e.target.classList.contains('plan-button')) return;
+                // Don't interfere with button clicks
+                if (e.target.classList.contains('plan-button') || e.target.closest('form')) {
+                    return;
+                }
 
                 // Remove active state from other cards
                 cards.forEach(c => c.classList.remove('active-comparison'));
@@ -140,22 +187,21 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize features
     initPlanComparison();
 
-    // Add loading animation for buttons
-    document.querySelectorAll('.plan-button').forEach(button => {
+    // Force cursor styles for disabled buttons
+    document.querySelectorAll('.plan-button:disabled, .btn-current, .btn-disabled').forEach(button => {
+        button.style.cursor = 'not-allowed';
+        button.addEventListener('mouseenter', function () {
+            this.style.cursor = 'not-allowed';
+        });
+        button.addEventListener('mouseleave', function () {
+            this.style.cursor = 'not-allowed';
+        });
+
+        // Prevent any click events
         button.addEventListener('click', function (e) {
-            if (this.classList.contains('loading')) return;
-
             e.preventDefault();
-            this.classList.add('loading');
-
-            const originalText = this.textContent;
-            this.textContent = 'Processing...';
-
-            // Simulate processing
-            setTimeout(() => {
-                // Here you would normally handle the actual subscription
-                window.location.href = '/Subscription/Subscribe?planId=' + this.closest('.pricing-card').dataset.planId;
-            }, 1500);
+            e.stopPropagation();
+            return false;
         });
     });
 });
@@ -172,8 +218,9 @@ style.textContent = `
     
     .plan-button.loading {
         opacity: 0.7;
-        cursor: not-allowed;
-        pointer-events: none;
+        cursor: wait;
+        position: relative;
+        overflow: hidden;
     }
     
     .active-comparison {
@@ -183,6 +230,59 @@ style.textContent = `
     
     .pricing-card {
         cursor: pointer;
+    }
+    
+    .plan-button:disabled,
+    .btn-current,
+    .btn-disabled {
+        opacity: 1 !important;
+        cursor: not-allowed !important;
+        pointer-events: none;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb) !important;
+        color: #6b7280 !important;
+        border: 2px solid #d1d5db !important;
+    }
+    
+    .plan-button:disabled:hover,
+    .btn-current:hover,
+    .btn-disabled:hover {
+        cursor: not-allowed !important;
+        transform: none !important;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb) !important;
+        color: #6b7280 !important;
+    }
+    
+    /* Special styling for current plan buttons */
+    .btn-current,
+    .pricing-card.current-plan .btn-current {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0) !important;
+        color: #16a34a !important;
+        border: 2px solid #22c55e !important;
+        font-weight: 600 !important;
+    }
+    
+    .btn-current:hover {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0) !important;
+        color: #16a34a !important;
+    }
+    
+    /* Style cards with disabled buttons differently */
+    .pricing-card:has(.plan-button:disabled) {
+        cursor: default;
+    }
+    
+    .pricing-card.current-plan {
+        cursor: default;
+    }
+    
+    .pricing-card:has(.plan-button:disabled):hover:not(.current-plan) {
+        transform: translateY(-10px) rotateX(5deg) !important;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .pricing-card.current-plan:hover {
+        transform: scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2) !important;
     }
 `;
 document.head.appendChild(style);

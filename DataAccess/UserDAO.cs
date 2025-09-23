@@ -45,9 +45,37 @@ namespace DataAccess
 
         public async Task<bool> UpdateAsync(Users entity)
         {
-            _db.Users.Update(entity);
-            return await _db.SaveChangesAsync() > 0; // Return true if any changes were made
+            // Mark the user as modified
+            _db.Entry(entity).State = EntityState.Modified;
+
+            // Handle navigation properties safely
+            if (entity.Major != null)
+            {
+                if (entity.Major.MajorId > 0)
+                    _db.Entry(entity.Major).State = EntityState.Unchanged;
+                else
+                    entity.Major = null; // avoid EF trying to insert
+            }
+
+            if (entity.University != null)
+            {
+                if (entity.University.Id > 0)
+                    _db.Entry(entity.University).State = EntityState.Unchanged;
+                else
+                    entity.University = null;
+            }
+
+            if (entity.SubscriptionPlan != null)
+            {
+                if (entity.SubscriptionPlan.PlanId > 0)
+                    _db.Entry(entity.SubscriptionPlan).State = EntityState.Unchanged;
+                else
+                    entity.SubscriptionPlan = null;
+            }
+
+            return await _db.SaveChangesAsync() > 0;
         }
+
 
         public async Task<bool> DeleteAsync(int UserId)
         {
