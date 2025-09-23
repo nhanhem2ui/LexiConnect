@@ -1,0 +1,359 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.IsCurrentlyFree ? "Subscribe to Premium" : "Extend Subscription";
+}
+@model LexiConnect.Models.ViewModels.SubscriptionExtensionViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@(Model.IsCurrentlyFree ? "Subscribe to Premium" : "Extend Subscription")</title>
+    <link rel="stylesheet" href="~/css/Home/UserProfile.css" />
+    <link rel="stylesheet" href="~/css/Subscription/ExtendSubscription.css" />
+</head>
+
+<body>
+    <div class="subscription-extension-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            @if (Model.IsCurrentlyFree)
+            {
+                <h1>Subscribe to Premium</h1>
+                <p>Upgrade from your free plan and unlock all premium features</p>
+            }
+            else
+            {
+                <h1>Extend Your Subscription</h1>
+                <p>Choose how long you'd like to extend your current plan</p>
+            }
+        </div>
+
+        <!-- Current Plan Section -->
+        <div class="current-plan-section @(Model.IsCurrentlyFree ? "free-user-header" : "")">
+            <div class="current-plan-header">
+                <div class="current-plan-title">
+                    <span>@(Model.IsCurrentlyFree ? "📋" : "💎")</span>
+                    Current Plan
+                </div>
+                <div class="current-plan-badge @(Model.IsCurrentlyFree ? "upgrade-badge" : "")">
+                    @(Model.IsCurrentlyFree ? "FREE" : "ACTIVE")
+                </div>
+            </div>
+
+            @if (!Model.IsCurrentlyFree)
+            {
+                <div class="current-plan-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Plan Name</div>
+                        <div class="detail-value">@Model.CurrentPlan.DisplayName</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Monthly Price</div>
+                        <div class="detail-value">@Model.CurrentPlan.Price.ToString("C")</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Current End Date</div>
+                        <div class="detail-value">@Model.CurrentSubscriptionEndDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                </div>
+            }
+
+            <div class="plan-features">
+                <div class="features-title">Current Plan Features</div>
+                <div class="features-list">
+                    @foreach (var feature in Model.CurrentPlanFeatures)
+                    {
+                        <div class="feature-item">
+                            <span class="feature-check">@(Model.IsCurrentlyFree ? "❌" : "✓")</span>
+                            <span>@feature</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription Options Section -->
+        @if (Model.ExtensionOptions?.Any() == true)
+        {
+            <div class="options-section">
+                <div class="section-header">
+                    <div class="section-title">
+                        @(Model.IsCurrentlyFree ? "Premium Subscription Options" : "Extension Options")
+                    </div>
+                    <div class="section-subtitle">
+                        @if (Model.IsCurrentlyFree)
+                        {
+                            <span>Choose your premium subscription duration</span>
+                        }
+                        else
+                        {
+                            <span>Extend your current plan with these duration options</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="options-grid">
+                    @foreach (var option in Model.ExtensionOptions)
+                    {
+                        <div class="option-card @(option.IsRecommended ? "recommended" : "")"
+                             data-plan-id="@option.PlanId"
+                             data-duration="@option.DurationMonths"
+                             data-price="@option.Price"
+                             data-original-price="@option.OriginalPrice"
+                             data-new-end-date="@option.NewEndDate.ToString("MMM dd, yyyy")"
+                             data-option-type="@(Model.IsCurrentlyFree ? "purchaseSubscription" : "extendSubscription")"
+                             data-currency="USD">
+                            @if (option.IsRecommended)
+                            {
+                                <div class="recommended-badge">Recommended</div>
+                            }
+
+                            <div class="option-duration">
+                                @option.DurationMonths Month@(option.DurationMonths > 1 ? "s" : "")
+                                @if (Model.IsCurrentlyFree)
+                                {
+                                    <small style="display: block; font-size: 14px; font-weight: 400; color: #28a745; margin-top: 5px;">Premium Access</small>
+                                }
+                            </div>
+
+                            <div class="option-pricing">
+                                <span class="current-price">@option.Price.ToString("C")</span>
+                                @if (option.OriginalPrice > option.Price)
+                                {
+                                    <span class="original-price">@option.OriginalPrice.ToString("C")</span>
+                                    <span class="discount-badge">
+                                        @(Math.Round((option.OriginalPrice - option.Price) / option.OriginalPrice * 100))% OFF
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="option-details">
+                                @if (Model.IsCurrentlyFree)
+                                {
+                                    <span>Get premium access for @option.DurationMonths month@(option.DurationMonths > 1 ? "s" : "")</span>
+                                }
+                                else
+                                {
+                                    <span>Extends your subscription by @option.DurationMonths month@(option.DurationMonths > 1 ? "s" : "")</span>
+                                }
+                            </div>
+
+                            <div class="new-end-date">
+                                @if (Model.IsCurrentlyFree)
+                                {
+                                    <span>Subscription until: @option.NewEndDate.ToString("MMM dd, yyyy")</span>
+                                }
+                                else
+                                {
+                                    <span>New end date: @option.NewEndDate.ToString("MMM dd, yyyy")</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.IsCurrentlyFree && Model.UpgradePlanFeatures?.Any() == true)
+                {
+                    <div class="plan-features" style="margin-top: 20px;">
+                        <div class="features-title">Premium Plan Features</div>
+                        <div class="features-list">
+                            @foreach (var feature in Model.UpgradePlanFeatures)
+                            {
+                                <div class="feature-item">
+                                    <span class="feature-check">✓</span>
+                                    <span>@feature</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (!Model.IsCurrentlyFree && Model.UpgradePlan != null && Model.UpgradeOptions?.Any() == true)
+        {
+            <div class="options-section">
+                <div class="section-header">
+                    <div class="section-title">Upgrade Options</div>
+                    <div class="section-subtitle">Upgrade to @Model.UpgradePlan.DisplayName with these duration options</div>
+                </div>
+
+                <div class="options-grid">
+                    @foreach (var option in Model.UpgradeOptions)
+                    {
+                        <div class="option-card @(option.IsRecommended ? "recommended" : "")"
+                             data-plan-id="@option.PlanId"
+                             data-duration="@option.DurationMonths"
+                             data-price="@option.Price"
+                             data-original-price="@option.OriginalPrice"
+                             data-new-end-date="@option.NewEndDate.ToString("MMM dd, yyyy")"
+                             data-option-type="upgradeSubscription"
+                             data-currency="USD"
+                             data-plan-name="@Model.UpgradePlan.DisplayName">
+
+                            @if (option.IsRecommended)
+                            {
+                                <div class="recommended-badge">Recommended</div>
+                            }
+
+                            <div class="option-duration">
+                                @option.DurationMonths Month@(option.DurationMonths > 1 ? "s" : "") - UPGRADE
+                            </div>
+
+                            <div class="option-pricing">
+                                <span class="current-price">@option.Price.ToString("C")</span>
+                                @if (option.OriginalPrice > option.Price)
+                                {
+                                    <span class="original-price">@option.OriginalPrice.ToString("C")</span>
+                                    <span class="discount-badge">
+                                        @(Math.Round((option.OriginalPrice - option.Price) / option.OriginalPrice * 100))% OFF
+                                    </span>
+                                }
+                            </div>
+
+                            <div class="option-details">
+                                Upgrade to @Model.UpgradePlan.DisplayName for @option.DurationMonths month@(option.DurationMonths > 1 ? "s" : "")
+                            </div>
+
+                            <div class="new-end-date">
+                                New end date: @option.NewEndDate.ToString("MMM dd, yyyy")
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.UpgradePlanFeatures?.Any() == true)
+                {
+                    <div class="plan-features" style="margin-top: 20px;">
+                        <div class="features-title">@Model.UpgradePlan.DisplayName Features</div>
+                        <div class="features-list">
+                            @foreach (var feature in Model.UpgradePlanFeatures)
+                            {
+                                <div class="feature-item">
+                                    <span class="feature-check">✓</span>
+                                    <span>@feature</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="guarantee-section">
+            <div class="guarantee-content">
+                <div class="guarantee-icon">🛡️</div>
+                <div class="guarantee-text">@Model.MoneyBackGuarantee</div>
+            </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+            <div class="selected-option-summary" id="selectedSummary">
+                <div class="summary-title">Selected Option Summary</div>
+                <div class="summary-details">
+                    <div class="summary-item">
+                        <span>Plan:</span>
+                        <span id="summaryPlan">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>Duration:</span>
+                        <span id="summaryDuration">-</span>
+                    </div>
+                    <div class="summary-item">
+                        <span>@(Model.IsCurrentlyFree ? "Subscription Until" : "New End Date"):</span>
+                        <span id="summaryEndDate">-</span>
+                    </div>
+                    <div class="summary-item total">
+                        <span>Total Price:</span>
+                        <span id="summaryPrice">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="subscriptionForm" method="post" asp-action="ProcessExtends" asp-controller="Payment">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="selectedPlanId" name="PlanId" />
+                <input type="hidden" id="selectedDuration" name="DurationMonths" />
+                <input type="hidden" id="selectedPrice" name="Price" />
+                <input type="hidden" id="selectedOptionType" name="OptionType" />
+                <input type="hidden" id="selectedCurrency" name="Currency" />
+                <input type="hidden" id="thirdParty" name="ThirdParty" value="VnPay" />
+                <button type="submit" class="btn-primary" id="proceedBtn" disabled>
+                    @(Model.IsCurrentlyFree ? "Subscribe to Premium" : "Proceed to Payment")
+                </button>
+                <a href="@Url.Action("Pricing", "Subscription")" class="btn-secondary">
+                    Back to Pricing
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const optionCards = document.querySelectorAll('.option-card');
+            const selectedSummary = document.getElementById('selectedSummary');
+            const proceedBtn = document.getElementById('proceedBtn');
+
+            const summaryPlan = document.getElementById('summaryPlan');
+            const summaryDuration = document.getElementById('summaryDuration');
+            const summaryEndDate = document.getElementById('summaryEndDate');
+            const summaryPrice = document.getElementById('summaryPrice');
+
+            const selectedPlanId = document.getElementById('selectedPlanId');
+            const selectedDuration = document.getElementById('selectedDuration');
+            const selectedPrice = document.getElementById('selectedPrice');
+            const selectedOptionType = document.getElementById('selectedOptionType');
+            const selectedCurrency = document.getElementById('selectedCurrency');
+
+            const isCurrentlyFree = @Html.Raw(Json.Serialize(Model.IsCurrentlyFree));
+            const currentPlanName = '@(Model.CurrentPlan?.DisplayName ?? "Premium")';
+
+            optionCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    optionCards.forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+
+                    const planId = this.dataset.planId;
+                    const duration = this.dataset.duration;
+                    const price = this.dataset.price;
+                    const newEndDate = this.dataset.newEndDate;
+                    const optionType = this.dataset.optionType;
+                    const currency = this.dataset.currency;
+                    const planName = this.dataset.planName || (isCurrentlyFree ? 'Premium' : currentPlanName);
+
+                    summaryPlan.textContent = planName;
+                    summaryDuration.textContent = duration + ' month' + (duration > 1 ? 's' : '');
+                    summaryEndDate.textContent = newEndDate;
+                    summaryPrice.textContent = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: currency
+                    }).format(price);
+
+                    selectedPlanId.value = planId;
+                    selectedDuration.value = duration;
+                    selectedPrice.value = price;
+                    selectedOptionType.value = optionType;
+                    selectedCurrency.value = currency;
+
+                    selectedSummary.classList.add('show');
+                    proceedBtn.disabled = false;
+                });
+            });
+
+            document.getElementById('subscriptionForm').addEventListener('submit', function(e) {
+                if (!selectedPlanId.value) {
+                    e.preventDefault();
+                    alert('Please select a subscription option.');
+                    return false;
+                }
+
+                proceedBtn.textContent = isCurrentlyFree ? 'Processing Subscription...' : 'Processing...';
+                proceedBtn.disabled = true;
+            });
+        });
+    </script>
+</body>
+</html>

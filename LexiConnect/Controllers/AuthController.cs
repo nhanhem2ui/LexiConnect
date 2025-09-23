@@ -51,12 +51,14 @@ namespace LexiConnect.Controllers
             var user = new Users
             {
                 UserName = model.Username,
-                FullName = model.Email,
+                FullName = model.Username,
                 Email = model.Email,
                 UniversityId = 0,
                 MajorId = 0,
                 PointsBalance = 0,
-                TotalPointsEarned = 0
+                TotalPointsEarned = 0,
+                SubscriptionPlanId = 1,
+                AvatarUrl = "~/image/default-avatar.png"
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -144,7 +146,7 @@ namespace LexiConnect.Controllers
 
             if (result.Succeeded)
             {
-                // ✅ Clear all existing authentication first
+                //  Clear all existing authentication first
                 await _signInManager.SignOutAsync();
 
                 // Ensure University is loaded
