@@ -1,0 +1,257 @@
+﻿@using BusinessObjects
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Admin Management";
+}
+@model LexiConnect.Models.ViewModels.AdminManagementViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Admin/AdminManagement.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <div class="header-content">
+                    <div class="header-info">
+                        <h1>Admin Dashboard</h1>
+                        <p class="admin-subtitle">Manage users, verify documents, and oversee platform activity</p>
+                    </div>
+                    <div class="admin-stats-row">
+                        <div class="stat-card pending-card">
+                            <span class="number">@Model.PendingDocuments</span>
+                            <span class="label">Pending Docs</span>
+                        </div>
+                        <div class="stat-card users-card">
+                            <span class="number">@Model.TotalUsers</span>
+                            <span class="label">Total Users</span>
+                        </div>
+                        <div class="stat-card documents-card">
+                            <span class="number">@Model.TotalDocuments</span>
+                            <span class="label">Documents</span>
+                        </div>
+                        <div class="stat-card flagged-card">
+                            <span class="number">@Model.FlaggedDocuments</span>
+                            <span class="label">Flagged</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-section">
+                <div class="section-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="actions-grid">
+                    <a href="@Url.Action("PendingDocuments", "Admin")" class="action-card pending-action">
+                        <div class="action-icon">📋</div>
+                        <div class="action-content">
+                            <h3>Review Pending Documents</h3>
+                            <p>@Model.PendingDocuments documents awaiting verification</p>
+                        </div>
+                        <div class="action-arrow">→</div>
+                    </a>
+                    <a href="@Url.Action("ManageUsers", "Admin")" class="action-card users-action">
+                        <div class="action-icon">👥</div>
+                        <div class="action-content">
+                            <h3>Manage Users</h3>
+                            <p>View, edit, and manage user accounts</p>
+                        </div>
+                        <div class="action-arrow">→</div>
+                    </a>
+                    <a href="@Url.Action("FlaggedContent", "Admin")" class="action-card flagged-action">
+                        <div class="action-icon">🚩</div>
+                        <div class="action-content">
+                            <h3>Flagged Content</h3>
+                            <p>Review reported and flagged documents</p>
+                        </div>
+                        <div class="action-arrow">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Management Sections -->
+            <div class="management-sections">
+                <!-- Document Verification Section -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>📄</span>
+                            Document Verification
+                        </h2>
+                        <a href="@Url.Action("PendingDocuments", "Admin")" class="view-all-link">View All</a>
+                    </div>
+                    <div class="documents-list">
+
+                        @if (Model.RecentPendingDocuments == null || !Model.RecentPendingDocuments.Any())
+                        {
+                            <div class="empty-state">
+                                <p>No pending documents to review.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            var docsToShow = new List<Document>();
+                            
+                            if (Model.RecentPendingDocuments.Count() > 4)
+                            {
+                                docsToShow = Model.RecentPendingDocuments.Take(5).ToList();
+                            }
+                            else
+                            {
+                                docsToShow = Model.RecentPendingDocuments.ToList();
+                            }
+
+                            foreach (var document in docsToShow)
+                            {
+                                <div class="document-item @(document.Status.ToLower())">
+                                    <div class="document-info">
+                                        <div class="document-header">
+                                            <h4>@document.Title</h4>
+                                            <span class="status-badge status-@document.Status.ToLower()">@document.Status.ToUpper()</span>
+                                        </div>
+                                        <p class="document-description">
+                                            @(document.Description?.Length > 80
+                                                                                ? document.Description.Substring(0, 80) + "..."
+                                                                                : document.Description ?? "No description")
+                                </p>
+                                <div class="document-meta">
+                                    <span class="meta-item">👤 @document.Uploader.FullName</span>
+                                    <span class="meta-item">📚 @document.Course.CourseName</span>
+                                    <span class="meta-item">🗓️ @document.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    @if (document.IsAiGenerated)
+                                            {
+                                                <span class="meta-item ai-tag">🤖 AI Generated (@document.AiConfidenceScore?.ToString("P0"))</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="document-actions">
+                                        <a href="@Url.Action("ReviewDocument", "Admin", new { id = document.DocumentId })"
+                                           class="btn-review">Review</a>
+                                        @if (document.Status == "pending")
+                                        {
+                                            <button onclick="approveDocument(@document.DocumentId)" class="btn-approve">✓ Approve</button>
+                                            <button onclick="rejectDocument(@document.DocumentId)" class="btn-reject">✗ Reject</button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (docsToShow.Count < 5)
+                            {
+                                <div class="info-state">
+                                    <p>Only @docsToShow.Count pending documents available.</p>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- User Management Section -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>👥</span>
+                            User Management
+                        </h2>
+                        <a href="@Url.Action("ManageUsers", "Admin")" class="view-all-link">View All</a>
+                    </div>
+                    <div class="users-list">
+                        @if (Model.RecentUsers?.Count() > 0)
+                        {
+                            @foreach (var user in Model.RecentUsers.Take(5))
+                            {
+                                <div class="user-item">
+                                    <div class="user-avatar-small">
+                                        @if (!string.IsNullOrEmpty(user.AvatarUrl) && user.AvatarUrl != "~/image/default-avatar.png")
+                                        {
+                                            <img src="@user.AvatarUrl" alt="@user.FullName" />
+                                        }
+                                        else
+                                        {
+                                            @user.FullName?.Substring(0, 1).ToUpper()
+                                        }
+                                    </div>
+                                    <div class="user-info">
+                                        <h4>@user.FullName</h4>
+                                        <p class="user-email">@user.Email</p>
+                                        <div class="user-meta">
+                                            <span class="meta-item">🎓 @(user.University?.Name ?? "No University")</span>
+                                            <span class="meta-item">📊 @user.PointsBalance pts</span>
+                                            @if (user.SubscriptionPlan != null && user.SubscriptionPlan.PlanId != 1)
+                                            {
+                                                <span class="meta-item subscription-tag">💎 @user.SubscriptionPlan.DisplayName</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="user-actions">
+                                        <a href="@Url.Action("UserDetails", "Admin", new { id = user.Id })"
+                                           class="btn-view">View</a>
+                                        <button onclick="suspendUser('@user.Id')" class="btn-suspend">Suspend</button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <p>No users to display.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modals -->
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure you want to perform this action?</p>
+            <div class="modal-actions">
+                <button id="confirmBtn" class="btn-confirm">Confirm</button>
+                <button id="cancelBtn" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('confirmModal').style.display = 'flex';
+
+            document.getElementById('confirmBtn').onclick = () => {
+                onConfirm();
+                hideConfirmModal();
+            };
+        }
+
+        function hideConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        document.getElementById('cancelBtn').onclick = hideConfirmModal;
+
+        // Close modal when clicking outside
+        document.getElementById('confirmModal').onclick = function(e) {
+            if (e.target === this) {
+                hideConfirmModal();
+            }
+        };
+    </script>
+</body>
+</html>

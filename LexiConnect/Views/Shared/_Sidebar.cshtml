@@ -23,24 +23,6 @@
         </li>
         <li class="nav-item">
             <a href="#" class="nav-link">
-                <span class="nav-icon">📝</span>
-                AI Notes
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <span class="nav-icon">🤖</span>
-                Ask AI
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <span class="nav-icon">📊</span>
-                AI Quiz
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link">
                 <span class="nav-icon">🕒</span>
                 Recent
             </a>
@@ -69,5 +51,14 @@
                 Questions
             </a>
         </li>
+        @if (User.IsInRole("Admin"))
+        {
+            <li class="nav-item">
+                <a href="@Url.Action("AdminManagement", "Admin")" class="nav-link">
+                    <span class="nav-icon">📋</span>
+                To Admin
+            </a>
+        </li>
+        }
     </ul>
 </div>
