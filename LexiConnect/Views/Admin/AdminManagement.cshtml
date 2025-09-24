@@ -1,0 +1,259 @@
+﻿@using BusinessObjects
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Admin Management";
+}
+@model LexiConnect.Models.ViewModels.AdminManagementViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Admin/AdminManagement.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Admin Header -->
+            <div class="admin-header">
+                <div class="header-content">
+                    <div class="header-info">
+                        <h1>Admin Dashboard</h1>
+                        <p class="admin-subtitle">Manage users, verify documents, and oversee platform activity</p>
+                    </div>
+                    <div class="admin-stats-row">
+                        <div class="stat-card pending-card">
+                            <span class="number">@Model.PendingDocuments</span>
+                            <span class="label">Pending Docs</span>
+                        </div>
+                        <div class="stat-card users-card">
+                            <span class="number">@Model.TotalUsers</span>
+                            <span class="label">Total Users</span>
+                        </div>
+                        <div class="stat-card documents-card">
+                            <span class="number">@Model.TotalDocuments</span>
+                            <span class="label">Documents</span>
+                        </div>
+                        <div class="stat-card flagged-card">
+                            <span class="number">@Model.FlaggedDocuments</span>
+                            <span class="label">Flagged</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-section">
+                <div class="section-header">
+                    <h2>Quick Actions</h2>
+                </div>
+                <div class="actions-grid">
+                    <a href="@Url.Action("DocumentManagement", "Admin")" class="action-card pending-action">
+                        <div class="action-icon">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M9.29289 1.29289C9.48043 1.10536 9.73478 1 10 1H18C19.6569 1 21 2.34315 21 4V20C21 21.6569 19.6569 23 18 23H6C4.34315 23 3 21.6569 3 20V8C3 7.73478 3.10536 7.48043 3.29289 7.29289L9.29289 1.29289ZM18 3H11V8C11 8.55228 10.5523 9 10 9H5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V4C19 3.44772 18.5523 3 18 3ZM6.41421 7H9V4.41421L6.41421 7ZM7 13C7 12.4477 7.44772 12 8 12H16C16.5523 12 17 12.4477 17 13C17 13.5523 16.5523 14 16 14H8C7.44772 14 7 13.5523 7 13ZM7 17C7 16.4477 7.44772 16 8 16H16C16.5523 16 17 16.4477 17 17C17 17.5523 16.5523 18 16 18H8C7.44772 18 7 17.5523 7 17Z" fill="#000000"></path> </g></svg>
+                        </div>
+                        <div class="action-content">
+                            <h3>Manage documents</h3>
+                            <p>@Model.PendingDocuments documents awaiting verification</p>
+                        </div>
+                        <div class="action-arrow">→</div>
+                    </a>
+                    <a href="@Url.Action("UserManagement", "Admin")" class="action-card users-action">
+                        <div class="action-icon">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M13 20V18C13 15.2386 10.7614 13 8 13C5.23858 13 3 15.2386 3 18V20H13ZM13 20H21V19C21 16.0545 18.7614 14 16 14C14.5867 14 13.3103 14.6255 12.4009 15.6311M11 7C11 8.65685 9.65685 10 8 10C6.34315 10 5 8.65685 5 7C5 5.34315 6.34315 4 8 4C9.65685 4 11 5.34315 11 7ZM18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                        </div>
+                        <div class="action-content">
+                            <h3>Manage Users</h3>
+                            <p>View, edit, and manage user accounts</p>
+                        </div>
+                        <div class="action-arrow">→</div>
+                    </a>
+                    <a href="@Url.Action("More", "Admin")" class="action-card moreActions-action">
+                        <div class="action-icon">
+                            <svg viewBox="0 0 24 24" width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>action / 8 - action, edit, compose, new, pencil icon</title> <g id="Free-Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-linejoin="round"> <g transform="translate(-673.000000, -81.000000)" id="Group" stroke="#000000" stroke-width="2"> <g transform="translate(671.000000, 80.000000)" id="Shape"> <path d="M21.2,21 L3,21 L3,2.8"> </path> <path d="M14.118249,5.69446421 L18.3608897,9.9371049 L11.2898219,17.0081727 L7.04337311,17.0043646 L7.0471812,12.765532 L14.118249,5.69446421 Z M18.3608897,4.28025065 L19.7751033,5.69446421 C20.5561518,6.4755128 20.5561518,7.74184276 19.7751033,8.52289134 L18.3608897,9.9371049 L14.118249,5.69446421 L15.5324626,4.28025065 C16.3135112,3.49920207 17.5798411,3.49920207 18.3608897,4.28025065 Z"> </path> </g> </g> </g> </g></svg>
+                        </div>
+                        <div class="action-content">
+                            <h3>More actions</h3>
+                            <p>Show more manage action</p>
+                        </div>
+                        <div class="action-arrow">→</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Main Management Sections -->
+            <div class="management-sections">
+                <!-- Document Verification Section -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M9.29289 1.29289C9.48043 1.10536 9.73478 1 10 1H18C19.6569 1 21 2.34315 21 4V20C21 21.6569 19.6569 23 18 23H6C4.34315 23 3 21.6569 3 20V8C3 7.73478 3.10536 7.48043 3.29289 7.29289L9.29289 1.29289ZM18 3H11V8C11 8.55228 10.5523 9 10 9H5V20C5 20.5523 5.44772 21 6 21H18C18.5523 21 19 20.5523 19 20V4C19 3.44772 18.5523 3 18 3ZM6.41421 7H9V4.41421L6.41421 7ZM7 13C7 12.4477 7.44772 12 8 12H16C16.5523 12 17 12.4477 17 13C17 13.5523 16.5523 14 16 14H8C7.44772 14 7 13.5523 7 13ZM7 17C7 16.4477 7.44772 16 8 16H16C16.5523 16 17 16.4477 17 17C17 17.5523 16.5523 18 16 18H8C7.44772 18 7 17.5523 7 17Z" fill="#000000"></path> </g></svg>
+                            </span>
+                            Document Verification
+                        </h2>
+                        <a href="@Url.Action("PendingDocuments", "Admin")" class="view-all-link">View All</a>
+                    </div>
+                    <div class="documents-list">
+
+                        @if (Model.RecentPendingDocuments == null || !Model.RecentPendingDocuments.Any())
+                        {
+                            <div class="empty-state">
+                                <p>No pending documents to review.</p>
+                            </div>
+                        }
+                        else
+                        {
+                            var docsToShow = new List<Document>();
+                            
+                            if (Model.RecentPendingDocuments.Count() > 4)
+                            {
+                                docsToShow = Model.RecentPendingDocuments.Take(5).ToList();
+                            }
+                            else
+                            {
+                                docsToShow = Model.RecentPendingDocuments.ToList();
+                            }
+
+                            foreach (var document in docsToShow)
+                            {
+                                <div class="document-item @(document.Status.ToLower())">
+                                    <div class="document-info">
+                                        <div class="document-header">
+                                            <h4>@document.Title</h4>
+                                            <span class="status-badge status-@document.Status.ToLower()">@document.Status.ToUpper()</span>
+                                        </div>
+                                        <p class="document-description">
+                                            @(document.Description?.Length > 80
+                                                                                ? document.Description.Substring(0, 80) + "..."
+                                                                                : document.Description ?? "No description")
+                                </p>
+                                <div class="document-meta">
+                                    <span class="meta-item">
+                                        <svg viewBox="0 0 16 16" width="16" height="16"  fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M8 7C9.65685 7 11 5.65685 11 4C11 2.34315 9.65685 1 8 1C6.34315 1 5 2.34315 5 4C5 5.65685 6.34315 7 8 7Z" fill="#000000"></path> <path d="M14 12C14 10.3431 12.6569 9 11 9H5C3.34315 9 2 10.3431 2 12V15H14V12Z" fill="#000000"></path> </g></svg>
+                                        @document.Uploader.FullName
+                                        </span>
+                                    <span class="meta-item">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M8 12H9M16 12H12" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> <path d="M16 8H15M12 8H8" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> <path d="M8 16H13" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> <path d="M3 14V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C20.4816 3.82476 20.7706 4.69989 20.8985 6M21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3.51839 20.1752 3.22937 19.3001 3.10149 18" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> </g></svg>
+                                        @document.Course.CourseName
+                                        </span>
+                                    <span class="meta-item">
+                                        <svg fill="#000000" viewBox="0 0 1024 1024" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M960 95.888l-256.224.001V32.113c0-17.68-14.32-32-32-32s-32 14.32-32 32v63.76h-256v-63.76c0-17.68-14.32-32-32-32s-32 14.32-32 32v63.76H64c-35.344 0-64 28.656-64 64v800c0 35.343 28.656 64 64 64h896c35.344 0 64-28.657 64-64v-800c0-35.329-28.656-63.985-64-63.985zm0 863.985H64v-800h255.776v32.24c0 17.679 14.32 32 32 32s32-14.321 32-32v-32.224h256v32.24c0 17.68 14.32 32 32 32s32-14.32 32-32v-32.24H960v799.984zM736 511.888h64c17.664 0 32-14.336 32-32v-64c0-17.664-14.336-32-32-32h-64c-17.664 0-32 14.336-32 32v64c0 17.664 14.336 32 32 32zm0 255.984h64c17.664 0 32-14.32 32-32v-64c0-17.664-14.336-32-32-32h-64c-17.664 0-32 14.336-32 32v64c0 17.696 14.336 32 32 32zm-192-128h-64c-17.664 0-32 14.336-32 32v64c0 17.68 14.336 32 32 32h64c17.664 0 32-14.32 32-32v-64c0-17.648-14.336-32-32-32zm0-255.984h-64c-17.664 0-32 14.336-32 32v64c0 17.664 14.336 32 32 32h64c17.664 0 32-14.336 32-32v-64c0-17.68-14.336-32-32-32zm-256 0h-64c-17.664 0-32 14.336-32 32v64c0 17.664 14.336 32 32 32h64c17.664 0 32-14.336 32-32v-64c0-17.68-14.336-32-32-32zm0 255.984h-64c-17.664 0-32 14.336-32 32v64c0 17.68 14.336 32 32 32h64c17.664 0 32-14.32 32-32v-64c0-17.648-14.336-32-32-32z"></path></g></svg>
+                                        @document.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    @if (document.IsAiGenerated)
+                                            {
+                                                <span class="meta-item ai-tag">
+                                                    <svg viewBox="0 0 512 512" width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>ai</title> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="icon" fill="#000000" transform="translate(64.000000, 64.000000)"> <path d="M320,64 L320,320 L64,320 L64,64 L320,64 Z M171.749388,128 L146.817842,128 L99.4840387,256 L121.976629,256 L130.913039,230.977 L187.575039,230.977 L196.319607,256 L220.167172,256 L171.749388,128 Z M260.093778,128 L237.691519,128 L237.691519,256 L260.093778,256 L260.093778,128 Z M159.094727,149.47526 L181.409039,213.333 L137.135039,213.333 L159.094727,149.47526 Z M341.333333,256 L384,256 L384,298.666667 L341.333333,298.666667 L341.333333,256 Z M85.3333333,341.333333 L128,341.333333 L128,384 L85.3333333,384 L85.3333333,341.333333 Z M170.666667,341.333333 L213.333333,341.333333 L213.333333,384 L170.666667,384 L170.666667,341.333333 Z M85.3333333,0 L128,0 L128,42.6666667 L85.3333333,42.6666667 L85.3333333,0 Z M256,341.333333 L298.666667,341.333333 L298.666667,384 L256,384 L256,341.333333 Z M170.666667,0 L213.333333,0 L213.333333,42.6666667 L170.666667,42.6666667 L170.666667,0 Z M256,0 L298.666667,0 L298.666667,42.6666667 L256,42.6666667 L256,0 Z M341.333333,170.666667 L384,170.666667 L384,213.333333 L341.333333,213.333333 L341.333333,170.666667 Z M0,256 L42.6666667,256 L42.6666667,298.666667 L0,298.666667 L0,256 Z M341.333333,85.3333333 L384,85.3333333 L384,128 L341.333333,128 L341.333333,85.3333333 Z M0,170.666667 L42.6666667,170.666667 L42.6666667,213.333333 L0,213.333333 L0,170.666667 Z M0,85.3333333 L42.6666667,85.3333333 L42.6666667,128 L0,128 L0,85.3333333 Z" id="Combined-Shape"> </path> </g> </g> </g></svg>
+                                                    AI Generated (@document.AiConfidenceScore?.ToString("P0"))
+                                                    </span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="document-actions">
+                                        <a href="@Url.Action("ReviewDocument", "Admin", new { id = document.DocumentId })"
+                                           class="btn-review">Review</a>
+                                        @if (document.Status == "pending")
+                                        {
+                                            <button onclick="approveDocument(@document.DocumentId)" class="btn-approve">✓ Approve</button>
+                                            <button onclick="rejectDocument(@document.DocumentId)" class="btn-reject">✗ Reject</button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            @if (docsToShow.Count < 5)
+                            {
+                                <div class="info-state">
+                                    <p>Only @docsToShow.Count pending documents available.</p>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- User Management Section -->
+                <div class="management-section">
+                    <div class="section-header">
+                        <h2>
+                            <span>
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M13 20V18C13 15.2386 10.7614 13 8 13C5.23858 13 3 15.2386 3 18V20H13ZM13 20H21V19C21 16.0545 18.7614 14 16 14C14.5867 14 13.3103 14.6255 12.4009 15.6311M11 7C11 8.65685 9.65685 10 8 10C6.34315 10 5 8.65685 5 7C5 5.34315 6.34315 4 8 4C9.65685 4 11 5.34315 11 7ZM18 9C18 10.1046 17.1046 11 16 11C14.8954 11 14 10.1046 14 9C14 7.89543 14.8954 7 16 7C17.1046 7 18 7.89543 18 9Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                            </span>
+                            User Management
+                        </h2>
+                        <a href="@Url.Action("ManageUsers", "Admin")" class="view-all-link">View All</a>
+                    </div>
+                    <div class="users-list">
+                        @if (Model.RecentUsers?.Count() > 0)
+                        {
+                            @foreach (var user in Model.RecentUsers.Take(5))
+                            {
+                                <div class="user-item">
+                                    <div class="user-avatar-small">
+                                        @if (!string.IsNullOrEmpty(user.AvatarUrl) && user.AvatarUrl != "~/image/default-avatar.png")
+                                        {
+                                            <img src="@user.AvatarUrl" alt="@user.FullName" />
+                                        }
+                                        else
+                                        {
+                                            @user.FullName?.Substring(0, 1).ToUpper()
+                                        }
+                                    </div>
+                                    <div class="user-info">
+                                        <h4>@user.FullName</h4>
+                                        <p class="user-email">@user.Email</p>
+                                        <div class="user-meta">
+                                            <span class="meta-item">
+                                                <svg fill="#000000" viewBox="0 0 16 16" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M16 6.28a1.23 1.23 0 0 0-.62-1.07l-6.74-4a1.27 1.27 0 0 0-1.28 0l-6.75 4a1.25 1.25 0 0 0 0 2.15l1.92 1.12v2.81a1.28 1.28 0 0 0 .62 1.09l4.25 2.45a1.28 1.28 0 0 0 1.24 0l4.25-2.45a1.28 1.28 0 0 0 .62-1.09V8.45l1.24-.73v2.72H16V6.28zm-3.73 5L8 13.74l-4.22-2.45V9.22l3.58 2.13a1.29 1.29 0 0 0 1.28 0l3.62-2.16zM8 10.27l-6.75-4L8 2.26l6.75 4z"></path></g></svg>
+                                                @(user.University?.Name ?? "No University")
+                                                </span>
+                                            <span class="meta-item">
+                                                <svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="16" height="16" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css">  .st0{fill:#000000;}  </style> <g> <path class="st0" d="M225.557,316.597c20.281,0,83.625,0,83.625,0c16.797,0,30.406-13.609,30.406-30.406 s-13.609-30.406-30.406-30.406c-15.203,0-45.609,0-121.625,0c-76.031,0-100.094,31.672-126.703,58.281l-48.281,42.172 c-3.125,2.719-4.938,6.672-4.938,10.813v140.157c0,1.875,1.094,3.578,2.797,4.359c1.703,0.766,3.703,0.5,5.125-0.719l93.313-80 c3.297-2.797,7.672-3.984,11.922-3.219l145.406,26.438c10.141,1.844,20.594-0.484,29.016-6.438 c0,0,185.609-129.047,199.297-140.454l0,0c13.063-11.984,12.906-29.375,0.922-42.438c-12-13.094-34.375-10.313-49.297,0.734 c-13.672,11.406-107.078,72.797-107.078,72.797h-113.5l-0.359,0.156c-5.984-0.188-10.656-5.203-10.469-11.172 c0.219-5.984,5.219-10.672,11.188-10.469L225.557,316.597z"></path> <path class="st0" d="M362.697,0.003c-27.656,0-51.813,14.781-65.172,36.844c42.719,15.672,73.344,56.641,73.344,104.719 c0,3.547-0.203,7.047-0.531,10.516c38.516-3.844,68.594-36.328,68.594-75.859C438.932,34.128,404.807,0.003,362.697,0.003z"></path> <path class="st0" d="M261.979,121.222h-12.016v24.203h12.016c7.609,0,13.797-5.438,13.797-12.109 C275.775,126.66,269.588,121.222,261.979,121.222z"></path> <path class="st0" d="M259.244,54.441c-48.109,0-87.125,39.016-87.125,87.125c0,48.125,39.016,87.125,87.125,87.125 s87.125-39,87.125-87.125C346.369,93.457,307.354,54.441,259.244,54.441z M261.979,158.863h-12.016v17.609 c0,3.391-2.75,6.125-6.125,6.125h-3.078c-3.391,0-6.125-2.734-6.125-6.125V113.91c0-3.375,2.734-6.125,6.125-6.125h21.219 c16.078,0,29.141,11.453,29.141,25.531C291.119,147.41,278.057,158.863,261.979,158.863z"></path> </g> </g></svg>
+                                                @user.PointsBalance pts
+                                                </span>
+                                            @if (user.SubscriptionPlan != null && user.SubscriptionPlan.PlanId != 1)
+                                            {
+                                                <span class="meta-item subscription-tag">💎 @user.SubscriptionPlan.DisplayName</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="user-actions">
+                                        <a href="@Url.Action("UserDetails", "Admin", new { id = user.Id })"
+                                           class="btn-view">View</a>
+                                        <button onclick="suspendUser('@user.Id')" class="btn-suspend">Suspend</button>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <p>No users to display.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modals -->
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure you want to perform this action?</p>
+            <div class="modal-actions">
+                <button id="confirmBtn" class="btn-confirm">Confirm</button>
+                <button id="cancelBtn" class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/js/Admin/AdminManagement.js" asp-append-version="true"></script>
+</body>
+</html>

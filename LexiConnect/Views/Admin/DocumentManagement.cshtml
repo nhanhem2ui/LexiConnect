@@ -1,0 +1,336 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Document Management";
+}
+@model LexiConnect.Models.ViewModels.DocumentManagementViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Management - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Admin/DocumentManagement.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Document Management</h1>
+                    <p class="page-subtitle">Manage and organize all documents in the system</p>
+                </div>
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">@Model.TotalDocuments</span>
+                        <span class="stat-label">Total Documents</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">@Model.PendingDocuments</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">@Model.FlaggedDocuments</span>
+                        <span class="stat-label">Flagged</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+                <form method="get" asp-action="DocumentManagement">
+                    <div class="controls-row">
+                        <div class="search-group">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <input type="text" class="search-input" name="search" 
+                                   placeholder="Search documents by title, description, uploader, or course..." 
+                                   value="@ViewBag.SearchTerm" />
+                        </div>
+                    </div>
+                    
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <select class="select-input" name="status" asp-items="ViewBag.StatusFilterList">
+                                <option value="">All Status</option>
+                            </select>
+
+                            <select class="select-input" name="type" asp-items="ViewBag.TypeFilterList">
+                                <option value="">All Types</option>
+                            </select>
+
+                            <select class="select-input" name="course" asp-items="ViewBag.CourseFilterList">
+                                <option value="">All Courses</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="sort-row">
+                        <div class="sort-group">
+                            <label>Sort by:</label>
+                            <select class="select-input" asp-for="SortBy" name="sortBy" asp-items="ViewBag.SortByList"></select>
+
+                            <select class="select-input" asp-for="SortOrder" name="sortOrder" asp-items="ViewBag.SortOrderList"></select>
+
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="@Url.Action("DocumentManagement", "Admin")" class="btn btn-outline">Clear All</a>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="results-info">
+                    <span>Showing <strong>@Model.Documents.Count()</strong> of <strong>@Model.TotalCount</strong> documents</span>
+                    <span>Page @Model.CurrentPage of @Model.TotalPages</span>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                @if (Model.Documents?.Any() == true)
+                {
+                    <table class="documents-table">
+                        <thead>
+                            <tr>
+                                <th>Document</th>
+                                <th>Type</th>
+                                <th>Uploader</th>
+                                <th>Course</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Stats</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var document in Model.Documents)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="document-title">
+                                            <div class="document-icon">
+                                                @switch(document.FileType?.ToLower())
+                                                {
+                                                    case "pdf":
+                                                        <span>📄</span>
+                                                        break;
+                                                    case "doc":
+                                                    case "docx":
+                                                        <span>📝</span>
+                                                        break;
+                                                    case "ppt":
+                                                    case "pptx":
+                                                        <span>📊</span>
+                                                        break;
+                                                    default:
+                                                        <span>📁</span>
+                                                        break;
+                                                }
+                                            </div>
+                                            <div class="title-text">
+                                                <h4>
+                                                    @document.Title
+                                                    @if (document.IsPremiumOnly)
+                                                    {
+                                                        <span class="premium-indicator" title="Premium Only">💎</span>
+                                                    }
+                                                    @if (document.IsAiGenerated)
+                                                    {
+                                                        <span class="ai-indicator" title="AI Generated">
+                                                            <svg viewBox="0 0 512 512" width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>ai</title> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="icon" fill="#000000" transform="translate(64.000000, 64.000000)"> <path d="M320,64 L320,320 L64,320 L64,64 L320,64 Z M171.749388,128 L146.817842,128 L99.4840387,256 L121.976629,256 L130.913039,230.977 L187.575039,230.977 L196.319607,256 L220.167172,256 L171.749388,128 Z M260.093778,128 L237.691519,128 L237.691519,256 L260.093778,256 L260.093778,128 Z M159.094727,149.47526 L181.409039,213.333 L137.135039,213.333 L159.094727,149.47526 Z M341.333333,256 L384,256 L384,298.666667 L341.333333,298.666667 L341.333333,256 Z M85.3333333,341.333333 L128,341.333333 L128,384 L85.3333333,384 L85.3333333,341.333333 Z M170.666667,341.333333 L213.333333,341.333333 L213.333333,384 L170.666667,384 L170.666667,341.333333 Z M85.3333333,0 L128,0 L128,42.6666667 L85.3333333,42.6666667 L85.3333333,0 Z M256,341.333333 L298.666667,341.333333 L298.666667,384 L256,384 L256,341.333333 Z M170.666667,0 L213.333333,0 L213.333333,42.6666667 L170.666667,42.6666667 L170.666667,0 Z M256,0 L298.666667,0 L298.666667,42.6666667 L256,42.6666667 L256,0 Z M341.333333,170.666667 L384,170.666667 L384,213.333333 L341.333333,213.333333 L341.333333,170.666667 Z M0,256 L42.6666667,256 L42.6666667,298.666667 L0,298.666667 L0,256 Z M341.333333,85.3333333 L384,85.3333333 L384,128 L341.333333,128 L341.333333,85.3333333 Z M0,170.666667 L42.6666667,170.666667 L42.6666667,213.333333 L0,213.333333 L0,170.666667 Z M0,85.3333333 L42.6666667,85.3333333 L42.6666667,128 L0,128 L0,85.3333333 Z" id="Combined-Shape"> </path> </g> </g> </g></svg>
+                                                            (@document.AiConfidenceScore?.ToString("P0")
+                                                            </span>
+                                                    }
+                                                </h4>
+                                                <p>@(document.Description?.Length > 80 ? document.Description.Substring(0, 80) + "..." : document.Description)</p>
+                                                <small class="text-muted">@((document.FileSize / 1024.0 / 1024.0).ToString("F1")) MB • @document.FileType?.ToUpper()</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="type-badge type-@document.DocumentType">@document.DocumentType?.Replace("_", " ")</span>
+                                    </td>
+                                    <td>
+                                        <div class="uploader-info">
+                                            <strong>@(document.Uploader.FullName ?? @document.Uploader.UserName)</strong>
+                                            <br />
+                                            <small class="text-muted">@document.Uploader.University?.Name</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="course-info">
+                                            <strong>@document.Course.CourseName</strong>
+                                            <br />
+                                            <small class="text-muted">@document.Course.CourseCode</small>
+                                        </div>
+                                        @if (document.IsAiGenerated)
+                                        {
+                                            <span class="meta-item ai-tag">🤖 AI Generated</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-@document.Status">@document.Status</span>
+                                        @if (!string.IsNullOrEmpty(document.RejectionReason))
+                                        {
+                                            <br />
+                                            <small class="text-danger" title="@document.RejectionReason">⚠️ Rejected</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="date-info">
+                                            <strong>@document.CreatedAt.ToString("MMM dd, yyyy")</strong>
+                                            <br />
+                                            <small class="text-muted">@document.CreatedAt.ToString("HH:mm")</small>
+                                            @if (document.ApprovedAt.HasValue)
+                                            {
+                                                <br />
+                                                <small class="text-success">Approved: @document.ApprovedAt.Value.ToString("MMM dd")</small>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="stats-cell">
+                                            <div class="stat-item">👁️ @document.ViewCount views</div>
+                                            <div class="stat-item">⬇️ @document.DownloadCount downloads</div>
+                                            <div class="stat-item">👍 @document.LikeCount likes</div>
+                                            @if (document.PointsAwarded > 0)
+                                            {
+                                                <div class="stat-item">🏆 @document.PointsAwarded pts awarded</div>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a href="@Url.Action("Details", "Documents", new { id = document.DocumentId })" 
+                                               class="btn btn-sm btn-outline" title="View Details">
+                                                View
+                                            </a>
+                                            @if (document.Status == "pending")
+                                            {
+                                                <form asp-action="ApproveDocument" method="post" style="display: inline;">
+                                                    <input type="hidden" name="id" value="@document.DocumentId" />
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Approve Document"
+                                                           onclick="return confirm('Are you sure you want to approve this document?')">
+                                                        ✅ Approve
+                                                    </button>
+                                                </form>
+                                                <button class="btn btn-sm btn-danger" title="Reject Document"
+                                                        onclick="showRejectModal(@document.DocumentId, '@document.Title')">
+                                                    ❌ Reject
+                                                </button>
+                                            }
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="deleteDocument(@document.DocumentId, '@document.Title')" 
+                                                    title="Delete Document">
+                                                🗑️ Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">📄</div>
+                        <h3>No documents found</h3>
+                        <p>@(string.IsNullOrEmpty(ViewBag.SearchTerm?.ToString()) ? "No documents have been uploaded yet." : "Try adjusting your search criteria.")</p>
+                        <a href="@Url.Action("Create", "Documents")" class="btn btn-primary" style="margin-top: 20px;">
+                            Add First Document
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a href="@Url.Action("DocumentManagement", new { 
+                            search = ViewBag.SearchTerm, 
+                            status = ViewBag.StatusFilter, 
+                            type = ViewBag.TypeFilter,
+                            course = ViewBag.CourseFilter,
+                            uploader = ViewBag.UploaderFilter,
+                            sortBy = ViewBag.SortBy, 
+                            sortOrder = ViewBag.SortOrder, 
+                            page = Model.CurrentPage - 1 
+                        })" class="pagination-btn">Previous</a>
+                    }
+
+                    @for (int i = Math.Max(1, Model.CurrentPage - 3); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 3); i++)
+                    {
+                        <a href="@Url.Action("DocumentManagement", new { 
+                            search = ViewBag.SearchTerm, 
+                            status = ViewBag.StatusFilter, 
+                            type = ViewBag.TypeFilter,
+                            course = ViewBag.CourseFilter,
+                            uploader = ViewBag.UploaderFilter,
+                            sortBy = ViewBag.SortBy, 
+                            sortOrder = ViewBag.SortOrder, 
+                            page = i 
+                        })" class="pagination-btn @(i == Model.CurrentPage ? "active" : "")">@i</a>
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a href="@Url.Action("DocumentManagement", new { 
+                            search = ViewBag.SearchTerm, 
+                            status = ViewBag.StatusFilter, 
+                            type = ViewBag.TypeFilter,
+                            course = ViewBag.CourseFilter,
+                            uploader = ViewBag.UploaderFilter,
+                            sortBy = ViewBag.SortBy, 
+                            sortOrder = ViewBag.SortOrder, 
+                            page = Model.CurrentPage + 1 
+                        })" class="pagination-btn">Next</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete "<span id="documentTitle"></span>"?</p>
+            <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Reject Document</h3>
+            <p>Are you sure you want to reject "<span id="rejectDocumentTitle"></span>"?</p>
+            <div class="form-group">
+                <label for="rejectionReason">Rejection Reason (optional):</label>
+                <textarea id="rejectionReason" name="rejectionReason" class="form-control" rows="3" 
+                          placeholder="Provide a reason for rejection..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeRejectModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmRejectBtn">Reject</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="~/js/Admin/DocumentManagement.js" asp-append-version="true"></script>
+</body>
+</html>
