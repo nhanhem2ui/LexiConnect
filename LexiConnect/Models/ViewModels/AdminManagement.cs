@@ -16,18 +16,5 @@ namespace LexiConnect.Models.ViewModels
         public IEnumerable<Document>? RecentPendingDocuments { get; set; }
         public IEnumerable<Users>? RecentUsers { get; set; }
         public IEnumerable<Document>? FlaggedContent { get; set; }
-
-        // Filter and Search Properties
-        public string? SearchTerm { get; set; }
-        public string? StatusFilter { get; set; }
-        public string? UserTypeFilter { get; set; }
-        public DateTime? DateFrom { get; set; }
-        public DateTime? DateTo { get; set; }
-
-        // Pagination
-        public int CurrentPage { get; set; } = 1;
-        public int PageSize { get; set; } = 10;
-        public int TotalPages { get; set; }
-        public int TotalItems { get; set; }
     }
 }

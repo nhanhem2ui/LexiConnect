@@ -179,6 +179,9 @@ body {
 .flagged-action:hover {
     border-color: #dc3545;
 }
+.moreActions-action:hover {
+    border-color: #01626B;
+}
 
 .settings-action:hover {
     border-color: #6c757d;
