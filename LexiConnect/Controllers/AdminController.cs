@@ -13,11 +13,11 @@ namespace LexiConnect.Controllers
     public class AdminController : Controller
     {
         private readonly IGenericRepository<Document> _documentRepository;
-        private readonly UserManager<Users> _userManager;
-        public AdminController(IGenericRepository<Document> documentRepository, UserManager<Users> userManager)
+        private readonly IGenericRepository<Users> _usersRepository;
+        public AdminController(IGenericRepository<Document> documentRepository, IGenericRepository<Users> userRepository)
         {
             _documentRepository = documentRepository;
-            _userManager = userManager;
+            _usersRepository = userRepository;
         }
 
         [HttpGet]
@@ -27,7 +27,7 @@ namespace LexiConnect.Controllers
                 .Include(d => d.Course)
                 .Include(d => d.Uploader);
 
-            var users = _userManager.Users;
+            var users = _usersRepository.GetAllQueryable().Include(u => u.SubscriptionPlan);
             var pendingDocuments = totalDocuments.Where(d => d.Status == "pending" || d.Status == "processing");
             var flaggedContent = totalDocuments.Where(d => d.Status == "flagged");
 
