@@ -1,6 +1,7 @@
 using BusinessObjects;
 using DataAccess;
 using LexiConnect.Models;
+using LexiConnect.Services.Firebase;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
@@ -50,7 +51,10 @@ builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();
+
+//External
 builder.Services.AddScoped<IVnPayService, VnPayService>();
+builder.Services.AddSingleton<IFirebaseStorageService ,FirebaseStorageService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
