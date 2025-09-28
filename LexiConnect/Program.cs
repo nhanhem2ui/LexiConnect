@@ -23,6 +23,7 @@ builder.Services.AddScoped<IGenericDAO<Course>, CourseDAO>();
 builder.Services.AddScoped<IGenericDAO<Document>, DocumentDAO>();
 builder.Services.AddScoped<IGenericDAO<DocumentReview>, DocumentReviewDAO>();
 builder.Services.AddScoped<IGenericDAO<DocumentTag>, DocumentTagDAO>();
+builder.Services.AddScoped<IGenericDAO<DocumentLike>, DocumentLikeDAO>();
 builder.Services.AddScoped<IGenericDAO<Major>, MajorDAO>();
 builder.Services.AddScoped<IGenericDAO<PointTransaction>, PointTransactionDAO>();
 builder.Services.AddScoped<IGenericDAO<SubscriptionPlan>, SubscriptionPlanDAO>();
@@ -39,6 +40,7 @@ builder.Services.AddScoped<IGenericRepository<Course>, CourseRepository>();
 builder.Services.AddScoped<IGenericRepository<Document>, DocumentRepository>();
 builder.Services.AddScoped<IGenericRepository<DocumentReview>, DocumentReviewRepository>();
 builder.Services.AddScoped<IGenericRepository<DocumentTag>, DocumentTagRepository>();
+builder.Services.AddScoped<IGenericRepository<DocumentLike>, DocumentLikeRepository>();
 builder.Services.AddScoped<IGenericRepository<Major>, MajorRepository>();
 builder.Services.AddScoped<IGenericRepository<PointTransaction>, PointTransactionRepository>();
 builder.Services.AddScoped<IGenericRepository<SubscriptionPlan>, SubscriptionPlanRepository>();
@@ -146,5 +148,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Introduction}/{id?}");
+
+
 
 app.Run();

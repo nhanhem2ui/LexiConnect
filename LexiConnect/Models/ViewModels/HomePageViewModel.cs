@@ -7,5 +7,9 @@ namespace LexiConnect.Models.ViewModels
         public IQueryable<RecentViewed> RecentVieweds { get; set; }
 
         public IQueryable<Document> TopDocuments { get; set; }
+
+        public Dictionary<int, bool> UserLikedDocuments { get; set; } = new Dictionary<int, bool>();
+
+
     }
 }
