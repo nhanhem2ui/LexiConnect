@@ -1,4 +1,8 @@
-﻿function removeDocument(element, documentId) {
+﻿
+// Add this to your Details.js or create a new cleanup script
+
+
+function removeDocument(element, documentId) {
     if (confirm('Are you sure you want to remove this document?')) {
         // Show loading state
         const section = element.closest('.doc-section');

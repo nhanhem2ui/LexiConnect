@@ -5,6 +5,14 @@
 }
 
 <link rel="stylesheet" href="~/css/Upload/Details.css" />
+<link rel="stylesheet" href="~/css/Upload/UploadDocument.css" />
+
+
+<!-- Hidden field to track document IDs for cleanup -->
+@if (TempData["DocumentIds"] != null)
+{
+    <input type="hidden" name="TempDocumentIds" value="@TempData["DocumentIds"]" />
+}
 
 <div class="doc-container">
     <!-- Header -->
@@ -12,6 +20,38 @@
         <h1>Share your to see Premium content</h1>
         <p class="doc-subtitle">You will receive <strong>points</strong> base on the quality of the content</p>
     </div>
+
+    <!-- Progress Bar -->
+    <div class="upload-progress-bar">
+
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle inactive">1</div>
+                <span class="upload-step-text">Upload</span>
+            </div>
+            <div class="upload-step-line inactive"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle active">2</div>
+                <span class="upload-step-text">Details</span>
+            </div>
+            <div class="upload-step-line active"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle inactive">3</div>
+                <span class="upload-step-text">Done</span>
+            </div>
+            <div class="upload-step-line inactive"></div>
+        </div>
+
+    </div>
+
 
     <!-- Progress Indicator -->
     <div class="doc-progress-section">
@@ -63,8 +103,9 @@
                     <div class="doc-row">
                         <div class="doc-group">
                             <label>📚 Course</label>
-                            <input asp-for="Documents[i].CourseName" class="doc-input" placeholder="Search by course code or name" />
-                            <input type="hidden" asp-for="Documents[i].CourseId" value="1" />
+                            <select asp-for="Documents[i].CourseId" asp-items="Model.Courses" class="doc-input">
+                            </select>
+                            <span asp-validation-for="Documents[i].CourseId" class="doc-feedback"></span>
                         </div>
                     </div>
 
@@ -139,5 +180,7 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/Upload/Details.js"></script>
+    <script src="~/js/Upload/FileCleanup.js"></script>
+
 
 }

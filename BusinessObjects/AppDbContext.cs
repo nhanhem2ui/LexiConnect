@@ -14,6 +14,9 @@ namespace BusinessObjects
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentReview> DocumentReviews { get; set; }
         public DbSet<DocumentTag> DocumentTags { get; set; }
+
+        public DbSet<DocumentLike> DocumentLikes { get; set; }
+
         public DbSet<Major> Majors { get; set; }
         public DbSet<PointTransaction> PointTransactions { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }

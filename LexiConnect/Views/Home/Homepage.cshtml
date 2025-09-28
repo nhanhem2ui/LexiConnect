@@ -144,21 +144,39 @@
                     <h2 class="section-title">Top Documents</h2>
                     <div class="top-documents">
 
+                        
+
+                        
                         @foreach (var doc in Model.TopDocuments)
                         {
+                            var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
+                            && Model.UserLikedDocuments[doc.DocumentId];
+
                             <div class="top-document-card">
                                 <div class="document-preview">
-                                    <div class="document-preview-title">@doc.Title</div>
+                                    <div class="document-preview-title">
+                                        <a asp-controller="Document" asp-action="ViewFile" asp-route-id="@doc.DocumentId">
+                                            @doc.Title
+                                        </a>
+                                    </div>
                                 </div>
                                 <h3 class="document-title">@doc.Description</h3>
+
+                                <button class="like-button @(isLiked ? "liked" : "")"
+                                        data-id="@doc.DocumentId">
+                                    @(isLiked ? "👎" : "👍")
+                                </button>
+
                                 <div class="completion-badge">
                                     <span>👍🏼</span>
-
                                     <span class="completion-percentage">@doc.LikeCount</span>
                                 </div>
                             </div>
-
                         }
+
+                        
+
+                        
                     </div>
                 </div>
 
@@ -166,7 +184,10 @@
         }
         else
         {
-            <h1>cut dit con me m</h1>
+            <h1>Please log in</h1>
         }
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/Home/HomePage.js" asp-append-version="true"></script>

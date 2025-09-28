@@ -1,0 +1,125 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+    @{
+        ViewData["Title"] = "Document Details";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/Upload/UploadDocument.css" />
+<link rel="stylesheet" href="~/css/Upload/Complete.css" />
+<head>
+    <!-- Header -->
+    <div class="upload-header">
+        <h1>Share <span style="color: #007bff;">3 mandatory documents</span> to see Premium content</h1>
+        <p class="upload-subtitle">You will receive <strong>6 weeks</strong> of Premium and get unlimited downloads/views.</p>
+    </div>
+    
+</head>
+
+<body>
+    <!-- Progress Bar -->
+    <div class="upload-progress-bar">
+
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle inactive">1</div>
+                <span class="upload-step-text">Upload</span>
+            </div>
+            <div class="upload-step-line inactive"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle inactive">2</div>
+                <span class="upload-step-text">Details</span>
+            </div>
+            <div class="upload-step-line inactive"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle active">3</div>
+                <span class="upload-step-text">Done</span>
+            </div>
+            <div class="upload-step-line active"></div>
+        </div>
+
+    </div>
+    <main class="main-content">
+        <div class="content-card">
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-circle">📤</div>
+                    <div class="step-label">Upload</div>
+                    <div class="step-line"></div>
+                </div>
+
+                <div class="step completed">
+                    <div class="step-circle">📋</div>
+                    <div class="step-label">Details</div>
+                    <div class="step-line"></div>
+                </div>
+
+                <div class="step active">
+                    <div class="step-circle">✓</div>
+                    <div class="step-label">Done</div>
+                </div>
+            </div>
+
+            <div class="main-title">Share your to see Premium content</div>
+            <div class="subtitle">your contribution helps both us and the entire community.</div>
+            <div class="points-info">You will receive <strong>points</strong> boss on the quality of the content</div>
+
+            <div class="thank-you-note">
+                <div class="sticky-note">
+                    <div class="thank-you-text">Thank<br>You!</div>
+                </div>
+            </div>
+
+            <div class="verification-note">This will take us some time to verify your document, please be patient</div>
+            <div class="share-more-docs">
+                <a asp-controller="Upload" asp-action="Index" class="share-link-btn">
+                    Share more documents →
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate the sticky note on page load
+            const stickyNote = document.querySelector('.sticky-note');
+            if (stickyNote) {
+                setTimeout(() => {
+                    stickyNote.style.transform = 'rotate(-3deg) scale(1.05)';
+                    stickyNote.style.transition = 'transform 0.3s ease';
+
+                    setTimeout(() => {
+                        stickyNote.style.transform = 'rotate(-3deg) scale(1)';
+                    }, 200);
+                }, 500);
+            }
+
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const searchBtn = document.querySelector('.search-btn');
+
+            searchBtn.addEventListener('click', function() {
+                if (searchInput.value.trim()) {
+                    alert('Searching for: ' + searchInput.value);
+                }
+            });
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    alert('Searching for: ' + this.value);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

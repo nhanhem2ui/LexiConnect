@@ -160,6 +160,8 @@
     flex: 1;
 }
 
+
+
 .document-meta {
     font-size: 12px;
     color: #6c757d;
@@ -203,6 +205,10 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
+
+
+
+
 .document-preview {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -214,6 +220,7 @@
     justify-content: center;
     position: relative;
 }
+
 
     .document-preview::before {
         content: '';
@@ -242,10 +249,31 @@
     margin-top: 8px;
 }
 
+
+
 .completion-percentage {
     font-weight: 600;
 }
 
+/* Ensure main content area extends properly */
+main.pb-3 {
+    padding-bottom: 0 !important;
+}
+
+.like-button {
+    background: none; /* bỏ nền */
+    border: none; /* bỏ đường viền */
+    cursor: pointer; /* đổi con trỏ thành bàn tay */
+    font-size: 20px; /* icon to hơn */
+    margin-right: 6px; /* nhích icon sang trái */
+    transition: transform 0.2s ease;
+}
+
+    .like-button:hover {
+        transform: scale(1.2); /* phóng to khi hover */
+    }
+
+  
 /* Responsive Design */
 @@media (max-width: 768px) {
     .dashboard-container {
@@ -275,7 +303,3 @@
     }
 }
 
-/* Ensure main content area extends properly */
-main.pb-3 {
-    padding-bottom: 0 !important;
-}

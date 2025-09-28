@@ -2,9 +2,24 @@
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Repositories;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
+
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.IO.Font.Constants;
+using iText.Kernel.Font;
+using Document = BusinessObjects.Document;
+
 
 namespace LexiConnect.Controllers
 {
@@ -56,7 +71,7 @@ namespace LexiConnect.Controllers
                 // Validate if files are provided
                 if (files == null || !files.Any())
                 {
-                    TempData["Error"] = "Please select at least one file to upload.";
+                    TempData["Error"] = "Please select at least one file  to upload.";
                     return RedirectToAction("Index");
                 }
 
@@ -113,6 +128,7 @@ namespace LexiConnect.Controllers
             }
         }
 
+
         [HttpPost]
         public async Task<IActionResult> DeleteDocument(int id)
         {
@@ -124,13 +140,36 @@ namespace LexiConnect.Controllers
                 if (document == null)
                     return Json(new { success = false, error = "Document not found" });
 
-                // Delete the physical file if it exists
+                // Delete the main physical file if it exists
                 if (!string.IsNullOrEmpty(document.FilePath))
                 {
                     string fullPath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
                     if (System.IO.File.Exists(fullPath))
                     {
                         System.IO.File.Delete(fullPath);
+                        Console.WriteLine($"Main file deleted: {fullPath}");
+                    }
+                }
+
+                // Delete the PDF file if it exists
+                if (!string.IsNullOrEmpty(document.FilePDFpath))
+                {
+                    string pdfPath = Path.Combine(_environment.WebRootPath, document.FilePDFpath.TrimStart('/'));
+                    if (System.IO.File.Exists(pdfPath))
+                    {
+                        System.IO.File.Delete(pdfPath);
+                        Console.WriteLine($"PDF file deleted: {pdfPath}");
+                    }
+                }
+
+                // Delete thumbnail if it exists
+                if (!string.IsNullOrEmpty(document.ThumbnailUrl))
+                {
+                    string thumbnailPath = Path.Combine(_environment.WebRootPath, document.ThumbnailUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(thumbnailPath))
+                    {
+                        System.IO.File.Delete(thumbnailPath);
+                        Console.WriteLine($"Thumbnail deleted: {thumbnailPath}");
                     }
                 }
 
@@ -164,6 +203,8 @@ namespace LexiConnect.Controllers
                 return Json(new { success = false, error = ex.Message });
             }
         }
+
+
 
         [HttpGet]
         public async Task<IActionResult> Details()
@@ -212,8 +253,22 @@ namespace LexiConnect.Controllers
                     TempData["Warning"] = "No documents were found in the database. They may have been deleted.";
                     return RedirectToAction("Index");
                 }
+                // Get all courses for the dropdown
+                var courses = _courseRepository.GetAllQueryable().Select(c => new SelectListItem
+                {
+                    Value = c.CourseId.ToString(),
+                    Text = $"{c.CourseCode} - {c.CourseName}"
+                }).ToList();
 
-                var model = new DocumentDetailsViewModel { Documents = documents };
+                // Add default option at the beginning
+                courses.Insert(0, new SelectListItem
+                {
+                    Value = "",
+                    Text = "Select a course",
+                    Selected = true
+                });
+
+                var model = new DocumentDetailsViewModel { Documents = documents , Courses = courses};
 
                 ViewBag.SuccessfulUploads = TempData["SuccessfulUploads"];
                 ViewBag.UploadedFiles = TempData["UploadedFiles"];
@@ -306,7 +361,8 @@ namespace LexiConnect.Controllers
             return View();
         }
 
-        // Helper method to process individual files
+        
+        //Helper method to process individual files
         private async Task<UploadResult> ProcessSingleFile(IFormFile file, string uploadPath, string thumbnailPath, string uploaderId)
         {
             var result = new UploadResult { FileName = file.FileName };
@@ -333,6 +389,9 @@ namespace LexiConnect.Controllers
                     await file.CopyToAsync(stream);
                 }
 
+                // Generate PDF path
+                string pdfPath = await GeneratePDFPath(filePath, fileExtension, uniqueFileName);
+
                 // Create Document entity
                 var document = new Document
                 {
@@ -352,7 +411,8 @@ namespace LexiConnect.Controllers
                     PointsAwarded = 0, // Will be set based on document type in Details
                     PointsToDownload = 0, // Will be set based on document type in Details
                     IsPremiumOnly = false,
-                    IsAiGenerated = false
+                    IsAiGenerated = false,
+                    FilePDFpath = pdfPath // Set the PDF path here
                 };
 
                 // Generate thumbnail if it's a PDF
@@ -381,6 +441,16 @@ namespace LexiConnect.Controllers
                     {
                         System.IO.File.Delete(filePath);
                     }
+
+                    // Clean up PDF file if it was created
+                    if (!string.IsNullOrEmpty(pdfPath))
+                    {
+                        string fullPdfPath = Path.Combine(_environment.WebRootPath, pdfPath.TrimStart('/'));
+                        if (System.IO.File.Exists(fullPdfPath))
+                        {
+                            System.IO.File.Delete(fullPdfPath);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -391,6 +461,197 @@ namespace LexiConnect.Controllers
 
             return result;
         }
+
+        // Helper method to generate PDF path
+        private async Task<string> GeneratePDFPath(string originalFilePath, string fileExtension, string uniqueFileName)
+        {
+            try
+            {
+                // Create PDF directory if it doesn't exist
+                string pdfPath = Path.Combine(_environment.WebRootPath, "uploads", "pdf");
+                if (!Directory.Exists(pdfPath))
+                {
+                    Directory.CreateDirectory(pdfPath);
+                }
+
+                string pdfFileName = $"{Path.GetFileNameWithoutExtension(uniqueFileName)}.pdf";
+                string fullPdfPath = Path.Combine(pdfPath, pdfFileName);
+
+                if (fileExtension == ".pdf")
+                {
+                    // If it's already a PDF, just copy it to the PDF directory
+                    System.IO.File.Copy(originalFilePath, fullPdfPath, true);
+                }
+                else if (fileExtension == ".doc" || fileExtension == ".docx")
+                {
+                    // For DOC/DOCX files, convert them to PDF
+                    await ConvertDocumentToPDF(originalFilePath, fullPdfPath, fileExtension);
+                }
+
+                return $"/uploads/pdf/{pdfFileName}";
+            }
+            catch (Exception ex)
+            {
+                // Log the error but don't fail the entire upload
+                Console.WriteLine($"Error generating PDF path: {ex.Message}");
+                return string.Empty;
+            }
+        }
+
+        // Helper method to convert DOC/DOCX to PDF using DocumentFormat.OpenXml + iTextSharp
+        private async Task ConvertDocumentToPDF(string inputPath, string outputPath, string fileExtension)
+        {
+            try
+            {
+                if (fileExtension == ".docx")
+                {
+                    await ConvertDocxToPdf(inputPath, outputPath);
+                }
+                else if (fileExtension == ".doc")
+                {
+                    // For .doc files, you might need additional libraries or conversion
+                    // For now, we'll create a basic PDF with a message
+                    await CreateDocConversionPdf(inputPath, outputPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error converting document to PDF: {ex.Message}");
+                // Create a fallback PDF with error message
+                await CreateErrorPdf(outputPath, Path.GetFileName(inputPath), ex.Message);
+            }
+        }
+
+        // Convert DOCX to PDF using DocumentFormat.OpenXml + iTextSharp
+        private async Task ConvertDocxToPdf(string docxPath, string pdfPath)
+        {
+            await Task.Run(() =>
+            {
+                using (var wordDocument = WordprocessingDocument.Open(docxPath, false))
+                {
+                    var body = wordDocument.MainDocumentPart.Document.Body;
+
+                    using (var writer = new PdfWriter(pdfPath))
+                    using (var pdf = new PdfDocument(writer))
+                    {
+                        var document = new iText.Layout.Document(pdf);
+                        var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                        // Extract text from DOCX and add to PDF
+                        foreach (var paragraph in body.Elements<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
+                        {
+                            var text = paragraph.InnerText;
+                            if (!string.IsNullOrWhiteSpace(text))
+                            {
+                                var pdfParagraph = new iText.Layout.Element.Paragraph(text)
+                                    .SetFont(font)
+                                    .SetFontSize(12);
+
+                                document.Add(pdfParagraph);
+                            }
+                        }
+
+                        // Add some spacing if document is empty
+                        if (!body.Elements<DocumentFormat.OpenXml.Wordprocessing.Paragraph>().Any(p => !string.IsNullOrWhiteSpace(p.InnerText)))
+                        {
+                            document.Add(new iText.Layout.Element.Paragraph("Document content could not be extracted.")
+                                .SetFont(font)
+                                .SetFontSize(12));
+                        }
+
+                        document.Close();
+                    }
+                }
+            });
+        }
+
+        // Create PDF for .doc files (since OpenXml doesn't support .doc format directly)
+        private async Task CreateDocConversionPdf(string docPath, string pdfPath)
+        {
+            await Task.Run(() =>
+            {
+                using (var writer = new PdfWriter(pdfPath))
+                using (var pdf = new PdfDocument(writer))
+                {
+                    var document = new iText.Layout.Document(pdf);
+                    var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                    // Add header
+                    document.Add(new iText.Layout.Element.Paragraph("Document Conversion Notice")
+                        .SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD))
+                        .SetFontSize(16)
+                        .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+
+                    document.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                    // Add content
+                    document.Add(new iText.Layout.Element.Paragraph($"Original file: {Path.GetFileName(docPath)}")
+                        .SetFont(font)
+                        .SetFontSize(12));
+
+                    document.Add(new iText.Layout.Element.Paragraph("File type: Microsoft Word Document (.doc)")
+                        .SetFont(font)
+                        .SetFontSize(12));
+
+                    document.Add(new iText.Layout.Element.Paragraph($"Converted on: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
+                        .SetFont(font)
+                        .SetFontSize(12));
+
+                    document.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                    document.Add(new iText.Layout.Element.Paragraph("Note: .DOC files require Microsoft Office or LibreOffice for full content extraction. This is a placeholder PDF. For complete conversion, consider upgrading to .DOCX format or implementing Office automation.")
+                        .SetFont(font)
+                        .SetFontSize(10)
+                        .SetFontColor(iText.Kernel.Colors.ColorConstants.GRAY));
+
+                    document.Close();
+                }
+            });
+        }
+
+        // Create error PDF when conversion fails
+        private async Task CreateErrorPdf(string pdfPath, string originalFileName, string errorMessage)
+        {
+            await Task.Run(() =>
+            {
+                using (var writer = new PdfWriter(pdfPath))
+                using (var pdf = new PdfDocument(writer))
+                {
+                    var document = new iText.Layout.Document(pdf);
+                    var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+
+                    document.Add(new iText.Layout.Element.Paragraph("Document Conversion Error")
+                        .SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD))
+                        .SetFontSize(16)
+                        .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)
+                        .SetFontColor(iText.Kernel.Colors.ColorConstants.RED));
+
+                    document.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                    document.Add(new iText.Layout.Element.Paragraph($"Original file: {originalFileName}")
+                        .SetFont(font)
+                        .SetFontSize(12));
+
+                    document.Add(new iText.Layout.Element.Paragraph($"Error occurred: {DateTime.Now:yyyy-MM-dd HH:mm:ss}")
+                        .SetFont(font)
+                        .SetFontSize(12));
+
+                    document.Add(new iText.Layout.Element.Paragraph("\n"));
+
+                    document.Add(new iText.Layout.Element.Paragraph("Error details:")
+                        .SetFont(PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD))
+                        .SetFontSize(12));
+
+                    document.Add(new iText.Layout.Element.Paragraph(errorMessage)
+                        .SetFont(font)
+                        .SetFontSize(10)
+                        .SetFontColor(iText.Kernel.Colors.ColorConstants.DARK_GRAY));
+
+                    document.Close();
+                }
+            });
+        }
+
 
         // Helper method to validate files
         private FileValidationResult ValidateFile(IFormFile file)
@@ -526,9 +787,142 @@ namespace LexiConnect.Controllers
         {
             return Json(new { progress = 100, status = "complete" });
         }
+
+
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CleanupTempFiles(string documentIds)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(documentIds))
+                    return Json(new { success = true, message = "No files to cleanup" });
+
+                var ids = documentIds.Split(',')
+                    .Where(id => !string.IsNullOrWhiteSpace(id))
+                    .Select(id => int.TryParse(id, out int result) ? result : 0)
+                    .Where(id => id > 0)
+                    .ToList();
+
+                int cleanedCount = 0;
+                foreach (var id in ids)
+                {
+                    var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                    if (document != null && document.Status == "pending") // Only cleanup pending documents
+                    {
+                        // Delete main physical file
+                        if (!string.IsNullOrEmpty(document.FilePath))
+                        {
+                            string fullPath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
+                            if (System.IO.File.Exists(fullPath))
+                            {
+                                System.IO.File.Delete(fullPath);
+                            }
+                        }
+
+                        // Delete PDF file
+                        if (!string.IsNullOrEmpty(document.FilePDFpath))
+                        {
+                            string pdfPath = Path.Combine(_environment.WebRootPath, document.FilePDFpath.TrimStart('/'));
+                            if (System.IO.File.Exists(pdfPath))
+                            {
+                                System.IO.File.Delete(pdfPath);
+                            }
+                        }
+
+                        // Delete thumbnail if exists
+                        if (!string.IsNullOrEmpty(document.ThumbnailUrl))
+                        {
+                            string thumbnailPath = Path.Combine(_environment.WebRootPath, document.ThumbnailUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(thumbnailPath))
+                            {
+                                System.IO.File.Delete(thumbnailPath);
+                            }
+                        }
+
+                        // Remove from database
+                        await _documentRepository.DeleteAsync(document.DocumentId);
+                        cleanedCount++;
+                    }
+                }
+
+                return Json(new { success = true, message = $"Cleaned up {cleanedCount} files" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
+
+        
+
+        [HttpPost]
+        public async Task<IActionResult> CleanupUserTempFiles()
+        {
+            try
+            {
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                {
+                    return Json(new { success = false, error = "User not found" });
+                }
+
+                // Find all pending documents uploaded by current user in last 24 hours
+                var cutoffTime = DateTime.UtcNow.AddHours(-24);
+                var tempDocuments = _documentRepository.GetAllQueryable(d =>
+                    d.UploaderId == currentUser.Id &&
+                    d.Status == "pending" &&
+                    d.CreatedAt < cutoffTime).ToList();
+
+                int cleanedCount = 0;
+                foreach (var document in tempDocuments)
+                {
+                    // Delete main physical file
+                    if (!string.IsNullOrEmpty(document.FilePath))
+                    {
+                        string fullPath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
+                        if (System.IO.File.Exists(fullPath))
+                        {
+                            System.IO.File.Delete(fullPath);
+                        }
+                    }
+
+                    // Delete PDF file
+                    if (!string.IsNullOrEmpty(document.FilePDFpath))
+                    {
+                        string pdfPath = Path.Combine(_environment.WebRootPath, document.FilePDFpath.TrimStart('/'));
+                        if (System.IO.File.Exists(pdfPath))
+                        {
+                            System.IO.File.Delete(pdfPath);
+                        }
+                    }
+
+                    // Delete thumbnail if exists
+                    if (!string.IsNullOrEmpty(document.ThumbnailUrl))
+                    {
+                        string thumbnailPath = Path.Combine(_environment.WebRootPath, document.ThumbnailUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(thumbnailPath))
+                        {
+                            System.IO.File.Delete(thumbnailPath);
+                        }
+                    }
+
+                    // Remove from database
+                    await _documentRepository.DeleteAsync(document.DocumentId);
+                    cleanedCount++;
+                }
+
+                return Json(new { success = true, message = $"Cleaned up {cleanedCount} old temp files" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = ex.Message });
+            }
+        }
     }
 
-    // Helper classes
+     //Helper classes
     public class UploadResult
     {
         public string FileName { get; set; } = string.Empty;
@@ -539,6 +933,9 @@ namespace LexiConnect.Controllers
         public string ErrorMessage { get; set; } = string.Empty;
         public int DocumentId { get; set; }
     }
+
+
+
 
     public class FileValidationResult
     {
@@ -557,6 +954,7 @@ namespace LexiConnect.Controllers
         public string University { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Course is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a course")]
         public int CourseId { get; set; }
 
         public string CourseName { get; set; } = string.Empty;

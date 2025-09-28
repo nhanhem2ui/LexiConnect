@@ -18,7 +18,8 @@ namespace LexiConnect.Controllers
         private readonly IGenericRepository<Course> _courseRepository;
         private readonly IGenericRepository<Document> _documentRepository;
         private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
-        public HomeController(ILogger<HomeController> logger, IGenericRepository<Users> userRepository, IGenericRepository<University> universityRepository, IGenericRepository<Course> courseRepository, IGenericRepository<Major> majorRepository , IGenericRepository<RecentViewed> recentViewedRepository, IGenericRepository<Document> documentRepository)
+        private readonly IGenericRepository<DocumentLike> _documentLikeRepository; 
+        public HomeController(ILogger<HomeController> logger, IGenericRepository<Users> userRepository, IGenericRepository<DocumentLike> documentLikeRepository, IGenericRepository<University> universityRepository, IGenericRepository<Course> courseRepository, IGenericRepository<Major> majorRepository , IGenericRepository<RecentViewed> recentViewedRepository, IGenericRepository<Document> documentRepository)
         {
             _logger = logger;
             _universityRepository = universityRepository;
@@ -26,6 +27,7 @@ namespace LexiConnect.Controllers
             _userRepository = userRepository;
             _documentRepository = documentRepository;
             _recentViewedRepository = recentViewedRepository;
+            _documentLikeRepository = documentLikeRepository;
 
         }
 
@@ -72,15 +74,18 @@ namespace LexiConnect.Controllers
                 .Include(c => c.Uploader)
                 .Include(c => c.ApprovedByUser)
                 .ThenInclude(m => m.University)
-                .OrderByDescending(c => c.ViewCount)
+                .OrderByDescending(c => c.LikeCount)
                 .Take(3);
 
-
+            // Load user liked status for top documents
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userLikedDocs =   GetUserLikedDocumentsAsync(topdocuments, userId);
 
             var model = new HomePageViewModel
             {
                 RecentVieweds = recentvieweds ,
                 TopDocuments = topdocuments ,
+                UserLikedDocuments = userLikedDocs.Result
             };
 
 
@@ -133,5 +138,38 @@ namespace LexiConnect.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+      
+
+        // Method ?? load like status cho user
+        private async Task<Dictionary<int, bool>> GetUserLikedDocumentsAsync(IQueryable<Document> documents, string userId)
+        {
+            var userLikedDocuments = new Dictionary<int, bool>();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                // N?u user ch?a ??ng nh?p, t?t c? documents ??u ch?a ???c like
+                foreach (var doc in documents)
+                {
+                    userLikedDocuments[doc.DocumentId] = false;
+                }
+                return userLikedDocuments;
+            }
+
+            // L?y danh sách document IDs mà user ?ã like
+            var likedDocumentIds = await _documentLikeRepository
+                .GetAllQueryable(dl => dl.UserId == userId, asNoTracking: true)
+                .Select(dl => dl.DocumentId)
+                .ToListAsync();
+
+            // Populate dictionary
+            foreach (var doc in documents)
+            {
+                userLikedDocuments[doc.DocumentId] = likedDocumentIds.Contains(doc.DocumentId);
+            }
+
+            return userLikedDocuments;
+        }
+
     }
 }

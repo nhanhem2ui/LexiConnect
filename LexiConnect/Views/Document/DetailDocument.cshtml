@@ -1,0 +1,286 @@
+﻿@model LexiConnect.Models.ViewModels.DetailDocumentViewModel
+@{
+    ViewData["Title"] = Model.Document.Title;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/Document/DetailDocument.css" />
+
+<div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2 class="document-title">@Model.Document.Title</h2>
+
+        <div class="info-section">
+            <h3>📚 Course</h3>
+            <p class="info-text">@(Model.Document.Course?.CourseName ?? "N/A")</p>
+        </div>
+
+        <div class="info-section">
+            <h3>🏛️ University</h3>
+            <p class="info-text">@Model.UploaderStats.UniversityName</p>
+        </div>
+
+        <div class="info-section">
+            <h3>📋 Category</h3>
+            <p class="info-text">
+                @(Model.Document.DocumentType switch
+                {
+                    "notes" => "Lecture Notes",
+                    "assignment" => "Assignment",
+                    "exam" => "Exam/Test",
+                    "quiz" => "Quiz",
+                    "study_guide" => "Study Guide",
+                    "flashcards" => "Flashcards",
+                    _ => Model.Document.DocumentType
+                })
+            </p>
+        </div>
+
+        <div class="info-section">
+            <h3>📄 Original Format</h3>
+            <p class="info-text">@Model.Document.FileType.ToUpper()</p>
+            @if (Model.IsViewingPdfVersion && Model.Document.FileType.ToLower() != "pdf")
+            {
+                <small class="text-muted">(Converted to PDF for viewing)</small>
+            }
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <strong>Uploaded by:</strong>
+        </div>
+
+        <div class="uploader-info">
+            <div class="avatar">
+                @if (!string.IsNullOrEmpty(Model.UploaderStats.AvatarUrl))
+                {
+                    <img src="@Model.UploaderStats.AvatarUrl" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                }
+                else
+                {
+                    <span>👤</span>
+                }
+            </div>
+            <div class="uploader-name">@Model.UploaderStats.FullName</div>
+            <div class="uploader-university">@Model.UploaderStats.UniversityName</div>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">@Model.UploaderStats.FollowerCount</div>
+                    <div class="stat-label">Follower</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">@Model.UploaderStats.UploadCount</div>
+                    <div class="stat-label">Upload</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">@Model.UploaderStats.LikeCount</div>
+                    <div class="stat-label">Like</div>
+                </div>
+            </div>
+
+            <button class="follow-btn">✨ Follow</button>
+        </div>
+
+        <div class="document-info">
+            <div class="info-item">
+                <strong>File Size:</strong> @((Model.Document.FileSize / 1024.0 / 1024.0).ToString("F2")) MB
+            </div>
+            <div class="info-item">
+                <strong>Pages:</strong> @(Model.Document.PageCount?.ToString() ?? "N/A")
+            </div>
+            <div class="info-item">
+                <strong>Downloads:</strong> @Model.Document.DownloadCount
+            </div>
+            <div class="info-item">
+                <strong>Views:</strong> @Model.Document.ViewCount
+            </div>
+            <div class="info-item">
+                <strong>Points to Download:</strong> @Model.Document.PointsToDownload
+            </div>
+            <div class="info-item">
+                <strong>Upload Date:</strong> @Model.Document.CreatedAt.ToString("dd/MM/yyyy")
+            </div>
+        </div>
+
+        <div class="comments-section">
+            <h4>Comments (@Model.Comments.Count)</h4>
+            <div class="comment-placeholder">
+                @if (Model.Comments.Any())
+                {
+                    @foreach (var comment in Model.Comments)
+                    {
+                        <div class="comment-item">
+                            <strong>@comment.UserName:</strong>
+                            <p>@comment.Content</p>
+                            <small>@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No comments yet.</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="content-header">
+            <h1>@Model.Document.Title</h1>
+            <div class="action-buttons">
+                @if (Model.CanDownload)
+                {
+                    <button class="btn btn-download" onclick="downloadDocument(@Model.Document.DocumentId)">
+                        📥 Download Original (@Model.Document.FileType.ToUpper())
+                    </button>
+                }
+                else
+                {
+                    <button class="btn btn-download disabled" title="Insufficient points">
+                        📥 Download (@Model.Document.PointsToDownload pts)
+                    </button>
+                }
+
+                <button class="btn btn-like" onclick="toggleLike(@Model.Document.DocumentId, true)">
+                    👍 <span id="likeCount">@Model.Document.LikeCount</span>
+                </button>
+                <button class="btn btn-save">
+                    💾 Save
+                </button>
+            </div>
+        </div>
+
+        <!-- Document Viewer Status -->
+        <div class="viewer-info">
+            <p class="viewer-status">
+                <strong>@Model.ViewerDisplayMessage</strong>
+                @if (Model.IsViewingPdfVersion && Model.Document.FileType.ToLower() != "pdf")
+                {
+                    <span class="converted-badge">✓ Auto-converted for optimal viewing</span>
+                }
+            </p>
+        </div>
+
+        <!-- Unified Document Viewer - All documents are now displayed as PDFs -->
+        <div class="document-viewer">
+            @if (!string.IsNullOrEmpty(Model.FilePDFpath) || Model.Document.FileType.ToLower() == "pdf")
+            {
+                <!-- PDF Viewer (for both original PDFs and converted documents) -->
+                <div class="pdf-viewer">
+                    <div class="viewer-toolbar">
+                        <button onclick="switchViewer('embed')" class="viewer-btn active" id="embedBtn">Browser PDF Viewer</button>
+                        <button onclick="switchViewer('office')" class="viewer-btn" id="officeBtn">Office Online Viewer</button>
+                        <button onclick="openFullscreen()" class="viewer-btn">🔍 Fullscreen</button>
+                    </div>
+                    
+                    <!-- Browser embed viewer -->
+                    <div id="embedViewer" class="viewer-container active">
+                        <embed src="@Url.Action("ViewFile", "Document", new { id = Model.Document.DocumentId })"
+                               type="application/pdf"
+                               width="100%"
+                               height="800px">
+                            <p>Your browser doesn't support PDF viewing. 
+                               <a href="@Url.Action("ViewFile", "Document", new { id = Model.Document.DocumentId })" target="_blank">Open in new tab</a>
+                            </p>
+                        />
+                    </div>
+                    
+                    <!-- Office Online viewer (alternative) -->
+                    <div id="officeViewer" class="viewer-container" style="display: none;">
+                        <iframe src="https://view.officeapps.live.com/op/embed.aspx?src=@System.Net.WebUtility.UrlEncode(
+                                    Url.Action("ViewFile", "Document", new { id = Model.Document.DocumentId }, Context.Request.Scheme)
+                                )"
+                            width="100%"
+                            height="800px"
+                            frameborder="0"
+                            onload="handleIframeLoad(this)"
+                            onerror="handleIframeError(this)">
+                            <p>Loading document viewer...</p>
+                        </iframe>
+                    </div>
+
+                    <!-- Error fallback -->
+                    <div id="docError" class="viewer-error" style="display: none;">
+                        <div class="error-content">
+                            <h3>⚠️ Preview not available</h3>
+                            <p>The document couldn't be loaded in the online viewer.</p>
+                            <div class="error-actions">
+                                <button onclick="retryViewer()" class="btn btn-primary">🔄 Retry</button>
+                                <a href="@Url.Action("ViewFile", "Document", new { id = Model.Document.DocumentId })" 
+                                   target="_blank" class="btn btn-secondary">📄 Open in new tab</a>
+                                @if (Model.CanDownload)
+                                {
+                                    <button onclick="downloadDocument(@Model.Document.DocumentId)" class="btn btn-download">
+                                        📥 Download Original
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <!-- Fallback for documents without PDF conversion -->
+                <div class="file-preview">
+                    <div class="preview-message">
+                        <h3>📄 File Preview</h3>
+                        <p><strong>File Type:</strong> @Model.Document.FileType.ToUpper()</p>
+                        <p><strong>Size:</strong> @((Model.Document.FileSize / 1024.0 / 1024.0).ToString("F2")) MB</p>
+                        <p>PDF conversion is in progress or unavailable for this file type.</p>
+                        
+                        <div class="preview-actions">
+                            <a href="@Url.Action("ViewFile", "Document", new { id = Model.Document.DocumentId })" 
+                               target="_blank" class="btn btn-secondary">📄 Try to open original</a>
+                            @if (Model.CanDownload)
+                            {
+                                <button onclick="downloadDocument(@Model.Document.DocumentId)" class="btn btn-download">
+                                    📥 Download to view
+                                </button>
+                            }
+                            <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh page</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Fullscreen Modal -->
+        <div id="fullscreenModal" class="fullscreen-modal" style="display: none;">
+            <div class="fullscreen-header">
+                <h3>@Model.Document.Title</h3>
+                <button onclick="closeFullscreen()" class="close-btn">✕</button>
+            </div>
+            <div class="fullscreen-content" id="fullscreenContent">
+                <!-- Content will be cloned here -->
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Document.Description))
+        {
+            <div class="document-description">
+                <h3>Description</h3>
+                <p>@Model.Document.Description</p>
+            </div>
+        }
+
+        <!-- Debug info (remove in production) -->
+        @if (ViewContext.HttpContext.Request.Query.ContainsKey("debug"))
+        {
+            <div class="debug-info" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #dee2e6;">
+                <h4>Debug Information</h4>
+                <p><strong>Original File Path:</strong> @Model.Document.FilePath</p>
+                <p><strong>PDF File Path:</strong> @(Model.FilePDFpath ?? "Not available")</p>
+                <p><strong>Serving File:</strong> @Model.FileUrl</p>
+                <p><strong>Is PDF Version:</strong> @Model.IsViewingPdfVersion</p>
+                <p><strong>Original File Type:</strong> @Model.Document.FileType</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Document/DetailDocument.js"></script>
+}
