@@ -7,6 +7,103 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="css\Admin\AdminManagement.css" />
+    <Content Include="css\Admin\DocumentManagement.css" />
+    <Content Include="css\Auth\ForgotPassword.css" />
+    <Content Include="css\Auth\Index.css" />
+    <Content Include="css\Auth\ResetPassword.css" />
+    <Content Include="css\Document\DetailDocument.css" />
+    <Content Include="css\Home\EditProfile.css" />
+    <Content Include="css\Home\Homepage.css" />
+    <Content Include="css\Home\Introduction.css" />
+    <Content Include="css\Home\UserProfile.css" />
+    <Content Include="css\site.css" />
+    <Content Include="css\Subscription\ExtendSubscription.css" />
+    <Content Include="css\Subscription\Pricing.css" />
+    <Content Include="css\Upload\Complete.css" />
+    <Content Include="css\Upload\Details.css" />
+    <Content Include="css\Upload\UploadDocument.css" />
+    <Content Include="favicon.ico" />
+    <Content Include="image\default-avatar.png" />
+    <Content Include="image\introductionBackground.png" />
+    <Content Include="image\LexiConnect_logo.png" />
+    <Content Include="image\LexiConnect_logo_NoText.png" />
+    <Content Include="image\logo_FPT.png" />
+    <Content Include="image\logo_VNU.jpg" />
+    <Content Include="image\logo_VNUHCM.png" />
+    <Content Include="js\Admin\AdminManagement.js" />
+    <Content Include="js\Admin\DocumentManagement.js" />
+    <Content Include="js\Auth\ForgotPassword.js" />
+    <Content Include="js\Auth\ResetPassword.js" />
+    <Content Include="js\Document\DetailDocument.js" />
+    <Content Include="js\Home\EditProfile.js" />
+    <Content Include="js\Home\HomePage.js" />
+    <Content Include="js\Home\Introduction.js" />
+    <Content Include="js\site.js" />
+    <Content Include="js\Subscription\Pricing.js" />
+    <Content Include="js\Upload\Details.js" />
+    <Content Include="js\Upload\FileCleanup.js" />
+    <Content Include="js\Upload\UploadDocument.js" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.rtl.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.rtl.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-grid.rtl.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.rtl.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.rtl.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-reboot.rtl.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.rtl.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.rtl.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap-utilities.rtl.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.min.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.rtl.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.rtl.css.map" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.rtl.min.css" />
+    <Content Include="lib\bootstrap\dist\css\bootstrap.rtl.min.css.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.min.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.bundle.min.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.esm.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.esm.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.esm.min.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.esm.min.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.js.map" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.min.js" />
+    <Content Include="lib\bootstrap\dist\js\bootstrap.min.js.map" />
+    <Content Include="lib\bootstrap\LICENSE" />
+    <Content Include="lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.js" />
+    <Content Include="lib\jquery-validation-unobtrusive\jquery.validate.unobtrusive.min.js" />
+    <Content Include="lib\jquery-validation-unobtrusive\LICENSE.txt" />
+    <Content Include="lib\jquery-validation\dist\additional-methods.js" />
+    <Content Include="lib\jquery-validation\dist\additional-methods.min.js" />
+    <Content Include="lib\jquery-validation\dist\jquery.validate.js" />
+    <Content Include="lib\jquery-validation\dist\jquery.validate.min.js" />
+    <Content Include="lib\jquery-validation\LICENSE.md" />
+    <Content Include="lib\jquery\dist\jquery.js" />
+    <Content Include="lib\jquery\dist\jquery.min.js" />
+    <Content Include="lib\jquery\dist\jquery.min.map" />
+    <Content Include="lib\jquery\LICENSE.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Firebase.Auth" Version="1.0.0" />
     <PackageReference Include="FirebaseStorage.net" Version="1.0.3" />
     <PackageReference Include="Google.Apis.Auth" Version="1.71.0" />
@@ -36,6 +133,10 @@
     <ProjectReference Include="..\BusinessObjects\BusinessObjects.csproj" />
     <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
     <ProjectReference Include="..\Repositories\Repositories.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
