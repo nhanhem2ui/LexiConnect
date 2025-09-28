@@ -51,12 +51,14 @@ namespace LexiConnect.Controllers
             var user = new Users
             {
                 UserName = model.Username,
-                FullName = model.Email,
+                FullName = model.Username,
                 Email = model.Email,
                 UniversityId = 0,
                 MajorId = 0,
                 PointsBalance = 0,
-                TotalPointsEarned = 0
+                TotalPointsEarned = 0,
+                SubscriptionPlanId = 1,
+                AvatarUrl = "~/image/default-avatar.png"
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -144,7 +146,7 @@ namespace LexiConnect.Controllers
 
             if (result.Succeeded)
             {
-                // ✅ Clear all existing authentication first
+                //  Clear all existing authentication first
                 await _signInManager.SignOutAsync();
 
                 // Ensure University is loaded
@@ -160,11 +162,20 @@ namespace LexiConnect.Controllers
                     new("UserName", user.UserName),
                     new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
                     new("UniversityName", user.University?.Name ?? "Unknown"),
-                    new(ClaimTypes.Role, "User")
                 };
 
+                var roles = await _userManager.GetRolesAsync(user);
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
-                return RedirectToAction("Homepage", "Home");
+
+                if (roles.Contains("Admin"))
+                    return RedirectToAction("AdminManagement", "Admin");
+                else
+                    return RedirectToAction("Homepage", "Home");
             }
 
             if (result.IsLockedOut)
@@ -209,15 +220,19 @@ namespace LexiConnect.Controllers
             if (result.Succeeded)
             {
                 var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-                if (user.University == null)
-                    user.University = await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
+                user.University ??= await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
 
                 // Clear existing authentication completely
                 await _signInManager.SignOutAsync();
 
                 // Create clean, consistent claims
                 await SignInUserWithClaims(user, false);
-                return LocalRedirect(returnUrl);
+
+                var roles = await _userManager.GetRolesAsync(user);
+                if (roles.Contains("Admin"))
+                    return RedirectToAction("AdminManagement", "Admin");
+                else
+                    return LocalRedirect(returnUrl);
             }
 
             if (result.IsLockedOut)
@@ -312,13 +327,19 @@ namespace LexiConnect.Controllers
             var claims = new List<Claim>
             {
                 new(ClaimTypes.NameIdentifier, user.Id),
-                new("FullName", user.FullName),
-                new(ClaimTypes.Email, user.Email),
-                new("UserName", user.UserName),
+                new("FullName", user.FullName ?? "DefaultName"),
+                new(ClaimTypes.Email, user.Email ?? "EditThisEmail@gmail.com"),
+                new("UserName", user.UserName ?? "DefaultUserName"),
                 new("AvatarUrl", user.AvatarUrl ?? "~/image/default-avatar.png"),
                 new("UniversityName", user.University?.Name ?? "Unknown"),
                 new(ClaimTypes.Role, "User")
             };
+
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             await _signInManager.SignInWithClaimsAsync(user, isPersistent, claims);
         }
@@ -416,6 +437,13 @@ namespace LexiConnect.Controllers
             }
 
             return BadRequest(ModelState);
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied(string? returnUrl)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
         }
     }
 }

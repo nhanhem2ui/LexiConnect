@@ -16,7 +16,7 @@ SET IDENTITY_INSERT [dbo].[Universities] ON;
 INSERT INTO [dbo].[Universities]
            ([Id], [Name], [ShortName], [CountryId], [City], [IsVerified], [LogoUrl], [CreatedAt])
 VALUES
-(0, N'Chưa rõ', N'', 1, N'', 1, N'', SYSDATETIME()),
+(0, N'Not provided', N'', 1, N'', 1, N'', SYSDATETIME()),
 
 (1, N'Đại học Quốc gia Hà Nội', N'VNU', 1, N'Hà Nội', 1, N'/image/logo_VNU.jpg', SYSDATETIME()),
 
@@ -31,7 +31,7 @@ SET IDENTITY_INSERT [dbo].[Majors] ON;
 INSERT INTO [dbo].[Majors]
            ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
 VALUES
-    (0, N'Chưa rõ', '', 0, N'', 1, GETDATE()),
+    (0, N'Not provided', '', 0, N'', 1, GETDATE()),
     (1, N'Software Engineering', 'SE', 3, N'Study of software design, development, and testing.', 1, GETDATE()),
     (2, N'Information Security', 'IS', 3, N'Study of cybersecurity, cryptography, and secure systems.', 1, GETDATE()),
     (3, N'Artificial Intelligence', 'AI', 3, N'Focus on machine learning, data science, and AI applications.', 1, GETDATE()),
@@ -41,8 +41,24 @@ VALUES
     (7, N'Digital Marketing', 'DM', 3, N'Online marketing strategies, SEO, and social media.', 1, GETDATE()),
     (8, N'Tourism and Hospitality Management', 'THM', 3, N'Management of travel, tourism, and hospitality industries.', 1, GETDATE());
 GO
-SET IDENTITY_INSERT [dbo].[Majors] OFF;
 
+-- Majors for VNU (UniversityId = 1)
+INSERT INTO [dbo].[Majors]
+           ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
+VALUES
+    (9, N'Computer Science', 'CS', 1, N'Focus on algorithms, programming languages, and theoretical foundations of computing.', 1, GETDATE()),
+    (10, N'Mathematics', 'MATH', 1, N'Study of pure and applied mathematics, logic, and statistics.', 1, GETDATE()),
+    (11, N'Physics', 'PHY', 1, N'Focus on classical mechanics, electromagnetism, and quantum physics.', 1, GETDATE());
+
+-- Majors for VNUHCM (UniversityId = 2)
+INSERT INTO [dbo].[Majors]
+           ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
+VALUES
+    (12, N'Biotechnology', 'BIO', 2, N'Study of genetics, molecular biology, and biotech applications.', 1, GETDATE()),
+    (13, N'Civil Engineering', 'CE', 2, N'Design and construction of infrastructure projects like bridges, roads, and buildings.', 1, GETDATE()),
+    (14, N'Chemical Engineering', 'CHE', 2, N'Processes involving chemical production, materials science, and industrial systems.', 1, GETDATE());
+
+SET IDENTITY_INSERT [dbo].[Majors] OFF;
 GO
 
 SET IDENTITY_INSERT [dbo].[Courses] ON;
@@ -72,8 +88,38 @@ VALUES
     (10, 'ACC201', N'Financial Accounting', 4, 2, 2025, N'Introduction to accounting concepts, balance sheets, and financial analysis.', 1, GETDATE()),
     (11, 'HRM301', N'Human Resource Management', 4, 4, 2025, N'Study of HR policies, recruitment, and employee relations.', 1, GETDATE());
 GO
-SET IDENTITY_INSERT [dbo].[Courses] OFF;
 
+-- Courses for Computer Science (MajorId = 9, UniversityId = 1)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (12, 'CS101', N'Introduction to Computer Science', 9, 1, 2025, N'Foundations of computing, data structures, and programming basics.', 1, GETDATE()),
+    (13, 'CS201', N'Data Structures & Algorithms', 9, 2, 2025, N'Analysis and implementation of common data structures and algorithms.', 1, GETDATE()),
+    (14, 'CS301', N'Operating Systems', 9, 3, 2025, N'Concepts of processes, memory management, and file systems.', 1, GETDATE());
+
+-- Courses for Mathematics (MajorId = 10)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (15, 'MATH101', N'Calculus I', 10, 1, 2025, N'Differentiation, integration, and applications.', 1, GETDATE()),
+    (16, 'MATH201', N'Linear Algebra', 10, 2, 2025, N'Matrices, vector spaces, and linear transformations.', 1, GETDATE());
+
+-- Courses for Biotechnology (MajorId = 12)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (17, 'BIO101', N'General Biology', 12, 1, 2025, N'Cell structure, genetics, and evolution.', 1, GETDATE()),
+    (18, 'BIO201', N'Molecular Biology', 12, 3, 2025, N'Gene expression, DNA replication, and protein synthesis.', 1, GETDATE());
+
+-- Courses for Civil Engineering (MajorId = 13)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (19, 'CE101', N'Engineering Mechanics', 13, 1, 2025, N'Statics, dynamics, and structural analysis.', 1, GETDATE()),
+    (20, 'CE201', N'Structural Engineering', 13, 3, 2025, N'Design and analysis of structures and materials.', 1, GETDATE());
+
+SET IDENTITY_INSERT [dbo].[Courses] OFF;
+GO
 
 SET IDENTITY_INSERT [dbo].[Documents] ON;
 
