@@ -73,6 +73,16 @@ namespace BusinessObjects
                 .WithMany()
                 .UsingEntity(j => j.ToTable("DocumentDocumentTags"));
 
+            modelBuilder.Entity<DocumentLike>()
+                .HasOne(d => d.Document)
+                .WithOne()
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<DocumentLike>()
+                .HasOne(d => d.User)
+                .WithOne()
+                .OnDelete(DeleteBehavior.NoAction);
+
             // =============== ACADEMIC STRUCTURE RELATIONSHIPS ===============
             modelBuilder.Entity<Major>()
                 .HasOne(m => m.University)
