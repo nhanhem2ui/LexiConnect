@@ -1,0 +1,186 @@
+﻿@model LexiConnect.Models.ViewModels.DocumentDetailsViewModel
+@{
+    ViewData["Title"] = "Document Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/Upload/Details.css" />
+<link rel="stylesheet" href="~/css/Upload/UploadDocument.css" />
+
+
+<!-- Hidden field to track document IDs for cleanup -->
+@if (TempData["DocumentIds"] != null)
+{
+    <input type="hidden" name="TempDocumentIds" value="@TempData["DocumentIds"]" />
+}
+
+<div class="doc-container">
+    <!-- Header -->
+    <div class="doc-header">
+        <h1>Share your to see Premium content</h1>
+        <p class="doc-subtitle">You will receive <strong>points</strong> base on the quality of the content</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="upload-progress-bar">
+
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle inactive">1</div>
+                <span class="upload-step-text">Upload</span>
+            </div>
+            <div class="upload-step-line inactive"></div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle active">2</div>
+                <span class="upload-step-text">Details</span>
+            </div>
+            <div class="upload-step-line active"></div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="upload-step-container">
+            <div class="upload-progress-step">
+                <div class="upload-step-circle inactive">3</div>
+                <span class="upload-step-text">Done</span>
+            </div>
+            <div class="upload-step-line inactive"></div>
+        </div>
+
+    </div>
+
+
+    <!-- Progress Indicator -->
+    <div class="doc-progress-section">
+        <div class="doc-progress-indicator">📋 Details</div>
+    </div>
+
+    <!-- Success/Warning Messages -->
+    @if (ViewBag.SuccessfulUploads != null)
+    {
+        <div class="doc-success">
+            <strong>Success!</strong> @ViewBag.SuccessfulUploads files uploaded successfully.
+        </div>
+    }
+
+    @if (TempData["Warning"] != null)
+    {
+        <div class="doc-warning">
+            <strong>Warning:</strong> @TempData["Warning"]
+        </div>
+    }
+
+    <!-- Document Details Form -->
+    <form asp-action="SaveDetails" asp-controller="Upload" method="post">
+        @Html.AntiForgeryToken()
+
+        @for (int i = 0; i < Model.Documents.Count; i++)
+        {
+            <!-- Document @(i + 1) -->
+            <div class="doc-section">
+                <div class="doc-section-header">
+                    <div style="display: flex; align-items: center;">
+                        <div class="doc-icon">📄</div>
+                        <span class="doc-name">@Model.Documents[i].FileName</span>
+                    </div>
+                    <div class="doc-remove" onclick="removeDocument(this, @Model.Documents[i].DocumentId)">🗑️</div>
+                </div>
+                <div class="doc-form">
+                    <input type="hidden" asp-for="Documents[i].DocumentId" />
+                    <input type="hidden" asp-for="Documents[i].FileName" />
+
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>🏛️ University</label>
+                            <input asp-for="Documents[i].University" class="doc-input" placeholder="Search University" />
+                            <span asp-validation-for="Documents[i].University" class="doc-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>📚 Course</label>
+                            <select asp-for="Documents[i].CourseId" asp-items="Model.Courses" class="doc-input">
+                            </select>
+                            <span asp-validation-for="Documents[i].CourseId" class="doc-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>🏷️ Category</label>
+                            <select asp-for="Documents[i].Category" class="doc-input">
+                                <option value="">Select Category</option>
+                                <option value="Science">Science</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Literature">Literature</option>
+                                <option value="History">History</option>
+                                <option value="Business">Business</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Medicine">Medicine</option>
+                                <option value="Law">Law</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Documents[i].Category" class="doc-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>📝 Title</label>
+                            <input asp-for="Documents[i].Title" class="doc-input" placeholder="Name a title" />
+                            <span asp-validation-for="Documents[i].Title" class="doc-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>📋 Document type</label>
+                            <select asp-for="Documents[i].DocumentType" class="doc-input">
+                                <option value="">Select a category</option>
+                                <option value="notes">Lecture Notes</option>
+                                <option value="assignment">Assignment</option>
+                                <option value="exam">Exam/Test</option>
+                                <option value="quiz">Quiz</option>
+                                <option value="study_guide">Study Guide</option>
+                                <option value="flashcards">Flashcards</option>
+                            </select>
+                            <span asp-validation-for="Documents[i].DocumentType" class="doc-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>📅 Public year</label>
+                            <input asp-for="Documents[i].PublicYear" type="date" class="doc-input" />
+                        </div>
+                    </div>
+
+                    <div class="doc-group full-width">
+                        <label>📄 Description</label>
+                        <textarea asp-for="Documents[i].Description" class="doc-input" placeholder="Give information about this document"></textarea>
+                        <span asp-validation-for="Documents[i].Description" class="doc-feedback"></span>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Next Button -->
+        <button type="submit" class="doc-next-btn">🚀 Next</button>
+        <div style="clear: both;"></div>
+    </form>
+</div>
+
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/Upload/Details.js"></script>
+    <script src="~/js/Upload/FileCleanup.js"></script>
+
+
+}

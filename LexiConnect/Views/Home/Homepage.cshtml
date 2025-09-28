@@ -1,15 +1,17 @@
 ﻿@{
-    ViewData["Title"] = "Dashboard - LexiConnect";
+ViewData["Title"] = "Dashboard - LexiConnect";
 }
 @model LexiConnect.Models.ViewModels.HomePageViewModel
 
 <head>
-    <link rel="stylesheet" href="~/css/Home/Homepage.css"/>
+    <link rel="stylesheet" href="~/css/Home/Homepage.css" />
 </head>
 
+@if (User.Identity.IsAuthenticated)
+}
 <div class="dashboard-page">
     <div class="dashboard-container">
-        
+
         <partial name="_SideBar"></partial>
 
         <!-- Main Content -->
@@ -36,52 +38,69 @@
                 </a>
             </div>
 
-            <!-- Recently Viewed Section -->
-            <div class="content-section">
-                <h2 class="section-title">Recently Viewed</h2>
-                <div class="documents-grid">
-
-                    @foreach (var recent in Model.RecentVieweds)
-                    {
-                        <div class="document-card">
-                            <div class="document-header">
-                                <div>
-                                    <h3 class="document-title">@recent.Document.Title</h3>
-                                    <p class="document-meta"># PRF192, #Programming</p>
-                                    <p class="document-meta">100 Document</p>
-                                </div>
-                            </div>
-                            <div class="document-actions">
-                                <button class="btn-add">+ Add to library</button>
-                            </div>
+            @foreach (var recent in Model.RecentVieweds)
+            {
+                <div class="document-card">
+                    <div class="document-header">
+                        <div>
+                            <h3 class="document-title">@recent.Document.Title</h3>
+                            <p class="document-meta"># PRF192, #Programming</p>
+                            <p class="document-meta">100 Document</p>
                         </div>
-                    }
+                    </div>
+                    <div class="document-actions">
+                        <button class="btn-add">+ Add to library</button>
+                    </div>
+                </div>
+            }
+        </div>
+</div>
+
+    <!-- Top Documents Section -->
+    <div class="content-section">
+        <h2 class="section-title">Top Documents</h2>
+        <div class="top-documents">
+            @foreach (var doc in Model.TopDocuments)
+        {
+            var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
+            && Model.UserLikedDocuments[doc.DocumentId];
+
+            <div class="top-document-card">
+                <div class="document-preview">
+                    <div class="document-preview-title">
+                        <a asp-controller="Document" asp-action="ViewFile" asp-route-id="@doc.DocumentId">
+                            @doc.Title
+                        </a>
+                    </div>
+                </div>
+                <h3 class="document-title">@doc.Description</h3>
+
+                <button class="like-button @(isLiked ? "liked" : "")"
+                        data-id="@doc.DocumentId">
+                    @(isLiked ? "👎" : "👍")
+                </button>
+
+                <div class="completion-badge">
+                    <span>
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7.99997 20H17.1919C17.9865 20 18.7058 19.5296 19.0243 18.8016L21.8323 12.3833C21.9429 12.1305 22 11.8576 22 11.5816V11C22 9.89543 21.1045 9 20 9H13.5L14.7066 4.5757C14.8772 3.95023 14.5826 3.2913 14.0027 3.00136V3.00136C13.4204 2.7102 12.7134 2.87256 12.3164 3.3886L8.41472 8.46082C8.14579 8.81044 7.99997 9.23915 7.99997 9.68024V20ZM7.99997 20H2V10H7.99997V20Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                    </span>
+                    <div class="completion-badge">
+                        <span>👍🏼</span>
+                        <span class="completion-percentage">
+                            @doc.LikeCount
+                            </span>
+                    </div>
                 </div>
             </div>
-
-            <!-- Top Documents Section -->
-            <div class="content-section">
-                <h2 class="section-title">Top Documents</h2>
-                <div class="top-documents">
-
-                    @foreach (var doc in Model.TopDocuments)
-                    {
-                        <div class="top-document-card">
-                            <div class="document-preview">
-                                <div class="document-preview-title">@doc.Title</div>
-                            </div>
-                            <h3 class="document-title">@doc.Description</h3>
-                            <div class="completion-badge">
-                                <span>
-                                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7.99997 20H17.1919C17.9865 20 18.7058 19.5296 19.0243 18.8016L21.8323 12.3833C21.9429 12.1305 22 11.8576 22 11.5816V11C22 9.89543 21.1045 9 20 9H13.5L14.7066 4.5757C14.8772 3.95023 14.5826 3.2913 14.0027 3.00136V3.00136C13.4204 2.7102 12.7134 2.87256 12.3164 3.3886L8.41472 8.46082C8.14579 8.81044 7.99997 9.23915 7.99997 9.68024V20ZM7.99997 20H2V10H7.99997V20Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                                </span>
-
-                                <span class="completion-percentage">@doc.LikeCount</span>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
+        }
+  
         </div>
     </div>
 </div>
+{
+else{
+    <h1>Please login</h1>
+}
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/Home/HomePage.js" asp-append-version="true"></script>

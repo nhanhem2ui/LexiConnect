@@ -54,6 +54,7 @@ namespace BusinessObjects
         public int ViewCount { get; set; } = 0;
         public int LikeCount { get; set; } = 0;
 
+        public string? FilePDFpath { get; set; }
         // Flags
         public bool IsPremiumOnly { get; set; } = false;
         public bool IsAiGenerated { get; set; } = false;

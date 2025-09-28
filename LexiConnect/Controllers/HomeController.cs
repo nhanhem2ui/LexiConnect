@@ -11,31 +11,31 @@ using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
-    public class HomeController : Controller
+    public class Home2Controller : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IGenericRepository<University> _universityRepository;
+        private readonly IGenericRepository<Users> _userRepository;
         private readonly IGenericRepository<Major> _majorRepository;
         private readonly IGenericRepository<Course> _courseRepository;
         private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Users> _userRepository;
         private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
+        private readonly IGenericRepository<DocumentLike> _documentLikeRepository;
         private readonly IGenericRepository<UserFollower> _userFollowerRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-
-        public HomeController(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
+        public Home2Controller(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
             IGenericRepository<Course> courseRepository, IGenericRepository<Document> documentRepository,
             IGenericRepository<Users> userRepository, IGenericRepository<RecentViewed> recentViewedRepository,
-            IGenericRepository<UserFollower> userFollowerRepository, IGenericRepository<Major> majorRepository, IWebHostEnvironment webHostEnvironment)
+            IGenericRepository<UserFollower> userFollowerRepository, IGenericRepository<Major> majorRepository, IWebHostEnvironment webHostEnvironment, IGenericRepository<DocumentLike> documentLikeRepository)
         {
             _logger = logger;
             _universityRepository = universityRepository;
-            _documentRepository = documentRepository;
             _courseRepository = courseRepository;
             _userRepository = userRepository;
             _documentRepository = documentRepository;
             _recentViewedRepository = recentViewedRepository;
+            _documentLikeRepository = documentLikeRepository;
             _userFollowerRepository = userFollowerRepository;
             _majorRepository = majorRepository;
             _webHostEnvironment = webHostEnvironment;
@@ -84,17 +84,26 @@ namespace LexiConnect.Controllers
                 .Include(c => c.Uploader)
                 .Include(c => c.ApprovedByUser)
                 .ThenInclude(m => m.University)
-                .OrderByDescending(c => c.ViewCount)
+
+                .OrderByDescending(c => c.LikeCount)
                 .Take(3);
+
+            // Load user liked status for top documents
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userLikedDocs = GetUserLikedDocumentsAsync(topdocuments, userId);
 
             var model = new HomePageViewModel
             {
                 RecentVieweds = recentvieweds,
-                TopDocuments = topdocuments
+                TopDocuments = topdocuments,
+                UserLikedDocuments = userLikedDocs.Result
             };
+
 
             return View(model);
         }
+
+
 
         [HttpGet]
         [Authorize]
@@ -321,5 +330,38 @@ namespace LexiConnect.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
+
+        // Method ?? load like status cho user
+        private async Task<Dictionary<int, bool>> GetUserLikedDocumentsAsync(IQueryable<Document> documents, string userId)
+        {
+            var userLikedDocuments = new Dictionary<int, bool>();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                // N?u user ch?a ??ng nh?p, t?t c? documents ??u ch?a ???c like
+                foreach (var doc in documents)
+                {
+                    userLikedDocuments[doc.DocumentId] = false;
+                }
+                return userLikedDocuments;
+            }
+
+            // L?y danh s�ch document IDs m� user ?� like
+            var likedDocumentIds = await _documentLikeRepository
+                .GetAllQueryable(dl => dl.UserId == userId, asNoTracking: true)
+                .Select(dl => dl.DocumentId)
+                .ToListAsync();
+
+            // Populate dictionary
+            foreach (var doc in documents)
+            {
+                userLikedDocuments[doc.DocumentId] = likedDocumentIds.Contains(doc.DocumentId);
+            }
+
+            return userLikedDocuments;
+        }
+
     }
 }

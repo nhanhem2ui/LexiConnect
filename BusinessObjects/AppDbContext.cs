@@ -14,6 +14,9 @@ namespace BusinessObjects
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentReview> DocumentReviews { get; set; }
         public DbSet<DocumentTag> DocumentTags { get; set; }
+
+        public DbSet<DocumentLike> DocumentLikes { get; set; }
+
         public DbSet<Major> Majors { get; set; }
         public DbSet<PointTransaction> PointTransactions { get; set; }
         public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
@@ -69,6 +72,16 @@ namespace BusinessObjects
                 .HasMany(d => d.Tags)
                 .WithMany()
                 .UsingEntity(j => j.ToTable("DocumentDocumentTags"));
+
+            modelBuilder.Entity<DocumentLike>()
+                .HasOne(d => d.Document)
+                .WithOne()
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<DocumentLike>()
+                .HasOne(d => d.User)
+                .WithOne()
+                .OnDelete(DeleteBehavior.NoAction);
 
             // =============== ACADEMIC STRUCTURE RELATIONSHIPS ===============
             modelBuilder.Entity<Major>()
