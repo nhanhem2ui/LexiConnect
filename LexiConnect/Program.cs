@@ -110,19 +110,6 @@ builder.Services.AddAuthentication(options =>
     options.SaveTokens = true;
 });
 
-static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
-{
-    string[] roleNames = { "Admin", "User", "Moderator" };
-
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-}
-
 var app = builder.Build();
 
 // make ASP.NET respect X-Forwarded headers from proxy
@@ -130,12 +117,6 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
     ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 });
-
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await SeedRoles(roleManager);
-}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
