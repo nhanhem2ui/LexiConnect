@@ -4,6 +4,7 @@ using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
@@ -86,6 +87,8 @@ builder.Services.AddSession(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.ExpireTimeSpan = TimeSpan.FromDays(2);
     options.SlidingExpiration = true;
     options.LoginPath = "/Auth/Signin";
@@ -122,6 +125,12 @@ static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
 
 var app = builder.Build();
 
+// make ASP.NET respect X-Forwarded headers from proxy
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -138,6 +147,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseForwardedHeaders(); 
+app.UseCookiePolicy();
 app.UseSession();
 
 app.UseRouting();
@@ -148,7 +159,5 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Introduction}/{id?}");
-
-
 
 app.Run();

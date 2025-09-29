@@ -1,5 +1,5 @@
 ﻿@{
-ViewData["Title"] = "Dashboard - LexiConnect";
+    ViewData["Title"] = "Dashboard - LexiConnect";
 }
 @model LexiConnect.Models.ViewModels.HomePageViewModel
 
@@ -8,97 +8,94 @@ ViewData["Title"] = "Dashboard - LexiConnect";
 </head>
 
 @if (User.Identity.IsAuthenticated)
-}
-<div class="dashboard-page">
-    <div class="dashboard-container">
+{
+    <div class="dashboard-page">
+        <div class="dashboard-container">
 
-        <partial name="_SideBar"></partial>
+            <partial name="_SideBar"></partial>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Action Buttons -->
-            <div class="action-buttons">
-                <a href="#" class="btn-action">
-                    <span>
-                        <svg viewBox="0 0 16 16" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill="#000000" fill-rule="evenodd" d="M8,16 C3.58172,16 0,12.4183 0,8 C0,3.58172 3.58172,0 8,0 C12.4183,0 16,3.58172 16,8 C16,12.4183 12.4183,16 8,16 Z M4.4325,6.19122 C4.4325,5.7729 4.57483,5.34907 4.8595,4.91974 C5.14417,4.49041 5.5595,4.13484 6.1055,3.85303 C6.6515,3.57121 7.28848,3.43033 8.01648,3.43033 C8.69315,3.43033 9.2905,3.54811 9.8085,3.78369 C10.3265,4.01927 10.7267,4.33961 11.009,4.74472 C11.2913,5.14983 11.4325,5.59017 11.4325,6.06573 C11.4325,6.44002 11.352,6.76805 11.191,7.04987 C11.03,7.33168 10.8387,7.57497 10.617,7.77972 C10.3953,7.98448 9.9975,8.32904 9.42349,8.81342 C9.26483,8.94992 9.13766,9.06989 9.04199,9.17337 C8.94633,9.27685 8.87516,9.37153 8.82849,9.4574 C8.4428,10.3468 6.77018,10.2464 7.0925,9.00165 C7.21383,8.73084 7.37483,8.49306 7.5755,8.2883 C7.77617,8.08354 8.04681,7.84026 8.38748,7.55844 C8.68615,7.31185 8.902,7.12583 9.035,7.00034 C9.168,6.87484 9.28,6.73502 9.371,6.5809 C9.462,6.42678 9.50748,6.25946 9.50748,6.07892 C9.50748,5.72665 9.36867,5.42944 9.091,5.18726 C8.81334,4.94507 8.45515,4.82397 8.01648,4.82397 C7.50314,4.82397 7.12514,4.94616 6.88248,5.19055 C6.63981,5.43494 6.43448,5.79491 6.26648,6.27048 C6.10781,6.76806 5.80683,7.01685 5.36349,7.01685 C5.10216,7.01685 4.88166,6.92988 4.702,6.75595 C4.52233,6.58202 4.4325,6.39378 4.4325,6.19122 Z M8,13 C7.44771,13 7,12.5523 7,12 C7,11.4477 7.44771,11 8,11 C8.55229,11 9,11.4477 9,12 C9,12.5523 8.55229,13 8,13 Z"></path> </g></svg>
-                    </span>
-                    Create a quiz
-                </a>
-                <a href="#" class="btn-action">
-                    <span>
-                        <svg version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="24" height="24" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Guides"> <g id="_x32_0_px_2_"> </g> <g id="_x32_0px"> </g> <g id="_x34_0px"> </g> <g id="_x34_4_px"> </g> <g id="_x34_8px"> <g id="_x31_6px"> </g> <g id="square_4px"> <g id="_x32_8_px"> <g id="square_4px_2_"> </g> <g id="square_4px_3_"> </g> <g id="square_4px_1_"> </g> <g id="_x32_4_px_2_"> </g> <g id="_x31_2_px"> </g> </g> </g> </g> <g id="Icons"> </g> <g id="_x32_0_px"> </g> <g id="square_6px"> <g id="_x31_2_PX"> </g> </g> <g id="_x33_6_px"> <g id="_x33_2_px"> <g id="_x32_8_px_1_"> <g id="square_6px_1_"> </g> <g id="_x32_0_px_1_"> <g id="_x31_2_PX_2_"> </g> <g id="_x34_8_px"> <g id="_x32_4_px"> </g> <g id="_x32_4_px_1_"> </g> </g> </g> </g> </g> </g> <g id="_x32_0_px_3_"> </g> <g id="_x32_0_px_4_"> </g> <g id="New_Symbol_8"> <g id="_x32_4_px_3_"> </g> </g> </g> <g id="Artboard"> </g> <g id="Free_Icons"> <g> <polygon style="fill:none;stroke:#000000;stroke-linejoin:round;stroke-miterlimit:10;" points="19,18.5 14.5,18.5 9.5,23.5 9.5,18.5 5,18.5 0.5,14 0.5,5 5,0.5 19,0.5 23.5,5 23.5,14 "></polygon> <rect x="16.939" y="8.939" transform="matrix(0.7071 0.7071 -0.7071 0.7071 12.3431 -9.799)" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" width="2.121" height="2.121"></rect> <rect x="10.939" y="8.939" transform="matrix(0.7071 0.7071 -0.7071 0.7071 10.5858 -5.5563)" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" width="2.121" height="2.121"></rect> <rect x="4.939" y="8.939" transform="matrix(0.7071 0.7071 -0.7071 0.7071 8.8284 -1.3137)" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" width="2.121" height="2.121"></rect> </g> </g> </g></svg>
-                    </span>
-                    Ask a Question
-                </a>
-                <a href="#" class="btn-action">
-                    <span>
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="File / Note_Edit"> <path id="Vector" d="M10.0002 4H7.2002C6.08009 4 5.51962 4 5.0918 4.21799C4.71547 4.40973 4.40973 4.71547 4.21799 5.0918C4 5.51962 4 6.08009 4 7.2002V16.8002C4 17.9203 4 18.4801 4.21799 18.9079C4.40973 19.2842 4.71547 19.5905 5.0918 19.7822C5.5192 20 6.07899 20 7.19691 20H16.8031C17.921 20 18.48 20 18.9074 19.7822C19.2837 19.5905 19.5905 19.2839 19.7822 18.9076C20 18.4802 20 17.921 20 16.8031V14M16 5L10 11V14H13L19 8M16 5L19 2L22 5L19 8M16 5L19 8" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
-                    </span>
-                    Summarize Notes
-                </a>
-            </div>
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="#" class="btn-action">
+                        <span>
+                            <svg viewBox="0 0 16 16" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill="#000000" fill-rule="evenodd" d="M8,16 C3.58172,16 0,12.4183 0,8 C0,3.58172 3.58172,0 8,0 C12.4183,0 16,3.58172 16,8 C16,12.4183 12.4183,16 8,16 Z M4.4325,6.19122 C4.4325,5.7729 4.57483,5.34907 4.8595,4.91974 C5.14417,4.49041 5.5595,4.13484 6.1055,3.85303 C6.6515,3.57121 7.28848,3.43033 8.01648,3.43033 C8.69315,3.43033 9.2905,3.54811 9.8085,3.78369 C10.3265,4.01927 10.7267,4.33961 11.009,4.74472 C11.2913,5.14983 11.4325,5.59017 11.4325,6.06573 C11.4325,6.44002 11.352,6.76805 11.191,7.04987 C11.03,7.33168 10.8387,7.57497 10.617,7.77972 C10.3953,7.98448 9.9975,8.32904 9.42349,8.81342 C9.26483,8.94992 9.13766,9.06989 9.04199,9.17337 C8.94633,9.27685 8.87516,9.37153 8.82849,9.4574 C8.4428,10.3468 6.77018,10.2464 7.0925,9.00165 C7.21383,8.73084 7.37483,8.49306 7.5755,8.2883 C7.77617,8.08354 8.04681,7.84026 8.38748,7.55844 C8.68615,7.31185 8.902,7.12583 9.035,7.00034 C9.168,6.87484 9.28,6.73502 9.371,6.5809 C9.462,6.42678 9.50748,6.25946 9.50748,6.07892 C9.50748,5.72665 9.36867,5.42944 9.091,5.18726 C8.81334,4.94507 8.45515,4.82397 8.01648,4.82397 C7.50314,4.82397 7.12514,4.94616 6.88248,5.19055 C6.63981,5.43494 6.43448,5.79491 6.26648,6.27048 C6.10781,6.76806 5.80683,7.01685 5.36349,7.01685 C5.10216,7.01685 4.88166,6.92988 4.702,6.75595 C4.52233,6.58202 4.4325,6.39378 4.4325,6.19122 Z M8,13 C7.44771,13 7,12.5523 7,12 C7,11.4477 7.44771,11 8,11 C8.55229,11 9,11.4477 9,12 C9,12.5523 8.55229,13 8,13 Z"></path> </g></svg>
+                        </span>
+                        Create a quiz
+                    </a>
+                    <a href="#" class="btn-action">
+                        <span>
+                            <svg version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="24" height="24" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="Guides"> <g id="_x32_0_px_2_"> </g> <g id="_x32_0px"> </g> <g id="_x34_0px"> </g> <g id="_x34_4_px"> </g> <g id="_x34_8px"> <g id="_x31_6px"> </g> <g id="square_4px"> <g id="_x32_8_px"> <g id="square_4px_2_"> </g> <g id="square_4px_3_"> </g> <g id="square_4px_1_"> </g> <g id="_x32_4_px_2_"> </g> <g id="_x31_2_px"> </g> </g> </g> </g> <g id="Icons"> </g> <g id="_x32_0_px"> </g> <g id="square_6px"> <g id="_x31_2_PX"> </g> </g> <g id="_x33_6_px"> <g id="_x33_2_px"> <g id="_x32_8_px_1_"> <g id="square_6px_1_"> </g> <g id="_x32_0_px_1_"> <g id="_x31_2_PX_2_"> </g> <g id="_x34_8_px"> <g id="_x32_4_px"> </g> <g id="_x32_4_px_1_"> </g> </g> </g> </g> </g> </g> <g id="_x32_0_px_3_"> </g> <g id="_x32_0_px_4_"> </g> <g id="New_Symbol_8"> <g id="_x32_4_px_3_"> </g> </g> </g> <g id="Artboard"> </g> <g id="Free_Icons"> <g> <polygon style="fill:none;stroke:#000000;stroke-linejoin:round;stroke-miterlimit:10;" points="19,18.5 14.5,18.5 9.5,23.5 9.5,18.5 5,18.5 0.5,14 0.5,5 5,0.5 19,0.5 23.5,5 23.5,14 "></polygon> <rect x="16.939" y="8.939" transform="matrix(0.7071 0.7071 -0.7071 0.7071 12.3431 -9.799)" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" width="2.121" height="2.121"></rect> <rect x="10.939" y="8.939" transform="matrix(0.7071 0.7071 -0.7071 0.7071 10.5858 -5.5563)" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" width="2.121" height="2.121"></rect> <rect x="4.939" y="8.939" transform="matrix(0.7071 0.7071 -0.7071 0.7071 8.8284 -1.3137)" style="fill:none;stroke:#000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;" width="2.121" height="2.121"></rect> </g> </g> </g></svg>
+                        </span>
+                        Ask a Question
+                    </a>
+                    <a href="#" class="btn-action">
+                        <span>
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g id="File / Note_Edit"> <path id="Vector" d="M10.0002 4H7.2002C6.08009 4 5.51962 4 5.0918 4.21799C4.71547 4.40973 4.40973 4.71547 4.21799 5.0918C4 5.51962 4 6.08009 4 7.2002V16.8002C4 17.9203 4 18.4801 4.21799 18.9079C4.40973 19.2842 4.71547 19.5905 5.0918 19.7822C5.5192 20 6.07899 20 7.19691 20H16.8031C17.921 20 18.48 20 18.9074 19.7822C19.2837 19.5905 19.5905 19.2839 19.7822 18.9076C20 18.4802 20 17.921 20 16.8031V14M16 5L10 11V14H13L19 8M16 5L19 2L22 5L19 8M16 5L19 8" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g> </g></svg>
+                        </span>
+                        Summarize Notes
+                    </a>
+                </div>
 
-            @foreach (var recent in Model.RecentVieweds)
-            {
-                <div class="document-card">
-                    <div class="document-header">
-                        <div>
-                            <h3 class="document-title">@recent.Document.Title</h3>
-                            <p class="document-meta"># PRF192, #Programming</p>
-                            <p class="document-meta">100 Document</p>
+                @foreach (var recent in Model.RecentVieweds)
+                {
+                    <div class="document-card">
+                        <div class="document-header">
+                            <div>
+                                <h3 class="document-title">@recent.Document.Title</h3>
+                                <p class="document-meta"># PRF192, #Programming</p>
+                                <p class="document-meta">100 Document</p>
+                            </div>
+                        </div>
+                        <div class="document-actions">
+                            <button class="btn-add">+ Add to library</button>
                         </div>
                     </div>
-                    <div class="document-actions">
-                        <button class="btn-add">+ Add to library</button>
-                    </div>
-                </div>
-            }
-        </div>
-</div>
+                }
 
-    <!-- Top Documents Section -->
-    <div class="content-section">
-        <h2 class="section-title">Top Documents</h2>
-        <div class="top-documents">
-            @foreach (var doc in Model.TopDocuments)
-        {
-            var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
-            && Model.UserLikedDocuments[doc.DocumentId];
+                <!-- Top Documents Section -->
+                <div class="content-section">
+                    <h2 class="section-title">Top Documents</h2>
+                    <div class="top-documents">
+                        @foreach (var doc in Model.TopDocuments)
+                        {
+                            var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
+                                && Model.UserLikedDocuments[doc.DocumentId];
 
-            <div class="top-document-card">
-                <div class="document-preview">
-                    <div class="document-preview-title">
-                        <a asp-controller="Document" asp-action="ViewFile" asp-route-id="@doc.DocumentId">
-                            @doc.Title
-                        </a>
-                    </div>
-                </div>
-                <h3 class="document-title">@doc.Description</h3>
+                            <div class="top-document-card">
+                                <div class="document-preview">
+                                    <div class="document-preview-title">
+                                        <a asp-controller="Document" asp-action="ViewFile" asp-route-id="@doc.DocumentId">
+                                            @doc.Title
+                                        </a>
+                                    </div>
+                                </div>
+                                <h3 class="document-title">@doc.Description</h3>
 
-                <button class="like-button @(isLiked ? "liked" : "")"
-                        data-id="@doc.DocumentId">
-                    @(isLiked ? "👎" : "👍")
-                </button>
+                                <button class="like-button @(isLiked ? "liked" : "")"
+                                        data-id="@doc.DocumentId">
+                                    @(isLiked ? "👍" : "👎")
+                                </button>
 
-                <div class="completion-badge">
-                    <span>
-                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7.99997 20H17.1919C17.9865 20 18.7058 19.5296 19.0243 18.8016L21.8323 12.3833C21.9429 12.1305 22 11.8576 22 11.5816V11C22 9.89543 21.1045 9 20 9H13.5L14.7066 4.5757C14.8772 3.95023 14.5826 3.2913 14.0027 3.00136V3.00136C13.4204 2.7102 12.7134 2.87256 12.3164 3.3886L8.41472 8.46082C8.14579 8.81044 7.99997 9.23915 7.99997 9.68024V20ZM7.99997 20H2V10H7.99997V20Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
-                    </span>
-                    <div class="completion-badge">
-                        <span>👍🏼</span>
-                        <span class="completion-percentage">
-                            @doc.LikeCount
-                            </span>
+                                <div class="completion-badge">
+                                    <span>
+                                        <svg viewBox="0 -0.5 21 21" width="21" height="21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>like [#1385]</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Dribbble-Light-Preview" transform="translate(-259.000000, -760.000000)" fill="#000000"> <g id="icons" transform="translate(56.000000, 160.000000)"> <path d="M203,620 L207.200006,620 L207.200006,608 L203,608 L203,620 Z M223.924431,611.355 L222.100579,617.89 C221.799228,619.131 220.638976,620 219.302324,620 L209.300009,620 L209.300009,608.021 L211.104962,601.825 C211.274012,600.775 212.223214,600 213.339366,600 C214.587817,600 215.600019,600.964 215.600019,602.153 L215.600019,608 L221.126177,608 C222.97313,608 224.340232,609.641 223.924431,611.355 L223.924431,611.355 Z" id="like-[#1385]"> </path> </g> </g> </g> </g></svg>
+                                    </span>
+                                    <span class="completion-percentage">
+                                        @doc.LikeCount
+                                    </span>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
-        }
-  
         </div>
     </div>
-</div>
+}
+else
 {
-else{
     <h1>Please login</h1>
 }
 

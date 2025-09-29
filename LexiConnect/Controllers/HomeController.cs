@@ -11,7 +11,7 @@ using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
-    public class Home2Controller : Controller
+    public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IGenericRepository<University> _universityRepository;
@@ -24,7 +24,7 @@ namespace LexiConnect.Controllers
         private readonly IGenericRepository<UserFollower> _userFollowerRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public Home2Controller(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
+        public HomeController(ILogger<HomeController> logger, IGenericRepository<University> universityRepository,
             IGenericRepository<Course> courseRepository, IGenericRepository<Document> documentRepository,
             IGenericRepository<Users> userRepository, IGenericRepository<RecentViewed> recentViewedRepository,
             IGenericRepository<UserFollower> userFollowerRepository, IGenericRepository<Major> majorRepository, IWebHostEnvironment webHostEnvironment, IGenericRepository<DocumentLike> documentLikeRepository)
