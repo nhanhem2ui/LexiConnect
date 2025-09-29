@@ -1,6 +1,80 @@
 ﻿USE [LexiConnect]
 GO
 
+
+-- Insert the main user first
+INSERT INTO [dbo].[AspNetUsers]
+           ([Id]
+           ,[FullName]
+           ,[AvatarUrl]
+           ,[UniversityId]
+           ,[MajorId]
+           ,[PointsBalance]
+           ,[TotalPointsEarned]
+           ,[SubscriptionPlanId]
+           ,[SubscriptionStartDate]
+           ,[SubscriptionEndDate]
+           ,[UserName]
+           ,[NormalizedUserName]
+           ,[Email]
+           ,[NormalizedEmail]
+           ,[EmailConfirmed]
+           ,[PasswordHash]
+           ,[SecurityStamp]
+           ,[ConcurrencyStamp]
+           ,[PhoneNumber]
+           ,[PhoneNumberConfirmed]
+           ,[TwoFactorEnabled]
+           ,[LockoutEnd]
+           ,[LockoutEnabled]
+           ,[AccessFailedCount])
+     VALUES
+           ('d9e4c226-19b9-499d-81b9-1d653ea1eb0a' -- Id
+           ,'Nguyen Van Bao'                        -- FullName
+           ,'~/image/default-avatar.png'            -- AvatarUrl
+           ,3                                       -- UniversityId (FPT Da Nang)
+           ,1                                       -- MajorId (Software Engineering)
+           ,500                                     -- PointsBalance
+           ,500                                     -- TotalPointsEarned
+           ,2                                       -- SubscriptionPlanId
+           ,'2025-01-01 00:00:00.0000000'           -- SubscriptionStartDate
+           ,'2027-01-01 00:00:00.0000000'           -- SubscriptionEndDate
+           ,'nhanhem3ui@gmail.com'                  -- UserName
+           ,'NHANHEM3UI@GMAIL.COM'                  -- NormalizedUserName
+           ,'nhanhem3ui@gmail.com'                  -- Email
+           ,'NHANHEM3UI@GMAIL.COM'                  -- NormalizedEmail
+           ,1                                       -- EmailConfirmed (True)
+           ,NULL                                    -- PasswordHash
+           ,'CKAWSLDS2KKZDHVCB2SGKZTCZ6ARX2CY'      -- SecurityStamp
+           ,'ef41aeaf-f358-4c7a-b819-e732a097bd0f'  -- ConcurrencyStamp
+           ,NULL                                    -- PhoneNumber
+           ,0                                       -- PhoneNumberConfirmed (False)
+           ,0                                       -- TwoFactorEnabled (False)
+           ,NULL                                    -- LockoutEnd
+           ,1                                       -- LockoutEnabled (True)
+           ,0)                                      -- AccessFailedCount
+GO
+
+-- Add additional test users
+INSERT INTO [dbo].[AspNetUsers]
+           ([Id], [FullName], [AvatarUrl], [UniversityId], [MajorId], [PointsBalance], [TotalPointsEarned], 
+            [SubscriptionPlanId], [SubscriptionStartDate], [SubscriptionEndDate], [UserName], [NormalizedUserName], 
+            [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], 
+            [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount])
+VALUES
+    ('a1b2c3d4-e5f6-7890-1234-567890abcdef', 'Tran Thi Mai', '~/image/avatar-mai.png', 1, 9, 250, 300, 1, NULL, NULL, 
+     'tran.mai@vnu.edu.vn', 'TRAN.MAI@VNU.EDU.VN', 'tran.mai@vnu.edu.vn', 'TRAN.MAI@VNU.EDU.VN', 1, NULL, 
+     'ABC123DEF456', 'uuid-mai-123', NULL, 0, 0, NULL, 1, 0),
+    
+    ('b2c3d4e5-f6g7-8901-2345-678901bcdefg', 'Le Van Duc', '~/image/avatar-duc.png', 2, 12, 150, 200, 1, NULL, NULL,
+     'le.duc@vnuhcm.edu.vn', 'LE.DUC@VNUHCM.EDU.VN', 'le.duc@vnuhcm.edu.vn', 'LE.DUC@VNUHCM.EDU.VN', 1, NULL,
+     'DEF789GHI012', 'uuid-duc-456', NULL, 0, 0, NULL, 1, 0),
+     
+    ('c3d4e5f6-g7h8-9012-3456-789012cdefgh', 'Pham Thi Linh', '~/image/avatar-linh.png', 3, 3, 350, 450, 2, 
+     '2024-09-01 00:00:00.0000000', '2025-09-01 00:00:00.0000000', 'pham.linh@fpt.edu.vn', 'PHAM.LINH@FPT.EDU.VN', 
+     'pham.linh@fpt.edu.vn', 'PHAM.LINH@FPT.EDU.VN', 1, NULL, 'GHI345JKL678', 'uuid-linh-789', NULL, 0, 0, NULL, 1, 0);
+GO
+
 SET IDENTITY_INSERT [dbo].[Countries] ON;
 INSERT INTO [dbo].[Countries] ([Id],[CountryName])
 VALUES 
@@ -132,26 +206,23 @@ VALUES
 -- Example Document 1
 (1, N'PRF192 Lecture Notes', N'Full lecture notes for Programming Fundamentals.',
  'notes', N'/uploads/docs/PRF192_notes.pdf', 524288, 'pdf',
- N'/uploads/thumbnails/PRF192_notes.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 1, NULL, 
+ N'/uploads/thumbnails/PRF192_notes.png', 'd9e4c226-19b9-499d-81b9-1d653ea1eb0a', 1, NULL, 
  10, 5, 0, 0, 0, 0, 0, NULL, 
  'approved', NULL, GETDATE(), 'en', 120, GETDATE(), GETDATE()),
 
 -- Example Document 2
 (2, N'OOP with Java Assignment', N'Assignment 1 for Java OOP course.',
  'assignment', N'/uploads/docs/PRO201_assignment1.docx', 1048576, 'docx',
- N'/uploads/thumbnails/PRO201_assignment1.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 2, NULL,
+ N'/uploads/thumbnails/PRO201_assignment1.png', 'd9e4c226-19b9-499d-81b9-1d653ea1eb0a', 2, NULL,
  15, 10, 0, 0, 0, 0, 1, 0.95,
  'pending', NULL, NULL, 'en', 15, GETDATE(), GETDATE()),
 
 -- Example Document 3
 (3, N'Database Systems Quiz', N'Quiz with answers for DBI202.',
  'quiz', N'/uploads/docs/DBI202_quiz.pdf', 256000, 'pdf',
- N'/uploads/thumbnails/DBI202_quiz.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 3, NULL,
+ N'/uploads/thumbnails/DBI202_quiz.png', 'd9e4c226-19b9-499d-81b9-1d653ea1eb0a', 3, NULL,
  5, 3, 0, 0, 0, 0, 0, NULL,
  'approved', NULL, GETDATE(), 'en', 10, GETDATE(), GETDATE());
 
 SET IDENTITY_INSERT [dbo].[Documents] OFF;
 GO
-
-GO
-
