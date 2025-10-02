@@ -25,22 +25,21 @@ namespace LexiConnect.Models.ViewModels
         [Display(Name = "Major")]
         public int? MajorId { get; set; }
 
-        // Current avatar URL (for display purposes)
         public string AvatarUrl { get; set; } = "~/image/default-avatar.png";
 
-        // File upload for new avatar
         [Display(Name = "Profile Picture")]
         public IFormFile? AvatarFile { get; set; }
 
-        // Read-only properties for display
         public int PointsBalance { get; set; }
         public int TotalPointsEarned { get; set; }
         public int DocumentCount { get; set; }
 
-        // Subscription information (read-only)
         public SubscriptionPlan? SubscriptionPlan { get; set; }
         public DateTime? SubscriptionStartDate { get; set; }
         public DateTime? SubscriptionEndDate { get; set; }
+
+        // 👇 Needed for model binding
+        public EditProfileViewModel() { }
 
         public EditProfileViewModel(Users user, int documentCount = 0)
         {
@@ -49,7 +48,7 @@ namespace LexiConnect.Models.ViewModels
             PhoneNumber = user.PhoneNumber;
             UniversityId = user.UniversityId;
             MajorId = user.MajorId;
-            AvatarUrl = user.AvatarUrl;
+            AvatarUrl = user.AvatarUrl ?? "~/image/default-avatar.png";
             PointsBalance = user.PointsBalance;
             TotalPointsEarned = user.TotalPointsEarned;
             DocumentCount = documentCount;

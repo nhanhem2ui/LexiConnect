@@ -1,14 +1,12 @@
 ﻿using BusinessObjects;
 using LexiConnect.Models.VnPay;
 using LexiConnect.Services.VnPay;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repositories;
 using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
-    [Authorize]
     public class PaymentController : Controller
     {
         private readonly IVnPayService _vnPayService;

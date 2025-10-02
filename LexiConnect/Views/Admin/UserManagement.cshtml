@@ -1,0 +1,370 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "User Management";
+}
+@model LexiConnect.Models.ViewModels.UserManagementViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Admin/UserManagement.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <partial name="_Sidebar" />
+
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">User Management</h1>
+                    <p class="page-subtitle">Manage and monitor all users in the system</p>
+                </div>
+                <!-- Quick Stats -->
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <span class="stat-number">@Model.TotalUsers</span>
+                        <span class="stat-label">Total Users</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">@Model.ActiveSubscriptions</span>
+                        <span class="stat-label">Active Premium</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">@Model.NewUsersThisMonth</span>
+                        <span class="stat-label">Verified Users</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+                <form method="get" asp-action="UserManagement">
+                    <div class="controls-row">
+                        <div class="search-group">
+                            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <input type="text" class="search-input" name="search" 
+                                   placeholder="Search by name, username, email, or university..." 
+                                   value="@ViewBag.SearchTerm" />
+                        </div>
+                    </div>
+                    
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <select class="select-input" name="subscription" asp-items="ViewBag.SubscriptionFilterList">
+                                <option value="">All Subscriptions</option>
+                            </select>
+
+                            <select class="select-input" name="university" asp-items="ViewBag.UniversityFilterList">
+                                <option value="">All Universities</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="sort-row">
+                        <div class="sort-group">
+                            <label>Sort by:</label>
+                            <select class="select-input" asp-for="SortBy" name="sortBy" asp-items="ViewBag.SortByList"></select>
+
+                            <select class="select-input" asp-for="SortOrder" name="sortOrder" asp-items="ViewBag.SortOrderList"></select>
+
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                            <a href="@Url.Action("UserManagement", "Admin")" class="btn btn-outline">Clear All</a>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="results-info">
+                    <span>Showing <strong>@Model.Users.Count()</strong> of <strong>@Model.TotalCount</strong> users</span>
+                    <span>Page @Model.CurrentPage of @Model.TotalPages</span>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                @if (Model.Users?.Any() == true)
+                {
+                    <table class="users-table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>University</th>
+                                <th>Subscription</th>
+                                <th>Points</th>
+                                <th>Activity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model.Users)
+                            {
+                                var isLocked = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.Now;
+                                var hasActiveSub = user.SubscriptionPlan != null && 
+                                                  user.SubscriptionPlan.Name != "FREE" &&
+                                                  user.SubscriptionEndDate.HasValue &&
+                                                  user.SubscriptionEndDate.Value > DateTime.Now;
+                                
+                                <tr class="@(isLocked ? "user-suspended" : "")">
+                                    <td>
+                                        <div class="user-info">
+                                            <img src="@user.AvatarUrl" alt="Avatar" class="user-avatar" />
+                                            <div class="user-details">
+                                                <h4>
+                                                    @user.FullName
+                                                    @if (!user.EmailConfirmed)
+                                                    {
+                                                        <span class="unverified-badge" title="Email Not Verified">⚠️</span>
+                                                    }
+                                                </h4>
+                                                <p>@@@user.UserName</p>
+                                                <small class="text-muted">@user.Email</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="university-info">
+                                            @if (user.University != null)
+                                            {
+                                                <strong>@user.University.Name</strong>
+                                                @if (user.Major != null)
+                                                {
+                                                    <br />
+                                                    <small class="text-muted">@user.Major.Name</small>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Not specified</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (hasActiveSub)
+                                        {
+                                            <span class="subscription-badge premium">
+                                                💎 @user.SubscriptionPlan.Name
+                                            </span>
+                                            <br />
+                                            <small class="text-muted">
+                                                Expires: @user.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")
+                                            </small>
+                                        }
+                                        else if (user.SubscriptionEndDate.HasValue && user.SubscriptionEndDate.Value <= DateTime.Now)
+                                        {
+                                            <span class="subscription-badge expired">Expired</span>
+                                            <br />
+                                            <small class="text-danger">
+                                                @user.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <span class="subscription-badge free">Free</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="points-info">
+                                            <div class="points-item">
+                                                <strong>@user.PointsBalance</strong>
+                                                <small>Current Balance</small>
+                                            </div>
+                                            <div class="points-item">
+                                                <span class="text-muted">@user.TotalPointsEarned</span>
+                                                <small class="text-muted">Total Earned</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="activity-info">
+                                            <div class="activity-item">
+                                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                                @user.UploadedDocuments?.Count() uploads
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (isLocked)
+                                        {
+                                            <span class="status-badge status-suspended">Suspended</span>
+                                        }
+                                        else if (!user.EmailConfirmed)
+                                        {
+                                            <span class="status-badge status-unverified">Unverified</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-active">Active</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a href="@Url.Action("UserDetails", "Admin", new { id = user.Id })" 
+                                               class="btn btn-sm btn-outline" title="View Details">
+                                                View
+                                            </a>
+                                            
+                                            @if (!isLocked)
+                                            {
+                                                <button class="btn btn-sm btn-warning" 
+                                                        onclick="suspendUser('@user.Id', '@user.FullName')" 
+                                                        title="Suspend User">
+                                                    🔒 Suspend
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-sm btn-success" 
+                                                        onclick="unsuspendUser('@user.Id', '@user.FullName')" 
+                                                        title="Unsuspend User">
+                                                    🔓 Unsuspend
+                                                </button>
+                                            }
+                                            
+                                            <button class="btn btn-sm btn-primary" 
+                                                    onclick="showPointsModal('@user.Id', '@user.FullName', @user.PointsBalance)" 
+                                                    title="Adjust Points">
+                                                ⚡ Points
+                                            </button>
+                                            
+                                            <button class="btn btn-sm btn-danger" 
+                                                    onclick="deleteUser('@user.Id', '@user.FullName')" 
+                                                    title="Delete User">
+                                                <svg version="1.0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="14" height="14">
+                                                    <path fill="#ffffff" d="M56,4H40c0-2.211-1.789-4-4-4h-8c-2.211,0-4,1.789-4,4H8C5.789,4,4,5.789,4,8v5c0,0.553,0.447,1,1,1h54 c0.553,0,1-0.447,1-1V8C60,5.789,58.211,4,56,4z M9,16H7v44c0,2.211,1.789,4,4,4h42c2.211,0,4-1.789,4-4V16h-2H9z"/>
+                                                </svg>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <h3>No users found</h3>
+                        <p>@(string.IsNullOrEmpty(ViewBag.SearchTerm?.ToString()) ? "No users match your criteria." : "Try adjusting your search criteria.")</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a href="@Url.Action("UserManagement", new { 
+                            search = ViewBag.SearchTerm, 
+                            subscription = ViewBag.SubscriptionFilter,
+                            university = ViewBag.UniversityFilter,
+                            sortBy = ViewBag.SortBy, 
+                            sortOrder = ViewBag.SortOrder, 
+                            page = Model.CurrentPage - 1 
+                        })" class="pagination-btn">Previous</a>
+                    }
+
+                    @for (int i = Math.Max(1, Model.CurrentPage - 3); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 3); i++)
+                    {
+                        <a href="@Url.Action("UserManagement", new { 
+                            search = ViewBag.SearchTerm, 
+                            subscription = ViewBag.SubscriptionFilter,
+                            university = ViewBag.UniversityFilter,
+                            sortBy = ViewBag.SortBy, 
+                            sortOrder = ViewBag.SortOrder, 
+                            page = i 
+                        })" class="pagination-btn @(i == Model.CurrentPage ? "active" : "")">@i</a>
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a href="@Url.Action("UserManagement", new { 
+                            search = ViewBag.SearchTerm, 
+                            subscription = ViewBag.SubscriptionFilter,
+                            university = ViewBag.UniversityFilter,
+                            sortBy = ViewBag.SortBy, 
+                            sortOrder = ViewBag.SortOrder, 
+                            page = Model.CurrentPage + 1 
+                        })" class="pagination-btn">Next</a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Points Adjustment Modal -->
+    <div id="pointsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Adjust User Points</h3>
+            <p>User: <strong><span id="pointsUserName"></span></strong></p>
+            <p>Current Balance: <strong><span id="currentPoints"></span></strong> points</p>
+            <div class="form-group">
+                <label for="pointsChange">Points Change:</label>
+                <input type="number" id="pointsChange" class="form-control" placeholder="Enter amount (positive or negative)" />
+                <small class="text-muted">Use negative numbers to deduct points</small>
+            </div>
+            <div class="form-group">
+                <label for="pointsReason">Reason:</label>
+                <textarea id="pointsReason" class="form-control" rows="2" placeholder="Reason for adjustment..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closePointsModal()">Cancel</button>
+                <button class="btn btn-primary" id="confirmPointsBtn">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspend Confirmation Modal -->
+    <div id="suspendModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Suspension</h3>
+            <p>Are you sure you want to suspend "<span id="suspendUserName"></span>"?</p>
+            <p class="text-warning"><strong>This will prevent the user from accessing their account.</strong></p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeSuspendModal()">Cancel</button>
+                <button class="btn btn-warning" id="confirmSuspendBtn">Suspend</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsuspend Confirmation Modal -->
+    <div id="unsuspendModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Unsuspension</h3>
+            <p>Are you sure you want to unsuspend "<span id="unsuspendUserName"></span>"?</p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeUnsuspendModal()">Cancel</button>
+                <button class="btn btn-success" id="confirmUnsuspendBtn">Unsuspend</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete "<span id="deleteUserName"></span>"?</p>
+            <p class="text-danger"><strong>This action cannot be undone. All user data will be permanently deleted.</strong></p>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="~/js/Admin/UserManagement.js" asp-append-version="true"></script>
+</body>
+</html>
