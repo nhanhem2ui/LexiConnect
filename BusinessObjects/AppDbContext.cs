@@ -25,6 +25,7 @@ namespace BusinessObjects
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<RecentViewed> RecentVieweds { get; set; }
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
+        public DbSet<Chat> Chats { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -53,6 +54,7 @@ namespace BusinessObjects
                 .WithMany()
                 .HasForeignKey(u => u.SubscriptionPlanId)
                 .OnDelete(DeleteBehavior.SetNull); // SetNull since SubscriptionPlanId is nullable
+
 
             // =============== DOCUMENT RELATIONSHIPS ===============
             modelBuilder.Entity<Document>()
@@ -177,6 +179,17 @@ namespace BusinessObjects
                 .HasForeignKey(rv => rv.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Sender)
+                .WithMany() // A User can send many chats
+                .HasForeignKey(c => c.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Receiver)
+                .WithMany() // A User can receive many chats
+                .HasForeignKey(c => c.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
             // =============== INDEXES ===============
             modelBuilder.Entity<Major>()
                 .HasIndex(m => new { m.Code, m.UniversityId })

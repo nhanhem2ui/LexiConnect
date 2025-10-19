@@ -1,5 +1,6 @@
 using BusinessObjects;
 using DataAccess;
+using LexiConnect.Libraries;
 using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
 using LexiConnect.Services.VnPay;
@@ -34,6 +35,7 @@ builder.Services.AddScoped<IGenericDAO<UserFollower>, UserFollowerDAO>();
 builder.Services.AddScoped<IGenericDAO<RecentViewed>, RecentViewedDAO>();
 builder.Services.AddScoped<IGenericDAO<PaymentRecord>, PaymentRecordDAO>();
 builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
+builder.Services.AddScoped<IGenericDAO<Chat>, ChatDAO>();
 
 //Repository
 builder.Services.AddScoped<IGenericRepository<Country>, CountryRepository>();
@@ -51,6 +53,7 @@ builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerReposit
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
 builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepository>();
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
+builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();
@@ -94,6 +97,15 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Auth/Signin";
     options.LogoutPath = "/Auth/Signout";
     options.AccessDeniedPath = "/Auth/AccessDenied";
+});
+
+//SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15);
 });
 
 // Configure Authentication
@@ -140,5 +152,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Introduction}/{id?}");
+
+app.MapHub<ChatHub>("/ChatHub");
 
 app.Run();

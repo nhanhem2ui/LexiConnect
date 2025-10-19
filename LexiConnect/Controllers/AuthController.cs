@@ -283,7 +283,7 @@ namespace LexiConnect.Controllers
 
         private async Task SignInUserWithClaims(Users user, bool isPersistent)
         {
-            // ✅ Ensure default subscription
+            // Ensure default subscription
             if (user.SubscriptionPlanId == null || user.SubscriptionPlanId == 0)
             {
                 user.SubscriptionPlanId = 1;
