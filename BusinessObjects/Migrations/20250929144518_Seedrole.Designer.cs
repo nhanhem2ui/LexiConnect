@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250911120210_Fix_key")]
-    partial class Fix_key
+    [Migration("20250929144518_Seedrole")]
+    partial class Seedrole
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -76,6 +76,9 @@ namespace BusinessObjects.Migrations
 
                     b.Property<int>("DownloadCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("FilePDFpath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
@@ -150,6 +153,35 @@ namespace BusinessObjects.Migrations
                     b.HasIndex("UploaderId");
 
                     b.ToTable("Documents");
+                });
+
+            modelBuilder.Entity("BusinessObjects.DocumentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LikedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("DocumentLikes");
                 });
 
             modelBuilder.Entity("BusinessObjects.DocumentReview", b =>
@@ -339,6 +371,57 @@ namespace BusinessObjects.Migrations
                         .HasFilter("[Code] IS NOT NULL");
 
                     b.ToTable("Majors");
+                });
+
+            modelBuilder.Entity("BusinessObjects.PaymentRecord", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PaymentRecords");
                 });
 
             modelBuilder.Entity("BusinessObjects.PointTransaction", b =>
@@ -804,6 +887,26 @@ namespace BusinessObjects.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "3",
+                            Name = "Moderator",
+                            NormalizedName = "MODERATOR"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -938,6 +1041,25 @@ namespace BusinessObjects.Migrations
                     b.Navigation("Uploader");
                 });
 
+            modelBuilder.Entity("BusinessObjects.DocumentLike", b =>
+                {
+                    b.HasOne("BusinessObjects.Document", "Document")
+                        .WithOne()
+                        .HasForeignKey("BusinessObjects.DocumentLike", "DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Users", "User")
+                        .WithOne()
+                        .HasForeignKey("BusinessObjects.DocumentLike", "UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObjects.DocumentReview", b =>
                 {
                     b.HasOne("BusinessObjects.Document", "Document")
@@ -966,6 +1088,17 @@ namespace BusinessObjects.Migrations
                         .IsRequired();
 
                     b.Navigation("University");
+                });
+
+            modelBuilder.Entity("BusinessObjects.PaymentRecord", b =>
+                {
+                    b.HasOne("BusinessObjects.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObjects.PointTransaction", b =>

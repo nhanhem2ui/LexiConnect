@@ -1,9 +1,11 @@
 using BusinessObjects;
 using DataAccess;
+using LexiConnect.Libraries;
 using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
@@ -33,6 +35,7 @@ builder.Services.AddScoped<IGenericDAO<UserFollower>, UserFollowerDAO>();
 builder.Services.AddScoped<IGenericDAO<RecentViewed>, RecentViewedDAO>();
 builder.Services.AddScoped<IGenericDAO<PaymentRecord>, PaymentRecordDAO>();
 builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
+builder.Services.AddScoped<IGenericDAO<Chat>, ChatDAO>();
 
 //Repository
 builder.Services.AddScoped<IGenericRepository<Country>, CountryRepository>();
@@ -50,6 +53,7 @@ builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerReposit
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
 builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepository>();
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
+builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();
@@ -86,11 +90,22 @@ builder.Services.AddSession(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.ExpireTimeSpan = TimeSpan.FromDays(2);
     options.SlidingExpiration = true;
     options.LoginPath = "/Auth/Signin";
     options.LogoutPath = "/Auth/Signout";
     options.AccessDeniedPath = "/Auth/AccessDenied";
+});
+
+//SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15);
 });
 
 // Configure Authentication
@@ -107,26 +122,13 @@ builder.Services.AddAuthentication(options =>
     options.SaveTokens = true;
 });
 
-static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
-{
-    string[] roleNames = { "Admin", "User", "Moderator" };
-
-    foreach (var roleName in roleNames)
-    {
-        if (!await roleManager.RoleExistsAsync(roleName))
-        {
-            await roleManager.CreateAsync(new IdentityRole(roleName));
-        }
-    }
-}
-
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+// make ASP.NET respect X-Forwarded headers from proxy
+app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    await SeedRoles(roleManager);
-}
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -138,6 +140,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseForwardedHeaders(); 
+app.UseCookiePolicy();
 app.UseSession();
 
 app.UseRouting();
@@ -149,6 +153,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Introduction}/{id?}");
 
-
+app.MapHub<ChatHub>("/ChatHub");
 
 app.Run();

@@ -14,10 +14,12 @@ namespace LexiConnect.Controllers
     {
         private readonly IGenericRepository<Document> _documentRepository;
         private readonly IGenericRepository<Users> _usersRepository;
-        public AdminController(IGenericRepository<Document> documentRepository, IGenericRepository<Users> userRepository)
+        private readonly UserManager<Users> _userManager;
+        public AdminController(IGenericRepository<Document> documentRepository, IGenericRepository<Users> userRepository, UserManager<Users> userManager)
         {
             _documentRepository = documentRepository;
             _usersRepository = userRepository;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -271,7 +273,7 @@ namespace LexiConnect.Controllers
         [HttpPost]
         public async Task<IActionResult> ApproveDocument(int id)
         {
-            var document = await _documentRepository.GetAsync(d => d.DocumentId == id );
+            var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
             if (document != null)
             {
                 document.Status = "approved";
@@ -305,6 +307,263 @@ namespace LexiConnect.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Error deleting document: " + ex.Message });
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> UserManagement(
+            string search = "",
+            string role = "",
+            string subscription = "",
+            string university = "",
+            string sortBy = "CreatedDate",
+            string sortOrder = "desc",
+            int page = 1,
+            int pageSize = 10)
+        {
+            ViewBag.SearchTerm = search;
+            ViewBag.RoleFilter = role;
+            ViewBag.SubscriptionFilter = subscription;
+            ViewBag.UniversityFilter = university;
+            ViewBag.SortBy = sortBy;
+            ViewBag.SortOrder = sortOrder;
+
+            var query = _usersRepository.GetAllQueryable()
+                .Include(u => u.University)
+                .Include(u => u.Major)
+                .Include(u => u.SubscriptionPlan)
+                .Include(u => u.UploadedDocuments)
+                .AsQueryable();
+
+            // Apply search filter
+            if (!string.IsNullOrEmpty(search))
+            {
+                var searchLower = search.ToLower();
+                query = query.Where(u =>
+                    u.FullName.ToLower().Contains(searchLower) ||
+                    u.UserName.ToLower().Contains(searchLower) ||
+                    u.Email.ToLower().Contains(searchLower) ||
+                    (u.University != null && u.University.Name.ToLower().Contains(searchLower))
+                );
+            }
+
+            // Apply subscription filter
+            if (!string.IsNullOrEmpty(subscription))
+            {
+                if (subscription == "free")
+                {
+                    query = query.Where(u => u.SubscriptionPlan == null || u.SubscriptionPlan.Name == "FREE");
+                }
+                else if (subscription == "active")
+                {
+                    query = query.Where(u => u.SubscriptionPlan != null &&
+                                           u.SubscriptionPlan.Name != "FREE" &&
+                                           u.SubscriptionStartDate.HasValue &&
+                                           u.SubscriptionEndDate.HasValue &&
+                                           u.SubscriptionEndDate.Value > DateTime.Now);
+                }
+                else if (subscription == "expired")
+                {
+                    query = query.Where(u => u.SubscriptionEndDate.HasValue &&
+                                           u.SubscriptionEndDate.Value <= DateTime.Now);
+                }
+            }
+
+            // Apply university filter
+            if (!string.IsNullOrEmpty(university))
+            {
+                query = query.Where(u => u.UniversityId.ToString() == university);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            // Apply sorting
+            query = sortBy.ToLower() switch
+            {
+                "fullname" => sortOrder.ToLower() == "asc"
+                    ? query.OrderBy(u => u.FullName)
+                    : query.OrderByDescending(u => u.FullName),
+                "email" => sortOrder.ToLower() == "asc"
+                    ? query.OrderBy(u => u.Email)
+                    : query.OrderByDescending(u => u.Email),
+                "points" => sortOrder.ToLower() == "asc"
+                    ? query.OrderBy(u => u.PointsBalance)
+                    : query.OrderByDescending(u => u.PointsBalance),
+                "uploads" => sortOrder.ToLower() == "asc"
+                    ? query.OrderBy(u => u.UploadedDocuments.Count)
+                    : query.OrderByDescending(u => u.UploadedDocuments.Count),
+                "subscription" => sortOrder.ToLower() == "asc"
+                    ? query.OrderBy(u => u.SubscriptionPlan.Name)
+                    : query.OrderByDescending(u => u.SubscriptionPlan.Name),
+                _ => sortOrder.ToLower() == "asc"
+                    ? query.OrderBy(u => u.Id)
+                    : query.OrderByDescending(u => u.Id)
+            };
+
+            var pagedUsers = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var allUsers = await _usersRepository.GetAllQueryable().ToListAsync();
+
+            var model = new UserManagementViewModel
+            {
+                Users = pagedUsers,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                SearchTerm = search,
+                RoleFilter = role,
+                SubscriptionFilter = subscription,
+                UniversityFilter = university,
+                SortBy = sortBy,
+                SortOrder = sortOrder,
+                TotalUsers = allUsers.Count,
+                ActiveSubscriptions = allUsers.Count(u => u.SubscriptionPlan != null &&
+                                                        u.SubscriptionPlan.Name != "FREE" &&
+                                                        u.SubscriptionEndDate.HasValue &&
+                                                        u.SubscriptionEndDate > DateTime.Now),
+                NewUsersThisMonth = allUsers.Count(u => u.EmailConfirmed)
+            };
+
+            SetupUserFilterDropdowns(subscription, university, sortBy, sortOrder);
+
+            return View(model);
+        }
+
+        private void SetupUserFilterDropdowns(string subscriptionFilter, string universityFilter, string sortBy, string sortOrder)
+        {
+            ViewBag.SubscriptionFilterList = new SelectList(new[]
+            {
+                new { Value = "", Text = "All Subscriptions" },
+                new { Value = "free", Text = "Free" },
+                new { Value = "active", Text = "Active Premium" },
+                new { Value = "expired", Text = "Expired" }
+            }, "Value", "Text", subscriptionFilter);
+
+            ViewBag.SortByList = new SelectList(new[]
+            {
+                new { Value = "CreatedDate", Text = "Registration Date" },
+                new { Value = "FullName", Text = "Name" },
+                new { Value = "Email", Text = "Email" },
+                new { Value = "Points", Text = "Points Balance" },
+                new { Value = "Uploads", Text = "Uploads Count" },
+                new { Value = "Subscription", Text = "Subscription" }
+            }, "Value", "Text", sortBy);
+
+            ViewBag.SortOrderList = new SelectList(new[]
+            {
+                new { Value = "desc", Text = "Descending" },
+                new { Value = "asc", Text = "Ascending" }
+            }, "Value", "Text", sortOrder);
+
+            var universityOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Universities" } };
+            var universities = _usersRepository.GetAllQueryable()
+                .Include(u => u.University)
+                .Where(u => u.University != null)
+                .Select(u => u.University)
+                .Distinct()
+                .OrderBy(uni => uni.Name);
+
+            foreach (var uni in universities)
+            {
+                universityOptions.Add(new SelectListItem
+                {
+                    Value = uni.Id.ToString(),
+                    Text = uni.Name,
+                    Selected = uni.Id.ToString() == universityFilter
+                });
+            }
+            ViewBag.UniversityFilterList = universityOptions;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SuspendUser(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user != null)
+                {
+                    user.LockoutEnabled = true;
+                    user.LockoutEnd = DateTimeOffset.MaxValue;
+                    await _userManager.UpdateAsync(user);
+                    return Json(new { success = true, message = "User suspended successfully." });
+                }
+                return Json(new { success = false, message = "User not found." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UnsuspendUser(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user != null)
+                {
+                    user.LockoutEnd = null;
+                    await _userManager.UpdateAsync(user);
+                    return Json(new { success = true, message = "User unsuspended successfully." });
+                }
+                return Json(new { success = false, message = "User not found." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user != null)
+                {
+                    var result = await _userManager.DeleteAsync(user);
+                    if (result.Succeeded)
+                    {
+                        return Json(new { success = true, message = "User deleted successfully." });
+                    }
+                    return Json(new { success = false, message = "Failed to delete user." });
+                }
+                return Json(new { success = false, message = "User not found." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AdjustUserPoints(string id, int pointsChange, string reason)
+        {
+            try
+            {
+                var user = await _usersRepository.GetAsync(u => u.Id == id);
+                if (user != null)
+                {
+                    user.PointsBalance += pointsChange;
+                    if (pointsChange > 0)
+                    {
+                        user.TotalPointsEarned += pointsChange;
+                    }
+                    await _usersRepository.UpdateAsync(user);
+                    return Json(new { success = true, message = "Points adjusted successfully." });
+                }
+                return Json(new { success = false, message = "User not found." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
     }

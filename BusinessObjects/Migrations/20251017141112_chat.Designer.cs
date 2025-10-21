@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BusinessObjects.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250828131428_UserFollower")]
-    partial class UserFollower
+    [Migration("20251017141112_chat")]
+    partial class chat
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,33 @@ namespace BusinessObjects.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("BusinessObjects.Chat", b =>
+                {
+                    b.Property<string>("ChatId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("SenderId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ChatId");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Chats");
+                });
 
             modelBuilder.Entity("BusinessObjects.Country", b =>
                 {
@@ -76,6 +103,9 @@ namespace BusinessObjects.Migrations
 
                     b.Property<int>("DownloadCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("FilePDFpath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FilePath")
                         .IsRequired()
@@ -152,6 +182,35 @@ namespace BusinessObjects.Migrations
                     b.ToTable("Documents");
                 });
 
+            modelBuilder.Entity("BusinessObjects.DocumentLike", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LikedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("DocumentLikes");
+                });
+
             modelBuilder.Entity("BusinessObjects.DocumentReview", b =>
                 {
                     b.Property<int>("ReviewId")
@@ -182,12 +241,10 @@ namespace BusinessObjects.Migrations
                         .HasColumnType("tinyint")
                         .HasColumnName("rating");
 
-                    b.Property<int>("ReviewerId")
-                        .HasColumnType("int")
+                    b.Property<string>("ReviewerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("reviewer_id");
-
-                    b.Property<string>("ReviewerId1")
-                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -197,7 +254,7 @@ namespace BusinessObjects.Migrations
 
                     b.HasIndex("DocumentId");
 
-                    b.HasIndex("ReviewerId1");
+                    b.HasIndex("ReviewerId");
 
                     b.ToTable("DocumentReviews");
                 });
@@ -221,9 +278,6 @@ namespace BusinessObjects.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<int?>("DocumentId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsSystemTag")
                         .HasColumnType("bit");
 
@@ -236,8 +290,6 @@ namespace BusinessObjects.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("TagId");
-
-                    b.HasIndex("DocumentId");
 
                     b.HasIndex("Name")
                         .IsUnique();
@@ -348,6 +400,57 @@ namespace BusinessObjects.Migrations
                     b.ToTable("Majors");
                 });
 
+            modelBuilder.Entity("BusinessObjects.PaymentRecord", b =>
+                {
+                    b.Property<int>("PaymentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("PaymentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PaymentRecords");
+                });
+
             modelBuilder.Entity("BusinessObjects.PointTransaction", b =>
                 {
                     b.Property<int>("TransactionId")
@@ -395,16 +498,14 @@ namespace BusinessObjects.Migrations
                         .HasColumnType("nvarchar(30)")
                         .HasColumnName("transaction_type");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)")
                         .HasColumnName("user_id");
-
-                    b.Property<string>("UserId1")
-                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("TransactionId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("PointTransactions");
                 });
@@ -423,11 +524,20 @@ namespace BusinessObjects.Migrations
                     b.Property<int>("DocumentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
 
                     b.HasIndex("DocumentId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("RecentVieweds");
                 });
@@ -560,47 +670,59 @@ namespace BusinessObjects.Migrations
 
             modelBuilder.Entity("BusinessObjects.UserFavorite", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("user_id")
-                        .HasColumnOrder(0);
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<int>("DocumentId")
-                        .HasColumnType("int")
-                        .HasColumnName("document_id")
-                        .HasColumnOrder(1);
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
-                    b.Property<string>("UserId1")
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("UserId", "DocumentId");
+                    b.HasKey("Id");
 
                     b.HasIndex("DocumentId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId", "DocumentId")
+                        .IsUnique();
 
                     b.ToTable("UserFavorites");
                 });
 
             modelBuilder.Entity("BusinessObjects.UserFollower", b =>
                 {
-                    b.Property<string>("FollowerId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
 
-                    b.Property<string>("FollowingId")
-                        .HasColumnType("nvarchar(450)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
-                    b.HasKey("FollowerId", "FollowingId");
+                    b.Property<string>("FollowerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("FollowingId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("FollowingId");
+
+                    b.HasIndex("FollowerId", "FollowingId")
+                        .IsUnique();
 
                     b.ToTable("UserFollowers");
                 });
@@ -638,7 +760,7 @@ namespace BusinessObjects.Migrations
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<int>("MajorId")
+                    b.Property<int?>("MajorId")
                         .HasColumnType("int");
 
                     b.Property<string>("NormalizedEmail")
@@ -667,7 +789,7 @@ namespace BusinessObjects.Migrations
                     b.Property<DateTime?>("SubscriptionEndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("SubscriptionPlanId")
+                    b.Property<int?>("SubscriptionPlanId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("SubscriptionStartDate")
@@ -679,7 +801,7 @@ namespace BusinessObjects.Migrations
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<int>("UniversityId")
+                    b.Property<int?>("UniversityId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserName")
@@ -752,6 +874,21 @@ namespace BusinessObjects.Migrations
                     b.ToTable("Courses");
                 });
 
+            modelBuilder.Entity("DocumentDocumentTag", b =>
+                {
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagsTagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DocumentId", "TagsTagId");
+
+                    b.HasIndex("TagsTagId");
+
+                    b.ToTable("DocumentDocumentTags", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -777,6 +914,26 @@ namespace BusinessObjects.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "1",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "2",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        },
+                        new
+                        {
+                            Id = "3",
+                            Name = "Moderator",
+                            NormalizedName = "MODERATOR"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -885,11 +1042,29 @@ namespace BusinessObjects.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BusinessObjects.Chat", b =>
+                {
+                    b.HasOne("BusinessObjects.Users", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BusinessObjects.Users", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
             modelBuilder.Entity("BusinessObjects.Document", b =>
                 {
                     b.HasOne("BusinessObjects.Users", "ApprovedByUser")
                         .WithMany()
-                        .HasForeignKey("ApprovedBy");
+                        .HasForeignKey("ApprovedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Course", "Course")
                         .WithMany("Documents")
@@ -910,6 +1085,25 @@ namespace BusinessObjects.Migrations
                     b.Navigation("Uploader");
                 });
 
+            modelBuilder.Entity("BusinessObjects.DocumentLike", b =>
+                {
+                    b.HasOne("BusinessObjects.Document", "Document")
+                        .WithOne()
+                        .HasForeignKey("BusinessObjects.DocumentLike", "DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.Users", "User")
+                        .WithOne()
+                        .HasForeignKey("BusinessObjects.DocumentLike", "UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Document");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("BusinessObjects.DocumentReview", b =>
                 {
                     b.HasOne("BusinessObjects.Document", "Document")
@@ -920,18 +1114,13 @@ namespace BusinessObjects.Migrations
 
                     b.HasOne("BusinessObjects.Users", "Reviewer")
                         .WithMany()
-                        .HasForeignKey("ReviewerId1");
+                        .HasForeignKey("ReviewerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Document");
 
                     b.Navigation("Reviewer");
-                });
-
-            modelBuilder.Entity("BusinessObjects.DocumentTag", b =>
-                {
-                    b.HasOne("BusinessObjects.Document", null)
-                        .WithMany("Tags")
-                        .HasForeignKey("DocumentId");
                 });
 
             modelBuilder.Entity("BusinessObjects.Major", b =>
@@ -939,17 +1128,30 @@ namespace BusinessObjects.Migrations
                     b.HasOne("BusinessObjects.University", "University")
                         .WithMany()
                         .HasForeignKey("UniversityId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("University");
+                });
+
+            modelBuilder.Entity("BusinessObjects.PaymentRecord", b =>
+                {
+                    b.HasOne("BusinessObjects.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObjects.PointTransaction", b =>
                 {
                     b.HasOne("BusinessObjects.Users", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -968,9 +1170,17 @@ namespace BusinessObjects.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("BusinessObjects.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Course");
 
                     b.Navigation("Document");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("BusinessObjects.University", b =>
@@ -978,7 +1188,7 @@ namespace BusinessObjects.Migrations
                     b.HasOne("BusinessObjects.Country", "Country")
                         .WithMany()
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Country");
@@ -994,7 +1204,9 @@ namespace BusinessObjects.Migrations
 
                     b.HasOne("BusinessObjects.Users", "User")
                         .WithMany()
-                        .HasForeignKey("UserId1");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Document");
 
@@ -1025,20 +1237,17 @@ namespace BusinessObjects.Migrations
                     b.HasOne("BusinessObjects.Major", "Major")
                         .WithMany()
                         .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("BusinessObjects.SubscriptionPlan", "SubscriptionPlan")
                         .WithMany()
                         .HasForeignKey("SubscriptionPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("BusinessObjects.University", "University")
                         .WithMany()
                         .HasForeignKey("UniversityId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Major");
 
@@ -1052,10 +1261,25 @@ namespace BusinessObjects.Migrations
                     b.HasOne("BusinessObjects.Major", "Major")
                         .WithMany()
                         .HasForeignKey("MajorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Major");
+                });
+
+            modelBuilder.Entity("DocumentDocumentTag", b =>
+                {
+                    b.HasOne("BusinessObjects.Document", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("BusinessObjects.DocumentTag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsTagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1107,11 +1331,6 @@ namespace BusinessObjects.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("BusinessObjects.Document", b =>
-                {
-                    b.Navigation("Tags");
                 });
 
             modelBuilder.Entity("BusinessObjects.Users", b =>
