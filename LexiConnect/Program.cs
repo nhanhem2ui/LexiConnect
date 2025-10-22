@@ -35,6 +35,7 @@ builder.Services.AddScoped<IGenericDAO<UserFollower>, UserFollowerDAO>();
 builder.Services.AddScoped<IGenericDAO<RecentViewed>, RecentViewedDAO>();
 builder.Services.AddScoped<IGenericDAO<PaymentRecord>, PaymentRecordDAO>();
 builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
+builder.Services.AddScoped<IGenericDAO<UserFollowCourse>, UserFollowCourseDAO>();
 builder.Services.AddScoped<IGenericDAO<Chat>, ChatDAO>();
 
 //Repository
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerReposit
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
 builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepository>();
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
+builder.Services.AddScoped<IGenericRepository<UserFollowCourse>, UserFollowCourseRepository>();
 builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
 
 builder.Services.AddScoped<AppDbContext>();

@@ -1,23 +1,16 @@
 ﻿using BusinessObjects;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using iText.IO.Font.Constants;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Repositories;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
-
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Wordprocessing;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
-using iText.IO.Font.Constants;
-using iText.Kernel.Font;
 using Document = BusinessObjects.Document;
 
 
@@ -268,7 +261,7 @@ namespace LexiConnect.Controllers
                     Selected = true
                 });
 
-                var model = new DocumentDetailsViewModel { Documents = documents , Courses = courses};
+                var model = new DocumentDetailsViewModel { Documents = documents, Courses = courses };
 
                 ViewBag.SuccessfulUploads = TempData["SuccessfulUploads"];
                 ViewBag.UploadedFiles = TempData["UploadedFiles"];
@@ -361,7 +354,7 @@ namespace LexiConnect.Controllers
             return View();
         }
 
-        
+
         //Helper method to process individual files
         private async Task<UploadResult> ProcessSingleFile(IFormFile file, string uploadPath, string thumbnailPath, string uploaderId)
         {
@@ -789,7 +782,7 @@ namespace LexiConnect.Controllers
         }
 
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CleanupTempFiles(string documentIds)
@@ -855,7 +848,7 @@ namespace LexiConnect.Controllers
             }
         }
 
-        
+
 
         [HttpPost]
         public async Task<IActionResult> CleanupUserTempFiles()
@@ -922,7 +915,7 @@ namespace LexiConnect.Controllers
         }
     }
 
-     //Helper classes
+    //Helper classes
     public class UploadResult
     {
         public string FileName { get; set; } = string.Empty;

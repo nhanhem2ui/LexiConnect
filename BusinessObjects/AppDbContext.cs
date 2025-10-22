@@ -14,6 +14,7 @@ namespace BusinessObjects
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentReview> DocumentReviews { get; set; }
         public DbSet<DocumentTag> DocumentTags { get; set; }
+        public DbSet<UserFollowCourse> UserFollowCourses { get; set; }
 
         public DbSet<DocumentLike> DocumentLikes { get; set; }
 
@@ -184,6 +185,23 @@ namespace BusinessObjects
                 .WithMany() // A User can send many chats
                 .HasForeignKey(c => c.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // USER FOLLOW COURSE RELATIONSHIP
+            modelBuilder.Entity<UserFollowCourse>()
+                .HasOne(ufc => ufc.User)
+                .WithMany() // A user can follow many courses
+                .HasForeignKey(ufc => ufc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserFollowCourse>()
+                .HasOne(ufc => ufc.Course)
+                .WithMany() // A course can have many followers
+                .HasForeignKey(ufc => ufc.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserFollowCourse>()
+                .HasIndex(ufc => new { ufc.UserId, ufc.CourseId })
+                .IsUnique();
 
             modelBuilder.Entity<Chat>()
                 .HasOne(c => c.Receiver)
