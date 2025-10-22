@@ -14,6 +14,7 @@ namespace BusinessObjects
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentReview> DocumentReviews { get; set; }
         public DbSet<DocumentTag> DocumentTags { get; set; }
+        public DbSet<UserFollowCourse> UserFollowCourses { get; set; }
 
         public DbSet<DocumentLike> DocumentLikes { get; set; }
 
@@ -24,10 +25,18 @@ namespace BusinessObjects
         public DbSet<UserFavorite> UserFavorites { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<RecentViewed> RecentVieweds { get; set; }
+        public DbSet<PaymentRecord> PaymentRecords { get; set; }
+        public DbSet<Chat> Chats { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // =============== SEED ROLE ===============
+            modelBuilder.Entity<IdentityRole>().HasData(
+                new IdentityRole { Id = "1", Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Id = "2", Name = "User", NormalizedName = "USER" },
+                new IdentityRole { Id = "3", Name = "Moderator", NormalizedName = "MODERATOR" }
+            );
             // =============== USER RELATIONSHIPS ===============
             modelBuilder.Entity<Users>()
                 .HasOne(u => u.University)
@@ -46,6 +55,7 @@ namespace BusinessObjects
                 .WithMany()
                 .HasForeignKey(u => u.SubscriptionPlanId)
                 .OnDelete(DeleteBehavior.SetNull); // SetNull since SubscriptionPlanId is nullable
+
 
             // =============== DOCUMENT RELATIONSHIPS ===============
             modelBuilder.Entity<Document>()
@@ -71,6 +81,16 @@ namespace BusinessObjects
                 .HasMany(d => d.Tags)
                 .WithMany()
                 .UsingEntity(j => j.ToTable("DocumentDocumentTags"));
+
+            modelBuilder.Entity<DocumentLike>()
+                .HasOne(d => d.Document)
+                .WithOne()
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<DocumentLike>()
+                .HasOne(d => d.User)
+                .WithOne()
+                .OnDelete(DeleteBehavior.NoAction);
 
             // =============== ACADEMIC STRUCTURE RELATIONSHIPS ===============
             modelBuilder.Entity<Major>()
@@ -148,13 +168,46 @@ namespace BusinessObjects
                 .HasForeignKey(rv => rv.CourseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Add this if you added UserId to RecentViewed (recommended)
             modelBuilder.Entity<RecentViewed>()
                 .HasOne(rv => rv.User)
                 .WithMany()
                 .HasForeignKey(rv => rv.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<PaymentRecord>()
+                .HasOne(rv => rv.User)
+                .WithMany()
+                .HasForeignKey(rv => rv.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Sender)
+                .WithMany() // A User can send many chats
+                .HasForeignKey(c => c.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // USER FOLLOW COURSE RELATIONSHIP
+            modelBuilder.Entity<UserFollowCourse>()
+                .HasOne(ufc => ufc.User)
+                .WithMany() // A user can follow many courses
+                .HasForeignKey(ufc => ufc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserFollowCourse>()
+                .HasOne(ufc => ufc.Course)
+                .WithMany() // A course can have many followers
+                .HasForeignKey(ufc => ufc.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserFollowCourse>()
+                .HasIndex(ufc => new { ufc.UserId, ufc.CourseId })
+                .IsUnique();
+
+            modelBuilder.Entity<Chat>()
+                .HasOne(c => c.Receiver)
+                .WithMany() // A User can receive many chats
+                .HasForeignKey(c => c.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
             // =============== INDEXES ===============
             modelBuilder.Entity<Major>()
                 .HasIndex(m => new { m.Code, m.UniversityId })

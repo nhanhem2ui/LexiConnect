@@ -1,0 +1,109 @@
+﻿@{
+    ViewData["Title"] = "Pricing";
+}
+@model LexiConnect.Models.ViewModels.PricingViewModel
+
+<head>
+    <link rel="stylesheet" href="~/css/Subscription/Pricing.css" />
+</head>
+
+<div class="subscription-page">
+    <div class="subscription-container">
+
+        <!-- Pricing Header -->
+        <div class="pricing-header">
+            <div class="pricing-badge">Pricing</div>
+            <h1 class="pricing-title">@Model.Title</h1>
+            <h2 class="pricing-subtitle">@Model.Subtitle</h2>
+            <p class="pricing-description">
+                <strong>@Model.Description</strong><br>
+                @Model.SubDescription
+            </p>
+        </div>
+
+        <!-- Pricing Plans -->
+        <div class="pricing-plans">
+            @foreach (var plan in Model.Plans)
+            {
+                @* <div class="pricing-card @(plan.IsPopular ? "popular" : "")" data-plan-id="@plan.SubscriptionPlan.PlanId"> *@
+                <div class="pricing-card @plan.CardClass" data-plan-id="@plan.SubscriptionPlan.PlanId">
+                    <div class="plan-header">
+                        <h3 class="plan-name">@plan.SubscriptionPlan.DisplayName</h3>
+                        <p class="plan-description">@plan.SubscriptionPlan.Description</p>
+
+                        <div class="plan-price">
+                            <span class="price-currency">$</span>
+                            @if (plan.SubscriptionPlan.Price <= 0m)
+                            {
+                                <span class="price-amount">Free</span>
+                            }
+                            else
+                            {
+                                <span class="price-amount">@plan.SubscriptionPlan.Price.ToString("F2")</span>
+                                <span class="price-period">/ @plan.SubscriptionPlan.DurationMonths Month@(plan.SubscriptionPlan.DurationMonths > 1 ? "s" : "")</span>
+                            }
+                        </div>
+                    </div>
+
+                    <ul class="plan-features">
+                        @foreach (var feature in plan.Features)
+                        {
+                            <li>
+                                <div class="feature-icon"></div>
+                                @feature
+                            </li>
+                        }
+                    </ul>
+
+                    @if (plan.IsFree)
+                    {
+                        <div style="margin: 0;">
+                            <input type="hidden" name="planId" value="@plan.SubscriptionPlan.PlanId" />
+                            <button disabled type="button" class="plan-button @plan.ButtonClass">
+                                @plan.ButtonText
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!User.Identity.IsAuthenticated)
+                        {
+                            <form asp-controller="Auth" asp-action="Signin" method="get" style="margin: 0;">
+                                <input type="hidden" name="redirectTo" value="@Url.Action("Pricing", "Subscription")" />
+                                <button type="submit" class="plan-button @plan.ButtonClass">
+                                    Sign in to Subscribe
+                                </button>
+                            </form>
+                        }
+                        else if (Model.HasActivePremium)
+                        {
+                            <div style="margin: 0;">
+                                <button disabled type="button" class="plan-button @plan.ButtonClass btn-disabled">
+                                    @plan.ButtonText
+                                </button>
+                            </div>
+                        }
+                        else
+                        {
+                            <form asp-controller="Subscription" asp-action="ExtendSubscription" method="get" style="margin: 0;">
+                                <button type="submit" class="plan-button @plan.ButtonClass">
+                                    @plan.ButtonText
+                                </button>
+                            </form>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- Money Back Guarantee -->
+        @if (!string.IsNullOrEmpty(Model.MoneyBackGuarantee))
+        {
+            <div class="guarantee-text">
+                @Model.MoneyBackGuarantee
+            </div>
+        }
+    </div>
+</div>
+
+<script src="~/js/Subscription/Pricing.js"></script>

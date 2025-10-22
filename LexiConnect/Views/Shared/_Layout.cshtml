@@ -12,12 +12,18 @@
     <!-- Dropdown Overlay -->
     <div class="dropdown-overlay" id="dropdownOverlay"></div>
 
-    @Html.Partial("_HeaderPartial")
+    <partial name="_HeaderPartial"></partial>
 
     @if (TempData["Success"] != null)
     {
         <div class="alert alert-success mt-3">
             @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning mt-3">
+            @TempData["Warning"]
         </div>
     }
     @if (TempData["Error"] != null)
@@ -33,7 +39,7 @@
         </main>
     </div>
 
-    @Html.Partial("_FooterPartial")
+    <partial name="_FooterPartial"></partial>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

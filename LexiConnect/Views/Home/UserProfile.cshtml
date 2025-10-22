@@ -16,104 +16,201 @@
 <body>
     <div class="dashboard-container">
 
-        <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <img style="max-width:40px;max-height:40px" src="@Url.Content(Model.User.AvatarUrl)" />
-                </div>
-                <h3 class="user-name">@Model.User.FullName</h3>
-                <p class="user-affiliation">@Model.User.University.Name</p>
-            </div>
-
-            <ul class="sidebar-nav">
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">🏠</span>
-                        Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📚</span>
-                        My Library
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📝</span>
-                        AI Notes
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">🤖</span>
-                        Ask AI
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📊</span>
-                        AI Quiz
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">🕒</span>
-                        Recent
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📖</span>
-                        Courses
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📚</span>
-                        Books
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">📋</span>
-                        Studylists
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <span class="nav-icon">❓</span>
-                        Questions
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <partial name="_Sidebar" />
 
         <!-- Main Content -->
         <div class="main-content">
             <!-- Profile Header -->
             <div class="profile-header">
-                <div class="profile-avatar-large">B</div>
+                <div class="profile-avatar-large">
+                    @if (!string.IsNullOrEmpty(Model.User.AvatarUrl))
+                    {
+                        <img src="@Url.Content(Model.User.AvatarUrl)" alt="@Model.User.FullName" />
+                    }
+                    else
+                    {
+                        @Model.User.FullName?.Substring(0, 1).ToUpper()
+                    }
+                </div>
                 <div class="profile-info">
                     <h1>@Model.User.FullName</h1>
-                    <p class="affiliation">@Model.User.University</p>
+                    <p class="affiliation">University: @Model.User.University?.Name</p>
+                    @if (Model.User.Major != null)
+                    {
+                        <p class="major">Major: @Model.User.Major.Name</p>
+                    }
                     <div class="profile-stats-row">
                         <div class="stat-card">
-                            <span class="number">@Model.UploadedNum</span>
+                            <span class="number">@Model.Documents?.Count()</span>
                             <span class="label">Uploads</span>
                         </div>
                         <div class="stat-card">
-                            <span class="number">0</span>
+                            <span class="number">@Model.FollowerNum</span>
                             <span class="label">Follows</span>
                         </div>
                         <div class="stat-card">
                             <span class="number">@Model.Upvotes</span>
                             <span class="label">Upvotes</span>
                         </div>
+                        <div class="stat-card points-card">
+                            <span class="number">@Model.User.PointsBalance</span>
+                            <span class="label">Points</span>
+                        </div>
+                        <div class="stat-card total-points-card">
+                            <span class="number">@Model.User.TotalPointsEarned</span>
+                            <span class="label">Total Earned</span>
+                        </div>
                     </div>
                 </div>
-                <a href="@Url.Action("EditProfile, Home")" class="btn-edit">Edit Profile</a>
+                <div class="profile-actions">
+                    <a href="@Url.Action("EditProfile", "Home")" class="btn-edit">Edit Profile</a>
+                </div>
+            </div>
+
+            <!-- User Details & Subscription Section -->
+            <div class="user-details-section">
+                <!-- User Information Card -->
+                <div class="info-card">
+                    <h3 class="card-title">
+                        <span>
+                            <svg viewBox="0 0 16 16" height="24" width="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M8 7C9.65685 7 11 5.65685 11 4C11 2.34315 9.65685 1 8 1C6.34315 1 5 2.34315 5 4C5 5.65685 6.34315 7 8 7Z" fill="#000000"></path> <path d="M14 12C14 10.3431 12.6569 9 11 9H5C3.34315 9 2 10.3431 2 12V15H14V12Z" fill="#000000"></path> </g></svg>
+                        </span>
+                        User Information
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span>@Model.User.Email</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Phone:</label>
+                            <span>@(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "Not provided" : Model.User.PhoneNumber)</span>
+                        </div>
+                        <div class="info-item">
+                            <label>University:</label>
+                            <span>@(Model.User.University?.Name ?? "Not specified")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Major:</label>
+                            <span>@(Model.User.Major?.Name ?? "Not specified")</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Points Balance:</label>
+                            <span class="points-balance">@Model.User.PointsBalance points</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Total Points Earned:</label>
+                            <span class="points-earned">@Model.User.TotalPointsEarned points</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription Plan Card -->
+                @if (Model.User.SubscriptionPlan != null && Model.User.SubscriptionPlan.PlanId != 1)
+                {
+                    <a href="@Url.Action("ManageSubscription", "Home")" class="subscription-card-link">
+                        <div class="subscription-card @(Model.ActiveSubscription ? "expired" : "active")">
+                            <div class="subscription-header">
+                                <h3 class="card-title">
+                                    <span>
+                                        <svg fill="#000000" viewBox="0 0 32 32" width="24" height="24" version="1.1" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>diamond</title> <path d="M26.709 5.915h-21.485l-4.543 6.12 15.344 16.815 15.344-16.815-4.659-6.12zM16.024 28.671l-6.021-16.523 6.021-6.146 6.021 6.146-6.021 16.523zM9.541 11.822l-4.633-6.114zM22.4 11.822l4.56-6.114zM9.541 12.137h12.86v0.574h-12.86v-0.574z"></path> </g></svg>
+                                    </span>
+                                    Current Subscription
+                                </h3>
+                                <div class="subscription-status @(Model.ActiveSubscription ? "status-active" : "status-expired")">
+                                    @(Model.ActiveSubscription ? "EXPIRED" : "ACTIVE")
+                                </div>
+                            </div>
+                            <div class="subscription-details">
+                                <div class="plan-info">
+                                    <h4 class="plan-name">@Model.User.SubscriptionPlan.DisplayName</h4>
+                                    <p class="plan-type">@Model.User.SubscriptionPlan.Name</p>
+                                </div>
+                                <div class="subscription-dates">
+                                    @if (Model.User.SubscriptionStartDate.HasValue)
+                                    {
+                                        <div class="date-item">
+                                            <label>Started:</label>
+                                            <span>@Model.User.SubscriptionStartDate.Value.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                    }
+                                    @if (Model.User.SubscriptionEndDate.HasValue)
+                                    {
+                                        <div class="date-item">
+                                            <label>@(Model.User.SubscriptionEndDate < DateTime.Now ? "Expired:" : "Expires:")</label>
+                                            <span>@Model.User.SubscriptionEndDate.Value.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                        @if (Model.User.SubscriptionStartDate.HasValue)
+                                        {
+                                            <div class="date-item">
+                                                <label>Duration:</label>
+                                                <span>
+                                                    @{
+                                                        var duration = Model.User.SubscriptionEndDate.Value - Model.User.SubscriptionStartDate.Value;
+                                                        var days = duration.Days;
+                                                        if (days >= 365)
+                                                        {
+                                                            var years = days / 365;
+                                                            <text>@years year@(years > 1 ? "s" : "")</text>
+                                                        }
+                                                        else if (days >= 30)
+                                                        {
+                                                            var months = days / 30;
+                                                            <text>@months month@(months > 1 ? "s" : "")</text>
+                                                        }
+                                                        else
+                                                        {
+                                                            <text>@days day@(days > 1 ? "s" : "")</text>
+                                                        }
+                                                    }
+                                                </span>
+                                            </div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="date-item">
+                                            <label>Status:</label>
+                                            <span>No end date specified</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="subscription-footer">
+                                <span class="manage-text">Click to manage subscription</span>
+                                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                }
+                else
+                {
+                    <a href="@Url.Action("SubscriptionPlans", "Home")" class="subscription-card-link">
+                        <div class="subscription-card no-subscription">
+                            <div class="subscription-header">
+                                <h3 class="card-title">
+                                    <span>📦</span>
+                                    Subscription Plan
+                                </h3>
+                                <div class="subscription-status status-none">
+                                    NO PLAN
+                                </div>
+                            </div>
+                            <div class="subscription-details">
+                                <p class="no-plan-text">You don't have an active subscription plan.</p>
+                                <p class="upgrade-text">Upgrade to access premium features and exclusive content.</p>
+                            </div>
+                            <div class="subscription-footer">
+                                <span class="manage-text">View available plans</span>
+                                <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                }
             </div>
 
             <!-- Profile Sections -->
@@ -121,68 +218,100 @@
                 <!-- My Uploads Section -->
                 <div class="profile-section">
                     <h2 class="section-title">
-                        <span>📚</span>
+                        <span>
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M8 12H9M16 12H12" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> <path d="M16 8H15M12 8H8" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> <path d="M8 16H13" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> <path d="M3 14V10C3 6.22876 3 4.34315 4.17157 3.17157C5.34315 2 7.22876 2 11 2H13C16.7712 2 18.6569 2 19.8284 3.17157C20.4816 3.82476 20.7706 4.69989 20.8985 6M21 10V14C21 17.7712 21 19.6569 19.8284 20.8284C18.6569 22 16.7712 22 13 22H11C7.22876 22 5.34315 22 4.17157 20.8284C3.51839 20.1752 3.22937 19.3001 3.10149 18" stroke="#000000" stroke-width="1.5" stroke-linecap="round"></path> </g></svg>
+                        </span>
                         My Uploads
                     </h2>
                     <div class="uploads-list">
-                        <div class="upload-item">
-                            <div class="upload-icon">📄</div>
-                            <div class="upload-details">
-                                <h4>Hướng DẪN THI THỰC HÀNH</h4>
-                                <p>This use something</p>
-                                <p style="color: #999; font-size: 11px;">Your document was already on the website.</p>
+                        @if (Model.Documents?.Count() > 0)
+                        {
+                            @foreach (var document in Model.Documents)
+                            {
+                                <a href="#" style="text-decoration: none;">
+                                    <div class="upload-item">
+                                        <div class="upload-icon">
+                                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path opacity="0.4" d="M20.5 10.19H17.61C15.24 10.19 13.31 8.26 13.31 5.89V3C13.31 2.45 12.86 2 12.31 2H8.07C4.99 2 2.5 4 2.5 7.57V16.43C2.5 20 4.99 22 8.07 22H15.93C19.01 22 21.5 20 21.5 16.43V11.19C21.5 10.64 21.05 10.19 20.5 10.19Z" fill="#000000"></path> <path d="M15.7997 2.20999C15.3897 1.79999 14.6797 2.07999 14.6797 2.64999V6.13999C14.6797 7.59999 15.9197 8.80999 17.4297 8.80999C18.3797 8.81999 19.6997 8.81999 20.8297 8.81999C21.3997 8.81999 21.6997 8.14999 21.2997 7.74999C19.8597 6.29999 17.2797 3.68999 15.7997 2.20999Z" fill="#000000"></path> <path d="M11.5295 12.47L9.52945 10.47C9.51945 10.46 9.50945 10.46 9.50945 10.45C9.44945 10.39 9.36945 10.34 9.28945 10.3C9.27945 10.3 9.27945 10.3 9.26945 10.3C9.18945 10.27 9.10945 10.26 9.02945 10.25C8.99945 10.25 8.97945 10.25 8.94945 10.25C8.88945 10.25 8.81945 10.27 8.75945 10.29C8.72945 10.3 8.70945 10.31 8.68945 10.32C8.60945 10.36 8.52945 10.4 8.46945 10.47L6.46945 12.47C6.17945 12.76 6.17945 13.24 6.46945 13.53C6.75945 13.82 7.23945 13.82 7.52945 13.53L8.24945 12.81V17C8.24945 17.41 8.58945 17.75 8.99945 17.75C9.40945 17.75 9.74945 17.41 9.74945 17V12.81L10.4695 13.53C10.6195 13.68 10.8095 13.75 10.9995 13.75C11.1895 13.75 11.3795 13.68 11.5295 13.53C11.8195 13.24 11.8195 12.76 11.5295 12.47Z" fill="#000000"></path> </g></svg>
+                                        </div>
+                                        <div class="upload-details">
+                                            <h4>@document.Title</h4>
+                                            <p>
+                                                @(document.Description?.Length > 35
+                                                                                        ? document.Description.Substring(0, 35) + "..."
+                                                                                        : document.Description)
+                                    </p>
+                                </div>
+                                <div class="upload-stats">
+                                    <div class="views">@document.ViewCount views</div>
+                                    <div class="rating">
+                                        <svg viewBox="0 -0.5 21 21" width="21" height="21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <title>like [#1385]</title> <desc>Created with Sketch.</desc> <defs> </defs> <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <g id="Dribbble-Light-Preview" transform="translate(-259.000000, -760.000000)" fill="#000000"> <g id="icons" transform="translate(56.000000, 160.000000)"> <path d="M203,620 L207.200006,620 L207.200006,608 L203,608 L203,620 Z M223.924431,611.355 L222.100579,617.89 C221.799228,619.131 220.638976,620 219.302324,620 L209.300009,620 L209.300009,608.021 L211.104962,601.825 C211.274012,600.775 212.223214,600 213.339366,600 C214.587817,600 215.600019,600.964 215.600019,602.153 L215.600019,608 L221.126177,608 C222.97313,608 224.340232,609.641 223.924431,611.355 L223.924431,611.355 Z" id="like-[#1385]"> </path> </g> </g> </g> </g></svg>
+                                        @document.LikeCount
+                                    </div>
+                                </div>
                             </div>
-                            <div class="upload-stats">
-                                <div class="views">0 views</div>
-                                <div class="rating">⭐ None</div>
+                        </a>
+                                                }
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <p>No uploads yet. Start sharing your documents!</p>
                             </div>
-                        </div>
-                        <div class="upload-item">
-                            <div class="upload-icon">📄</div>
-                            <div class="upload-details">
-                                <h4>Hướng dẫn cài đặt gói hỗ trợ ngôn ngữ và bộ gõ trên Windows</h4>
-                                <p>Programming guide</p>
-                                <p style="color: #999; font-size: 11px;">Your document was already on the website.</p>
-                            </div>
-                            <div class="upload-stats">
-                                <div class="views">0 views</div>
-                                <div class="rating">⭐ None</div>
-                            </div>
-                        </div>
+                        }
                     </div>
                 </div>
 
                 <!-- Recent Activity Section -->
                 <div class="profile-section">
                     <h2 class="section-title">
-                        <span>⚡</span>
+                        <span>
+                            <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M22.719 12A10.719 10.719 0 0 1 1.28 12h.838a9.916 9.916 0 1 0 1.373-5H8v1H2V2h1v4.2A10.71 10.71 0 0 1 22.719 12zM16 13h-4V7h-1v7h5z"></path><path fill="none" d="M0 0h24v24H0z"></path></g></svg>
+                        </span>
                         Recent Activity
                     </h2>
                     <div class="activity-list">
-                        <div class="activity-item">
-                            <div class="activity-icon">📤</div>
-                            <div class="activity-content">
-                                <h4>Uploaded new document</h4>
-                                <p>Hướng DẪN THI THỰC HÀNH - This use something</p>
+                        @if (Model.RecentActivities?.Count() > 0)
+                        {
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                if (activity.CourseId > 0 && activity.Course != null)
+                                {
+                                    <div class="activity-item">
+                                        <div class="activity-icon">📤</div>
+                                        <div class="activity-content">
+                                            <h4>@activity.Course.CourseName</h4>
+                                            <p>
+                                                @(activity.Course.Description?.Length > 35
+                                                                                    ? activity.Course.Description?.Substring(0, 35) + "..."
+                                                                                    : activity.Course.Description)
+                                </p>
                             </div>
-                            <div class="activity-time">2h ago</div>
+                            <div class="activity-time">Academic year: @activity.Course.AcademicYear</div>
                         </div>
-                        <div class="activity-item">
-                            <div class="activity-icon">📤</div>
-                            <div class="activity-content">
-                                <h4>Uploaded new document</h4>
-                                <p>Hướng dẫn cài đặt gói hỗ trợ ngôn ngữ và bộ gõ trên Windows</p>
+                                                }
+                                if (activity.DocumentId > 0 && activity.Document != null)
+                                {
+                                    <div class="activity-item">
+                                        <div class="activity-icon">📤</div>
+                                        <div class="activity-content">
+                                            <h4>@activity.Document.Title</h4>
+                                            <p>
+                                                @(activity.Document.Description?.Length > 35
+                                                                                    ? activity.Document.Description?.Substring(0, 35) + "..."
+                                                                                    : activity.Document.Description)
+                                </p>
                             </div>
-                            <div class="activity-time">3h ago</div>
+                            <div class="activity-time">Created at: @activity.Document.CreatedAt</div>
                         </div>
-                        <div class="activity-item">
-                            <div class="activity-icon">👤</div>
-                            <div class="activity-content">
-                                <h4>Joined LexiConnect</h4>
-                                <p>Welcome to the community!</p>
+                                                }
+                            }
+                        }
+                        else
+                        {
+                            <div class="empty-state">
+                                <p>No recent activity to display.</p>
                             </div>
-                            <div class="activity-time">1 day ago</div>
-                        </div>
+                        }
                     </div>
                 </div>
             </div>

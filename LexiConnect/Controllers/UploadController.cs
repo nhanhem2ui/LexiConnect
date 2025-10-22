@@ -1,4 +1,4 @@
-﻿//using BusinessObjects;
+//using BusinessObjects;
 //using DocumentFormat.OpenXml.Packaging;
 //using DocumentFormat.OpenXml.Wordprocessing;
 //using iText.IO.Font.Constants;
@@ -1831,7 +1831,7 @@ namespace LexiConnect.Controllers
         }
 
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CleanupTempFiles(string documentIds)
@@ -1897,7 +1897,7 @@ namespace LexiConnect.Controllers
             }
         }
 
-        
+
 
         [HttpPost]
         public async Task<IActionResult> CleanupUserTempFiles()
@@ -1964,7 +1964,7 @@ namespace LexiConnect.Controllers
         }
     }
 
-     //Helper classes
+    //Helper classes
     public class UploadResult
     {
         public string FileName { get; set; } = string.Empty;

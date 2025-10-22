@@ -1,6 +1,80 @@
 ﻿USE [LexiConnect]
 GO
 
+
+-- Insert the main user first
+INSERT INTO [dbo].[AspNetUsers]
+           ([Id]
+           ,[FullName]
+           ,[AvatarUrl]
+           ,[UniversityId]
+           ,[MajorId]
+           ,[PointsBalance]
+           ,[TotalPointsEarned]
+           ,[SubscriptionPlanId]
+           ,[SubscriptionStartDate]
+           ,[SubscriptionEndDate]
+           ,[UserName]
+           ,[NormalizedUserName]
+           ,[Email]
+           ,[NormalizedEmail]
+           ,[EmailConfirmed]
+           ,[PasswordHash]
+           ,[SecurityStamp]
+           ,[ConcurrencyStamp]
+           ,[PhoneNumber]
+           ,[PhoneNumberConfirmed]
+           ,[TwoFactorEnabled]
+           ,[LockoutEnd]
+           ,[LockoutEnabled]
+           ,[AccessFailedCount])
+     VALUES
+           ('d9e4c226-19b9-499d-81b9-1d653ea1eb0a' -- Id
+           ,'Nguyen Van Bao'                        -- FullName
+           ,'~/image/default-avatar.png'            -- AvatarUrl
+           ,3                                       -- UniversityId (FPT Da Nang)
+           ,1                                       -- MajorId (Software Engineering)
+           ,500                                     -- PointsBalance
+           ,500                                     -- TotalPointsEarned
+           ,2                                       -- SubscriptionPlanId
+           ,'2025-01-01 00:00:00.0000000'           -- SubscriptionStartDate
+           ,'2027-01-01 00:00:00.0000000'           -- SubscriptionEndDate
+           ,'nhanhem3ui@gmail.com'                  -- UserName
+           ,'NHANHEM3UI@GMAIL.COM'                  -- NormalizedUserName
+           ,'nhanhem3ui@gmail.com'                  -- Email
+           ,'NHANHEM3UI@GMAIL.COM'                  -- NormalizedEmail
+           ,1                                       -- EmailConfirmed (True)
+           ,NULL                                    -- PasswordHash
+           ,'CKAWSLDS2KKZDHVCB2SGKZTCZ6ARX2CY'      -- SecurityStamp
+           ,'ef41aeaf-f358-4c7a-b819-e732a097bd0f'  -- ConcurrencyStamp
+           ,NULL                                    -- PhoneNumber
+           ,0                                       -- PhoneNumberConfirmed (False)
+           ,0                                       -- TwoFactorEnabled (False)
+           ,NULL                                    -- LockoutEnd
+           ,1                                       -- LockoutEnabled (True)
+           ,0)                                      -- AccessFailedCount
+GO
+
+-- Add additional test users
+INSERT INTO [dbo].[AspNetUsers]
+           ([Id], [FullName], [AvatarUrl], [UniversityId], [MajorId], [PointsBalance], [TotalPointsEarned], 
+            [SubscriptionPlanId], [SubscriptionStartDate], [SubscriptionEndDate], [UserName], [NormalizedUserName], 
+            [Email], [NormalizedEmail], [EmailConfirmed], [PasswordHash], [SecurityStamp], [ConcurrencyStamp], 
+            [PhoneNumber], [PhoneNumberConfirmed], [TwoFactorEnabled], [LockoutEnd], [LockoutEnabled], [AccessFailedCount])
+VALUES
+    ('a1b2c3d4-e5f6-7890-1234-567890abcdef', 'Tran Thi Mai', '~/image/avatar-mai.png', 1, 9, 250, 300, 1, NULL, NULL, 
+     'tran.mai@vnu.edu.vn', 'TRAN.MAI@VNU.EDU.VN', 'tran.mai@vnu.edu.vn', 'TRAN.MAI@VNU.EDU.VN', 1, NULL, 
+     'ABC123DEF456', 'uuid-mai-123', NULL, 0, 0, NULL, 1, 0),
+    
+    ('b2c3d4e5-f6g7-8901-2345-678901bcdefg', 'Le Van Duc', '~/image/avatar-duc.png', 2, 12, 150, 200, 1, NULL, NULL,
+     'le.duc@vnuhcm.edu.vn', 'LE.DUC@VNUHCM.EDU.VN', 'le.duc@vnuhcm.edu.vn', 'LE.DUC@VNUHCM.EDU.VN', 1, NULL,
+     'DEF789GHI012', 'uuid-duc-456', NULL, 0, 0, NULL, 1, 0),
+     
+    ('c3d4e5f6-g7h8-9012-3456-789012cdefgh', 'Pham Thi Linh', '~/image/avatar-linh.png', 3, 3, 350, 450, 2, 
+     '2024-09-01 00:00:00.0000000', '2025-09-01 00:00:00.0000000', 'pham.linh@fpt.edu.vn', 'PHAM.LINH@FPT.EDU.VN', 
+     'pham.linh@fpt.edu.vn', 'PHAM.LINH@FPT.EDU.VN', 1, NULL, 'GHI345JKL678', 'uuid-linh-789', NULL, 0, 0, NULL, 1, 0);
+GO
+
 SET IDENTITY_INSERT [dbo].[Countries] ON;
 INSERT INTO [dbo].[Countries] ([Id],[CountryName])
 VALUES 
@@ -16,7 +90,7 @@ SET IDENTITY_INSERT [dbo].[Universities] ON;
 INSERT INTO [dbo].[Universities]
            ([Id], [Name], [ShortName], [CountryId], [City], [IsVerified], [LogoUrl], [CreatedAt])
 VALUES
-(0, N'Chưa rõ', N'', 1, N'', 1, N'', SYSDATETIME()),
+(0, N'Not provided', N'', 1, N'', 1, N'', SYSDATETIME()),
 
 (1, N'Đại học Quốc gia Hà Nội', N'VNU', 1, N'Hà Nội', 1, N'/image/logo_VNU.jpg', SYSDATETIME()),
 
@@ -31,7 +105,7 @@ SET IDENTITY_INSERT [dbo].[Majors] ON;
 INSERT INTO [dbo].[Majors]
            ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
 VALUES
-    (0, N'Chưa rõ', '', 0, N'', 1, GETDATE()),
+    (0, N'Not provided', '', 0, N'', 1, GETDATE()),
     (1, N'Software Engineering', 'SE', 3, N'Study of software design, development, and testing.', 1, GETDATE()),
     (2, N'Information Security', 'IS', 3, N'Study of cybersecurity, cryptography, and secure systems.', 1, GETDATE()),
     (3, N'Artificial Intelligence', 'AI', 3, N'Focus on machine learning, data science, and AI applications.', 1, GETDATE()),
@@ -41,8 +115,24 @@ VALUES
     (7, N'Digital Marketing', 'DM', 3, N'Online marketing strategies, SEO, and social media.', 1, GETDATE()),
     (8, N'Tourism and Hospitality Management', 'THM', 3, N'Management of travel, tourism, and hospitality industries.', 1, GETDATE());
 GO
-SET IDENTITY_INSERT [dbo].[Majors] OFF;
 
+-- Majors for VNU (UniversityId = 1)
+INSERT INTO [dbo].[Majors]
+           ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
+VALUES
+    (9, N'Computer Science', 'CS', 1, N'Focus on algorithms, programming languages, and theoretical foundations of computing.', 1, GETDATE()),
+    (10, N'Mathematics', 'MATH', 1, N'Study of pure and applied mathematics, logic, and statistics.', 1, GETDATE()),
+    (11, N'Physics', 'PHY', 1, N'Focus on classical mechanics, electromagnetism, and quantum physics.', 1, GETDATE());
+
+-- Majors for VNUHCM (UniversityId = 2)
+INSERT INTO [dbo].[Majors]
+           ([MajorId], [Name], [Code], [UniversityId], [Description], [IsActive], [CreatedAt])
+VALUES
+    (12, N'Biotechnology', 'BIO', 2, N'Study of genetics, molecular biology, and biotech applications.', 1, GETDATE()),
+    (13, N'Civil Engineering', 'CE', 2, N'Design and construction of infrastructure projects like bridges, roads, and buildings.', 1, GETDATE()),
+    (14, N'Chemical Engineering', 'CHE', 2, N'Processes involving chemical production, materials science, and industrial systems.', 1, GETDATE());
+
+SET IDENTITY_INSERT [dbo].[Majors] OFF;
 GO
 
 SET IDENTITY_INSERT [dbo].[Courses] ON;
@@ -72,8 +162,38 @@ VALUES
     (10, 'ACC201', N'Financial Accounting', 4, 2, 2025, N'Introduction to accounting concepts, balance sheets, and financial analysis.', 1, GETDATE()),
     (11, 'HRM301', N'Human Resource Management', 4, 4, 2025, N'Study of HR policies, recruitment, and employee relations.', 1, GETDATE());
 GO
-SET IDENTITY_INSERT [dbo].[Courses] OFF;
 
+-- Courses for Computer Science (MajorId = 9, UniversityId = 1)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (12, 'CS101', N'Introduction to Computer Science', 9, 1, 2025, N'Foundations of computing, data structures, and programming basics.', 1, GETDATE()),
+    (13, 'CS201', N'Data Structures & Algorithms', 9, 2, 2025, N'Analysis and implementation of common data structures and algorithms.', 1, GETDATE()),
+    (14, 'CS301', N'Operating Systems', 9, 3, 2025, N'Concepts of processes, memory management, and file systems.', 1, GETDATE());
+
+-- Courses for Mathematics (MajorId = 10)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (15, 'MATH101', N'Calculus I', 10, 1, 2025, N'Differentiation, integration, and applications.', 1, GETDATE()),
+    (16, 'MATH201', N'Linear Algebra', 10, 2, 2025, N'Matrices, vector spaces, and linear transformations.', 1, GETDATE());
+
+-- Courses for Biotechnology (MajorId = 12)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (17, 'BIO101', N'General Biology', 12, 1, 2025, N'Cell structure, genetics, and evolution.', 1, GETDATE()),
+    (18, 'BIO201', N'Molecular Biology', 12, 3, 2025, N'Gene expression, DNA replication, and protein synthesis.', 1, GETDATE());
+
+-- Courses for Civil Engineering (MajorId = 13)
+INSERT INTO [dbo].[Courses]
+           ([CourseId], [CourseCode], [CourseName], [MajorId], [Semester], [AcademicYear], [Description], [IsActive], [CreatedAt])
+VALUES
+    (19, 'CE101', N'Engineering Mechanics', 13, 1, 2025, N'Statics, dynamics, and structural analysis.', 1, GETDATE()),
+    (20, 'CE201', N'Structural Engineering', 13, 3, 2025, N'Design and analysis of structures and materials.', 1, GETDATE());
+
+SET IDENTITY_INSERT [dbo].[Courses] OFF;
+GO
 
 SET IDENTITY_INSERT [dbo].[Documents] ON;
 
@@ -86,26 +206,52 @@ VALUES
 -- Example Document 1
 (1, N'PRF192 Lecture Notes', N'Full lecture notes for Programming Fundamentals.',
  'notes', N'/uploads/docs/PRF192_notes.pdf', 524288, 'pdf',
- N'/uploads/thumbnails/PRF192_notes.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 1, NULL, 
+ N'/uploads/thumbnails/PRF192_notes.png', 'd9e4c226-19b9-499d-81b9-1d653ea1eb0a', 1, NULL, 
  10, 5, 0, 0, 0, 0, 0, NULL, 
  'approved', NULL, GETDATE(), 'en', 120, GETDATE(), GETDATE()),
 
 -- Example Document 2
 (2, N'OOP with Java Assignment', N'Assignment 1 for Java OOP course.',
  'assignment', N'/uploads/docs/PRO201_assignment1.docx', 1048576, 'docx',
- N'/uploads/thumbnails/PRO201_assignment1.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 2, NULL,
+ N'/uploads/thumbnails/PRO201_assignment1.png', 'd9e4c226-19b9-499d-81b9-1d653ea1eb0a', 2, NULL,
  15, 10, 0, 0, 0, 0, 1, 0.95,
  'pending', NULL, NULL, 'en', 15, GETDATE(), GETDATE()),
 
 -- Example Document 3
 (3, N'Database Systems Quiz', N'Quiz with answers for DBI202.',
  'quiz', N'/uploads/docs/DBI202_quiz.pdf', 256000, 'pdf',
- N'/uploads/thumbnails/DBI202_quiz.png', 'cb1accbd-4502-4222-ad98-cdc11892d287', 3, NULL,
+ N'/uploads/thumbnails/DBI202_quiz.png', 'd9e4c226-19b9-499d-81b9-1d653ea1eb0a', 3, NULL,
  5, 3, 0, 0, 0, 0, 0, NULL,
  'approved', NULL, GETDATE(), 'en', 10, GETDATE(), GETDATE());
 
 SET IDENTITY_INSERT [dbo].[Documents] OFF;
 GO
+-- Create Chats table
+CREATE TABLE [Chats] (
+    [ChatId] NVARCHAR(450) NOT NULL,
+    [Message] NVARCHAR(MAX) NOT NULL,
+    [Timestamp] DATETIME2 NOT NULL,
+    [SenderId] NVARCHAR(450) NULL,
+    [ReceiverId] NVARCHAR(450) NULL,
+    
+    -- Primary Key
+    CONSTRAINT [PK_Chats] PRIMARY KEY ([ChatId]),
+    
+    -- Foreign Key to AspNetUsers for Sender
+    CONSTRAINT [FK_Chats_AspNetUsers_SenderId] 
+        FOREIGN KEY ([SenderId]) 
+        REFERENCES [AspNetUsers] ([Id]) 
+        ON DELETE NO ACTION,
+    
+    -- Foreign Key to AspNetUsers for Receiver
+    CONSTRAINT [FK_Chats_AspNetUsers_ReceiverId] 
+        FOREIGN KEY ([ReceiverId]) 
+        REFERENCES [AspNetUsers] ([Id]) 
+        ON DELETE NO ACTION
+);
 
-GO
+-- Create index on SenderId
+CREATE INDEX [IX_Chats_SenderId] ON [Chats] ([SenderId]);
 
+-- Create index on ReceiverId
+CREATE INDEX [IX_Chats_ReceiverId] ON [Chats] ([ReceiverId]);
