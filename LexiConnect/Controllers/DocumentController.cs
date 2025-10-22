@@ -33,10 +33,11 @@ namespace LexiConnect.Controllers
             _documentLikeRepository = documentLikeRepository;
         }
 
-        
+
 
         // GET: Document/Details/{id}
-        public async Task<IActionResult> Details(int id)
+        [HttpGet]
+        public async Task<IActionResult> DetailDocument(int id)
         {
             try
             {
@@ -50,7 +51,7 @@ namespace LexiConnect.Controllers
                 if (document == null)
                 {
                     TempData["Error"] = "Document not found.";
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Homepage", "Home");   
                 }
 
                 // Determine which file to use for viewing (PDF version if available)
@@ -58,7 +59,7 @@ namespace LexiConnect.Controllers
                 if (string.IsNullOrEmpty(viewFilePath))
                 {
                     TempData["Error"] = "Document file not found.";
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Homepage", "Home");
                 }
 
                 // Check if the viewing file exists
@@ -66,7 +67,7 @@ namespace LexiConnect.Controllers
                 if (!System.IO.File.Exists(fullPath))
                 {
                     TempData["Error"] = "Document file not found on disk.";
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Homepage", "Home");
                 }
 
                 // Increment view count
@@ -91,7 +92,7 @@ namespace LexiConnect.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] = $"Error loading document: {ex.Message}";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Homepage", "Home");
             }
         }
 
@@ -156,8 +157,8 @@ namespace LexiConnect.Controllers
         }
 
         // Download action
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
+        //[ValidateAntiForgeryToken]
         
         public async Task<IActionResult> Download(int id)
         {

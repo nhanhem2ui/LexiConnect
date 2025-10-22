@@ -142,7 +142,7 @@
                 <!-- Top Documents Section -->
                 <div class="content-section">
                     <h2 class="section-title">Top Documents</h2>
-                    <div class="top-documents">
+                    <div class="top-documents"> 
 
                         
 
@@ -152,12 +152,10 @@
                             var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
                             && Model.UserLikedDocuments[doc.DocumentId];
 
-                            <div class="top-document-card">
+                            <div class="top-document-card" onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = doc.DocumentId })'">
                                 <div class="document-preview">
                                     <div class="document-preview-title">
-                                        <a asp-controller="Document" asp-action="ViewFile" asp-route-id="@doc.DocumentId">
                                             @doc.Title
-                                        </a>
                                     </div>
                                 </div>
                                 <h3 class="document-title">@doc.Description</h3>
@@ -166,6 +164,14 @@
                                         data-id="@doc.DocumentId">
                                     @(isLiked ? "👎" : "👍")
                                 </button>
+
+                                <button class="download-button"> 
+
+                                    <a asp-controller="Document" asp-action="Download" asp-route-id="@doc.DocumentId">
+                                        Download
+                                    </a>
+                                </button>
+                                
 
                                 <div class="completion-badge">
                                     <span>👍🏼</span>
