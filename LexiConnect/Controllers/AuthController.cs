@@ -2,6 +2,7 @@
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -387,9 +388,9 @@ namespace LexiConnect.Controllers
         }
 
         [HttpGet]
-        public IActionResult AccessDenied(string? returnUrl)
+        [AllowAnonymous]
+        public IActionResult AccessDenied()
         {
-            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
     }

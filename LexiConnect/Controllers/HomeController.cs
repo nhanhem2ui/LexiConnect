@@ -362,6 +362,10 @@ namespace LexiConnect.Controllers
 
             return userLikedDocuments;
         }
-
+        [HttpGet]
+        public IActionResult NotFoundPage()
+        {
+            return View();
+        }
     }
 }
