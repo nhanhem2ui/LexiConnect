@@ -3,6 +3,7 @@ using DataAccess;
 using LexiConnect.Libraries;
 using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
+using LexiConnect.Services.Gemini;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -63,6 +64,7 @@ builder.Services.AddScoped<ISender, EmailSender>();
 //External
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddSingleton<IFirebaseStorageService ,FirebaseStorageService>();
+builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>

@@ -1,9 +1,12 @@
 ﻿using BusinessObjects;
 using LexiConnect.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
+using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
@@ -13,18 +16,245 @@ namespace LexiConnect.Controllers
         private readonly IGenericRepository<Document> _documentRepository;
         private readonly IGenericRepository<UserFollower> _followerRepository;
         private readonly UserManager<Users> _userManager;
+        private readonly IGenericRepository<University> _universityRepository;
+        private readonly IGenericRepository<Major> _majorRepository;
+        private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         public ProfileController(
-            IGenericRepository<Users> userRepository,
-            IGenericRepository<Document> documentRepository,
-            IGenericRepository<UserFollower> followerRepository,
-            UserManager<Users> userManager)
+            IGenericRepository<Users> userRepository, IGenericRepository<Document> documentRepository,
+            IGenericRepository<UserFollower> followerRepository, IGenericRepository<RecentViewed> recentViewedRepository,
+            UserManager<Users> userManager, IWebHostEnvironment webHostEnvironment,
+            IGenericRepository<University> universityRepository, IGenericRepository<Major> majorRepository)
         {
             _userRepository = userRepository;
             _documentRepository = documentRepository;
             _followerRepository = followerRepository;
             _userManager = userManager;
+            _recentViewedRepository = recentViewedRepository;
+            _webHostEnvironment = webHostEnvironment;
+            _universityRepository = universityRepository;
+            _majorRepository = majorRepository;
         }
 
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> UserProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return NotFound("Invalid operant");
+            }
+
+            var user = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+
+            if (user != null)
+            {
+                var uploadedDocuments = _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(userId));
+                var upvotes = 0;
+                foreach (var document in uploadedDocuments)
+                {
+                    upvotes += document.LikeCount;
+                }
+                var follower = _followerRepository.GetAllQueryable(u => u.FollowingId == user.Id);
+
+                var recentActivities = _recentViewedRepository
+                    .GetAllQueryable(c => c.UserId.Equals(user.Id))
+                    .Include(c => c.Document)
+                    .Include(c => c.Course);
+
+                var activeSubscription = true;
+
+                if (user.SubscriptionPlan.PlanId != 1 && user.SubscriptionEndDate > DateTime.Now)
+                {
+                    activeSubscription = false;
+                }
+
+                var model = new UserProfileViewModel
+                {
+                    User = user,
+                    Documents = uploadedDocuments,
+                    RecentActivities = recentActivities,
+                    FollowerNum = await follower.CountAsync(),
+                    ActiveSubscription = activeSubscription,
+                    Upvotes = upvotes
+                };
+
+                return View(model);
+            }
+            return NotFound("An error has occured");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> EditProfile()
+        {
+            var user = await _userRepository.GetAsync(u => u.Id.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Get document count for the user
+            var documentCount = await _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(user.Id)).CountAsync();
+
+            // Create view model
+            var viewModel = new EditProfileViewModel(user, documentCount);
+
+            // Populate dropdown lists
+
+            var universities = _universityRepository.GetAllQueryable(u => u.Id != 0).ToList();
+            ViewBag.Universities = new SelectList(universities, "Id", "Name", user?.UniversityId);
+
+            var majors = _majorRepository
+                .GetAllQueryable(m => m.UniversityId == user.UniversityId)
+                .ToList();
+            ViewBag.Majors = new SelectList(majors, "MajorId", "Name", user?.MajorId);
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(EditProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Repopulate dropdown lists if model is invalid
+                var universities = _universityRepository.GetAllQueryable(u => u.Id != 0).ToList();
+                ViewBag.Universities = new SelectList(universities, "Id", "Name", model?.UniversityId);
+
+                var majors = _majorRepository
+                    .GetAllQueryable(m => m.UniversityId == model.UniversityId)
+                    .ToList();
+                ViewBag.Majors = new SelectList(majors, "MajorId", "Name", model?.MajorId);
+                return View(model);
+            }
+
+            var user = await _userRepository.GetAsync(u => u.Id.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            try
+            {
+                // Update user properties
+                user.FullName = model.FullName;
+                user.PhoneNumber = model.PhoneNumber;
+                user.UniversityId = model.UniversityId;
+                user.MajorId = model.MajorId;
+
+                // Handle avatar upload if provided
+                if (model.AvatarFile != null && model.AvatarFile.Length > 0)
+                {
+                    var avatarUrl = string.Empty;
+                    try
+                    {
+
+                        // Check file size (5MB limit)
+                        if (model.AvatarFile.Length > 5 * 1024 * 1024)
+                        {
+                            TempData["Error"] = $"{model.AvatarFile}, File size cannot exceed 5MB.";
+                            return RedirectToAction("EditProfile");
+                        }
+
+                        // Check file type
+                        var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+                        if (!allowedTypes.Contains(model.AvatarFile.ContentType.ToLower()))
+                        {
+                            TempData["Error"] = $"{model.AvatarFile}, Only JPEG, PNG and GIF images are allowed.";
+                            return RedirectToAction("EditProfile");
+                        }
+
+                        // Generate unique filename
+                        var fileExtension = Path.GetExtension(model.AvatarFile.FileName);
+                        var fileName = $"avatar_{user.Id}_{DateTime.Now:yyyyMMdd_HHmmss}{fileExtension}";
+
+                        // Create uploads directory if it doesn't exist
+                        var uploadsPath = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "avatars");
+                        if (!Directory.Exists(uploadsPath))
+                        {
+                            Directory.CreateDirectory(uploadsPath);
+                        }
+
+                        // Save file
+                        var filePath = Path.Combine(uploadsPath, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await model.AvatarFile.CopyToAsync(stream);
+                        }
+
+                        // Return relative URL
+                        avatarUrl = $"~/uploads/avatars/{fileName}";
+                    }
+                    catch (Exception)
+                    {
+                        TempData["Error"] = $"{model.AvatarFile}, Error uploading avatar. Please try again.";
+                        return RedirectToAction("EditProfile");
+                    }
+
+                    if (!string.IsNullOrEmpty(avatarUrl))
+                    {
+                        // Delete old avatar if it's not the default
+                        if (!string.IsNullOrEmpty(user.AvatarUrl) &&
+                            user.AvatarUrl != "~/image/default-avatar.png")
+                        {
+                            try
+                            {
+                                // Convert relative URL to physical path
+                                var relativePath = user.AvatarUrl.Replace("~/", "");
+                                var physicalPath = Path.Combine(_webHostEnvironment.WebRootPath, relativePath);
+
+                                if (System.IO.File.Exists(physicalPath))
+                                {
+                                    System.IO.File.Delete(physicalPath);
+                                }
+                            }
+                            catch (Exception)
+                            {
+                                TempData["Error"] = "Something wrong, please try again";
+                                return RedirectToAction("EditProfile");
+                            }
+                        }
+                        user.AvatarUrl = avatarUrl;
+                    }
+                }
+
+                // Update user in database
+                var result = await _userRepository.UpdateAsync(user);
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Profile updated successfully!";
+                    return RedirectToAction("UserProfile");
+                }
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "An error occurred while updating your profile. Please try again.";
+            }
+
+            ViewBag.Universities = new SelectList(_universityRepository.GetAllQueryable(u => u.Id != 0)
+                .ToList(), "Id", "Name", user?.UniversityId);
+
+            ViewBag.Majors = new SelectList(_majorRepository
+                .GetAllQueryable(m => m.UniversityId == user.UniversityId)
+                .ToList(), "MajorId", "Name", user?.MajorId);
+
+            return View(model);
+        }
+
+        [HttpGet]
+        [Authorize]
+        public IActionResult GetMajorsByUniversity(int universityId)
+        {
+            var majors = _majorRepository
+                .GetAllQueryable(m => m.UniversityId == universityId)
+                .Select(m => new { m.MajorId, m.Name })
+                .ToList();
+            return Json(majors);
+        }
         [HttpGet]
         public async Task<IActionResult> PublicUserProfile(string id)
         {
@@ -104,6 +334,7 @@ namespace LexiConnect.Controllers
             return View(viewModel);
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFollow(string userId)
@@ -122,7 +353,7 @@ namespace LexiConnect.Controllers
             if (currentUser.Id == userId)
             {
                 TempData["Error"] = "You cannot follow yourself.";
-                return RedirectToAction("PublicProfile", new { id = userId });
+                return RedirectToAction("PublicUserProfile", new { id = userId });
             }
 
             // Check if already following
@@ -149,7 +380,7 @@ namespace LexiConnect.Controllers
                 TempData["Success"] = "You are now following this user.";
             }
 
-            return RedirectToAction("PublicProfile", new { id = userId });
+            return RedirectToAction("PublicUserProfile", new { id = userId });
         }
 
         [HttpGet]
@@ -172,6 +403,7 @@ namespace LexiConnect.Controllers
             return View("FollowList", followers);
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Following(string id)
         {
