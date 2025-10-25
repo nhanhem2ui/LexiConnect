@@ -1,0 +1,210 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = $"{Model.User.FullName} - Profile";
+}
+@model LexiConnect.Models.ViewModels.PublicUserProfileViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.User.FullName - LexiConnect</title>
+    <link rel="stylesheet" href="~/css/Profile/PublicUserProfile.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-left-section">
+                    <div class="profile-avatar-large">
+                        @if (!string.IsNullOrEmpty(Model.User.AvatarUrl))
+                        {
+                            <img src="@Url.Content(Model.User.AvatarUrl)" alt="@Model.User.FullName" />
+                        }
+                        else
+                        {
+                            @Model.User.FullName?.Substring(0, 1).ToUpper()
+                        }
+                    </div>
+
+                    <div class="profile-info">
+                        <h1>@Model.User.FullName</h1>
+
+                        @if (Model.User.University != null)
+                        {
+                            <div class="university-info">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 3L1 9L12 15L23 9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    <path d="M1 9V15L12 21L23 15V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <span>@Model.User.University.Name</span>
+                            </div>
+                        }
+
+                        <div class="follow-stats">
+                            <span><strong>@Model.FollowerCount</strong> Followers</span>
+                            <span><strong>@Model.FollowingCount</strong> Following</span>
+                        </div>
+
+                        @if (!Model.IsOwnProfile)
+                        {
+                            <form asp-action="ToggleFollow" asp-controller="User" method="post" class="follow-form">
+                                <input type="hidden" name="userId" value="@Model.User.Id" />
+                                <button type="submit" class="btn-follow @(Model.IsFollowing ? "following" : "")">
+                                    <svg class="icon-follow" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        @if (Model.IsFollowing)
+                                        {
+                                            <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M17 8L19 10L23 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        }
+                                        else
+                                        {
+                                            <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <circle cx="8.5" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M20 8V14M23 11H17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        }
+                                    </svg>
+                                    <span>@(Model.IsFollowing ? "Following" : "Follow")</span>
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("UserProfile", "Profile")" class="btn-view-profile">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2" />
+                                    <path d="M2 12C2 12 5 5 12 5C19 5 22 12 22 12C22 12 19 19 12 19C5 19 2 12 2 12Z" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                                View My Profile
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="profile-right-section">
+                    <div class="level-card">
+                        <div class="level-header">
+                            <span class="level-label">Total Points</span>
+                            <span class="level-points">@Model.User.TotalPointsEarned</span>
+                        </div>
+                        <div class="level-info">
+                            <span class="level-badge">Level 3</span>
+                            <span class="level-title">Contributor</span>
+                        </div>
+                        <div class="level-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: @((Model.User.TotalPointsEarned % 1000) / 10.0)%"></div>
+                            </div>
+                            <span class="progress-text">@(1000 - (Model.User.TotalPointsEarned % 1000)) points to level 4</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Section -->
+            <div class="statistics-section">
+                <h2 class="section-title">Statistics</h2>
+
+                <div class="stats-grid">
+                    <!-- Documents Stats -->
+                    <div class="stats-card documents-card">
+                        <div class="stats-card-header">
+                            <svg class="stats-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <h3>@Model.User.FullName's Documents</h3>
+                        </div>
+                        <div class="stats-grid-inner">
+                            <div class="stat-item">
+                                <span class="stat-number">@Model.TotalUploads</span>
+                                <span class="stat-label">Uploads</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">@Model.TotalUpvotes</span>
+                                <span class="stat-label">Upvotes</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">@Model.TotalComments</span>
+                                <span class="stat-label">Comments</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Impact Stats -->
+                    <div class="stats-card impact-card">
+                        <div class="stats-card-header">
+                            <svg class="stats-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20.84 4.61C20.3292 4.099 19.7228 3.69364 19.0554 3.41708C18.3879 3.14052 17.6725 2.99817 16.95 2.99817C16.2275 2.99817 15.5121 3.14052 14.8446 3.41708C14.1772 3.69364 13.5708 4.099 13.06 4.61L12 5.67L10.94 4.61C9.9083 3.57831 8.50903 2.99871 7.05 2.99871C5.59096 2.99871 4.19169 3.57831 3.16 4.61C2.1283 5.64169 1.54871 7.04097 1.54871 8.5C1.54871 9.95903 2.1283 11.3583 3.16 12.39L4.22 13.45L12 21.23L19.78 13.45L20.84 12.39C21.351 11.8792 21.7564 11.2728 22.0329 10.6054C22.3095 9.93789 22.4518 9.22248 22.4518 8.5C22.4518 7.77752 22.3095 7.06211 22.0329 6.39464C21.7564 5.72718 21.351 5.12075 20.84 4.61Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <h3>Impact</h3>
+                        </div>
+                        <div class="impact-number">
+                            <span class="impact-value">@Model.StudentsHelped</span>
+                            <span class="impact-label">Students Helped</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Uploads Section -->
+            <div class="uploads-section">
+                <h2 class="section-title">Popular uploads</h2>
+
+                @if (Model.PopularDocuments.Any())
+                {
+                    <div class="uploads-table">
+                        <div class="table-header">
+                            <div class="header-cell">Document Title</div>
+                            <div class="header-cell text-right">Ratings</div>
+                        </div>
+
+                        @foreach (var docStat in Model.PopularDocuments)
+                        {
+                            <a href="@Url.Action("DocumentDetail", "Document", new { id = docStat.Document.DocumentId })" class="table-row">
+                                <div class="row-content">
+                                    <svg class="doc-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <span class="doc-title">@docStat.Document.Title</span>
+                                </div>
+                                <div class="rating-info">
+                                    <svg class="rating-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M14 9V5C14 4.46957 13.7893 3.96086 13.4142 3.58579C13.0391 3.21071 12.5304 3 12 3C11.4696 3 10.9609 3.21071 10.5858 3.58579C10.2107 3.96086 10 4.46957 10 5V9L7 21H17L14 9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <span class="rating-text">@docStat.Rating% (@docStat.TotalRatings)</span>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <p>No documents uploaded yet</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle follow button animation
+        document.querySelector('.follow-form')?.addEventListener('submit', function(e) {
+            const button = this.querySelector('.btn-follow');
+            button.disabled = true;
+            button.style.opacity = '0.6';
+        });
+    </script>
+</body>
+</html>

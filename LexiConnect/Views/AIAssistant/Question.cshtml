@@ -1,0 +1,398 @@
+﻿@{
+    ViewData["Title"] = "Ask Questions";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-secondary text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-robot fs-3 me-3"></i>
+                            <div>
+                                <h4 class="mb-0">LexiConnect AI Assistant</h4>
+                                <small>Ask me about studies, documents, or support</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-light btn-sm" id="clear-chat">
+                            <i class="bi bi-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Chat Container -->
+                    <div id="chat-container" class="p-4" style="height: 500px; overflow-y: auto; background-color: #f8f9fa;">
+                        <!-- Welcome Message -->
+                        <div class="message ai-message mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="avatar bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                                    <i class="bi bi-robot"></i>
+                                </div>
+                                <div class="message-content bg-white p-3 rounded shadow-sm" style="max-width: 80%;">
+                                    <p class="mb-0">Hello! I'm your LexiConnect AI assistant. I can help you with:</p>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Study questions and academic topics</li>
+                                        <li>Finding documents and resources</li>
+                                        <li>Contacting support</li>
+                                        <li>Analyzing uploaded files (PDF, images, documents)</li>
+                                    </ul>
+                                    <p class="mb-0 mt-2">What can I help you with today?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="border-top p-3 bg-white">
+                        <!-- File Upload Preview -->
+                        <div id="file-preview" class="mb-2" style="display: none;">
+                            <div class="alert alert-info d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-paperclip me-2"></i>
+                                    <span id="file-name"></span>
+                                    <small class="text-muted ms-2" id="file-size"></small>
+                                </div>
+                                <button type="button" class="btn-close" id="remove-file"></button>
+                            </div>
+                        </div>
+
+                        <form id="question-form">
+                            <div class="input-group">
+                                <button class="btn btn-outline-secondary" type="button" id="attach-file-btn" title="Attach file">
+                                    <i class="bi bi-paperclip"></i>
+                                </button>
+                                <input type="file"
+                                       id="file-input"
+                                       class="d-none"
+                                       accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.txt,.doc,.docx">
+                                <input type="text"
+                                       id="question-input"
+                                       class="form-control"
+                                       placeholder="Ask me anything..."
+                                       autocomplete="off"
+                                       required>
+                                <button class="btn btn-secondary" type="submit" id="send-btn">
+                                    <i class="bi bi-send-fill"></i> Send
+                                </button>
+                            </div>
+                        </form>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="bi bi-lightbulb"></i> Try: "How do I contact support?" or attach a document to analyze
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="mt-3">
+                <h6 class="text-muted">Quick Questions:</h6>
+                <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-secondary btn-sm quick-question" data-question="How do I contact support?">
+                        📞 Contact Support
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm quick-question" data-question="Where can I find my documents?">
+                        📄 Find Documents
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm quick-question" data-question="How do I reset my password?">
+                        🔒 Reset Password
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm quick-question" data-question="What study resources are available?">
+                        📚 Study Resources
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .message {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .user-message .message-content {
+        background-color: #6c757d !important; /* Bootstrap secondary */
+        color: white;
+    }
+
+    .ai-message .message-content {
+        background-color: white;
+    }
+
+    .typing-indicator {
+        display: inline-block;
+    }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+            .typing-indicator span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .typing-indicator span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+    @@keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+
+    #chat-container {
+        scroll-behavior: smooth;
+    }
+
+    .file-attachment-badge {
+        display: inline-block;
+        background-color: #f1f3f4;
+        color: #495057;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-top: 8px;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const questionInput = document.getElementById('question-input');
+        const questionForm = document.getElementById('question-form');
+        const sendBtn = document.getElementById('send-btn');
+        const quickQuestions = document.querySelectorAll('.quick-question');
+        const fileInput = document.getElementById('file-input');
+        const attachFileBtn = document.getElementById('attach-file-btn');
+        const filePreview = document.getElementById('file-preview');
+        const fileName = document.getElementById('file-name');
+        const fileSize = document.getElementById('file-size');
+        const removeFileBtn = document.getElementById('remove-file');
+        const clearChatBtn = document.getElementById('clear-chat');
+
+        let selectedFile = null;
+
+        attachFileBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                selectedFile = file;
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                filePreview.style.display = 'block';
+            }
+        });
+
+        removeFileBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+        });
+
+        clearChatBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                const messages = chatContainer.querySelectorAll('.message');
+                messages.forEach((msg, index) => {
+                    if (index > 0) msg.remove();
+                });
+            }
+        });
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        questionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = questionInput.value.trim();
+            if (!question) return;
+            await sendQuestion(question, selectedFile);
+            questionInput.value = '';
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+        });
+
+        async function sendQuestion(question, file = null) {
+            addMessage(question, 'user', file);
+            const typingId = showTypingIndicator();
+
+            try {
+                let response;
+                if (file) {
+                    const formData = new FormData();
+                    formData.append('question', question);
+                    formData.append('file', file);
+                    response = await fetch('@Url.Action("AskWithFile", "AIAssistant")', { method: 'POST', body: formData });
+                } else {
+                    response = await fetch('@Url.Action("Ask", "AIAssistant")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ question: question })
+                    });
+                }
+
+                removeTypingIndicator(typingId);
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    addMessage(`Sorry, I encountered an error: ${error.error || 'Unknown error'}`, 'ai');
+                    return;
+                }
+
+                const data = await response.json();
+                addMessage(data.answer, 'ai');
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage('Sorry, I\'m having trouble connecting. Please try again later.', 'ai');
+                console.error('Error:', error);
+            }
+        }
+
+        function addMessage(text, type, file = null) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message mb-3`;
+
+            let fileAttachment = '';
+            if (file && type === 'user') {
+                fileAttachment = `
+                    <div class="file-attachment-badge">
+                        <i class="bi bi-paperclip"></i> ${escapeHtml(file.name)}
+                    </div>
+                `;
+            }
+
+            if (type === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="d-flex align-items-start justify-content-end">
+                        <div class="message-content bg-secondary text-white p-3 rounded shadow-sm" style="max-width: 80%;">
+                            <p class="mb-0">${escapeHtml(text)}</p>
+                            ${fileAttachment}
+                        </div>
+                        <div class="avatar bg-secondary text-white rounded-circle ms-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="d-flex align-items-start">
+                        <div class="avatar bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="message-content bg-white p-3 rounded shadow-sm" style="max-width: 80%;">
+                            ${formatMessage(text)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function formatMessage(text) {
+            let formatted = escapeHtml(text);
+            formatted = formatted.replace(/\n\n/g, '</p><p class="mb-2">');
+            formatted = formatted.replace(/\n/g, '<br>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            const lines = formatted.split('<br>');
+            let inList = false;
+            let result = [];
+            for (let line of lines) {
+                if (line.trim().match(/^[-•*]\s+/)) {
+                    if (!inList) {
+                        result.push('<ul class="mb-2 mt-2">');
+                        inList = true;
+                    }
+                    result.push('<li>' + line.replace(/^[-•*]\s+/, '') + '</li>');
+                } else {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    result.push(line);
+                }
+            }
+            if (inList) result.push('</ul>');
+            formatted = result.join('<br>');
+            formatted = formatted.replace(/(\d+)\.\s+(.*?)(?=<br>|$)/g, '<li>$2</li>');
+            return `<div>${formatted}</div>`;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai-message mb-3';
+            typingDiv.id = 'typing-indicator-' + Date.now();
+            typingDiv.innerHTML = `
+                <div class="d-flex align-items-start">
+                    <div class="avatar bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="message-content bg-white p-3 rounded shadow-sm">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return typingDiv.id;
+        }
+
+        function removeTypingIndicator(id) {
+            const indicator = document.getElementById(id);
+            if (indicator) indicator.remove();
+        }
+
+        quickQuestions.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const question = btn.getAttribute('data-question');
+                questionInput.value = question;
+                sendQuestion(question);
+            });
+        });
+
+        questionInput.focus();
+    </script>
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">

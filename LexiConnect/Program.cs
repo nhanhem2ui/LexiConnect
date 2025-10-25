@@ -3,6 +3,7 @@ using DataAccess;
 using LexiConnect.Libraries;
 using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
+using LexiConnect.Services.Gemini;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -63,6 +64,7 @@ builder.Services.AddScoped<ISender, EmailSender>();
 //External
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddSingleton<IFirebaseStorageService ,FirebaseStorageService>();
+builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
@@ -113,16 +115,18 @@ builder.Services.AddSignalR(options =>
 // Configure Authentication
 builder.Services.AddAuthentication(options =>
 {
+    // Use cookie authentication by default (Identity)
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
 })
-.AddGoogle(options =>
+.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     options.CallbackPath = "/signin-google";
     options.SaveTokens = true;
 });
+
 
 var app = builder.Build();
 
@@ -141,6 +145,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.UseStatusCodePagesWithReExecute("/Home/NotFoundPage");
 
 app.UseForwardedHeaders(); 
 app.UseCookiePolicy();

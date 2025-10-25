@@ -18,10 +18,10 @@
     <None Include="wwwroot\css\Auth\Index.css" />
     <None Include="wwwroot\css\Auth\ResetPassword.css" />
     <None Include="wwwroot\css\Document\DetailDocument.css" />
-    <None Include="wwwroot\css\Home\EditProfile.css" />
+    <None Include="wwwroot\css\Profile\EditProfile.css" />
     <None Include="wwwroot\css\Home\Homepage.css" />
     <None Include="wwwroot\css\Home\Introduction.css" />
-    <None Include="wwwroot\css\Home\UserProfile.css" />
+    <None Include="wwwroot\css\Profile\UserProfile.css" />
     <None Include="wwwroot\css\site.css" />
     <None Include="wwwroot\css\Subscription\ExtendSubscription.css" />
     <None Include="wwwroot\css\Subscription\Pricing.css" />
@@ -40,7 +40,7 @@
     <None Include="wwwroot\js\Auth\ForgotPassword.js" />
     <None Include="wwwroot\js\Auth\ResetPassword.js" />
     <None Include="wwwroot\js\Document\DetailDocument.js" />
-    <None Include="wwwroot\js\Home\EditProfile.js" />
+    <None Include="wwwroot\js\Profile\EditProfile.js" />
     <None Include="wwwroot\js\Home\HomePage.js" />
     <None Include="wwwroot\js\Home\Introduction.js" />
     <None Include="wwwroot\js\site.js" />
@@ -111,6 +111,7 @@
     <PackageReference Include="Firebase.Auth" Version="1.0.0" />
     <PackageReference Include="FirebaseStorage.net" Version="1.0.3" />
     <PackageReference Include="Google.Apis.Auth" Version="1.71.0" />
+    <PackageReference Include="Google.GenAI" Version="0.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.19" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.19" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.11" />

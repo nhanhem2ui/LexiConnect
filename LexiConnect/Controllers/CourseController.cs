@@ -165,7 +165,6 @@ namespace LexiConnect.Controllers
                 ? TempData["Error"] = "Course not exists"
                 : null;
 
-            // TODO: Implement follow/unfollow logic with UserFollowCourse repository
             // Check if already following
             // If following: remove the follow
             // If not following: add the follow

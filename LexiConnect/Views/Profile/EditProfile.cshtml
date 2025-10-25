@@ -11,7 +11,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile - LexiConnect</title>
-    <link rel="stylesheet" href="~/css/Home/EditProfile.css" />
+    <link rel="stylesheet" href="~/css/Profile/EditProfile.css" />
 </head>
 
 <body>
@@ -28,11 +28,11 @@
                     <p>Update your personal information and preferences</p>
                 </div>
                 <div class="header-actions">
-                    <a href="@Url.Action("UserProfile", "Home")" class="btn-secondary">Cancel</a>
+                    <a href="@Url.Action("UserProfile", "Profile")" class="btn-secondary">Cancel</a>
                 </div>
             </div>
 
-            <form asp-action="EditProfile" asp-controller="Home" method="post" enctype="multipart/form-data" class="edit-profile-form">
+            <form asp-action="EditProfile" asp-controller="Profile" method="post" enctype="multipart/form-data" class="edit-profile-form">
                 <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
 
                 <!-- Profile Picture Section -->
@@ -179,7 +179,7 @@
 
                 <!-- Form Actions -->
                 <div class="form-actions">
-                    <a href="@Url.Action("UserProfile", "Home")" class="btn-secondary">Cancel</a>
+                    <a href="@Url.Action("UserProfile", "Profile")" class="btn-secondary">Cancel</a>
                     <button type="submit" class="btn-primary">
                         <span>💾</span>
                         Save Changes
@@ -189,6 +189,6 @@
         </div>
     </div>
 
-    <script src="~/js/Home/EditProfile.js" asp-append-version="true"></script>
+    <script src="~/js/Profile/EditProfile.js" asp-append-version="true"></script>
 </body>
 </html>
