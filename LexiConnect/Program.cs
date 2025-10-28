@@ -1,11 +1,15 @@
 using BusinessObjects;
 using DataAccess;
+using LexiConnect.Libraries;
 using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
+using LexiConnect.Services.Gemini;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using System.Security.Claims;
@@ -34,6 +38,8 @@ builder.Services.AddScoped<IGenericDAO<UserFollower>, UserFollowerDAO>();
 builder.Services.AddScoped<IGenericDAO<RecentViewed>, RecentViewedDAO>();
 builder.Services.AddScoped<IGenericDAO<PaymentRecord>, PaymentRecordDAO>();
 builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
+builder.Services.AddScoped<IGenericDAO<UserFollowCourse>, UserFollowCourseDAO>();
+builder.Services.AddScoped<IGenericDAO<Chat>, ChatDAO>();
 
 //Repository
 builder.Services.AddScoped<IGenericRepository<Country>, CountryRepository>();
@@ -51,6 +57,8 @@ builder.Services.AddScoped<IGenericRepository<UserFollower>, UserFollowerReposit
 builder.Services.AddScoped<IGenericRepository<RecentViewed>, RecentViewedRepository>();
 builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepository>();
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
+builder.Services.AddScoped<IGenericRepository<UserFollowCourse>, UserFollowCourseRepository>();
+builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();
@@ -58,6 +66,7 @@ builder.Services.AddScoped<ISender, EmailSender>();
 //External
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddSingleton<IFirebaseStorageService ,FirebaseStorageService>();
+builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
@@ -96,18 +105,42 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Auth/AccessDenied";
 });
 
+//SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = builder.Environment.IsDevelopment();
+    options.KeepAliveInterval = TimeSpan.FromSeconds(15);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+    options.HandshakeTimeout = TimeSpan.FromSeconds(15);
+});
+
 // Configure Authentication
 builder.Services.AddAuthentication(options =>
 {
+    // Use cookie authentication by default (Identity)
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
-    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
 })
-.AddGoogle(options =>
+.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "";
     options.CallbackPath = "/signin-google";
     options.SaveTokens = true;
+});
+
+// Configure form options for file uploads
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+// Kestrel server limits
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB
 });
 
 var app = builder.Build();
@@ -128,6 +161,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseStatusCodePagesWithReExecute("/Home/NotFoundPage");
+
 app.UseForwardedHeaders(); 
 app.UseCookiePolicy();
 app.UseSession();
@@ -140,5 +175,7 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Introduction}/{id?}");
+
+app.MapHub<ChatHub>("/ChatHub");
 
 app.Run();

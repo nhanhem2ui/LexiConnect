@@ -1,0 +1,164 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Universities";
+}
+@model LexiConnect.Models.ViewModels.UniversitiesViewModel
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universities</title>
+    <link rel="stylesheet" href="~/css/University/AllUniversities.css" />
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <partial name="_Sidebar" />
+
+        <div class="main-content">
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-illustration">
+                    <svg viewBox="0 0 64 64" width="128" height="128" data-name="Layer 1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" fill="#000000">
+                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g id="SVGRepo_iconCarrier">
+                            <defs>
+                                <style>
+                                    .cls-1 {
+                                        fill: #f5dd90;
+                                    }
+
+                                    .cls-2 {
+                                        fill: #ffbc0a;
+                                    }
+
+                                    .cls-3 {
+                                        fill: #8b8c89;
+                                    }
+
+                                    .cls-4 {
+                                        fill: #6096ba;
+                                    }
+
+                                    .cls-5 {
+                                        fill: #274c77;
+                                    }
+                                </style>
+                            </defs><rect class="cls-4" height="3" width="2" x="44" y="18"></rect><rect class="cls-4" height="5" width="2" x="44" y="11"></rect><circle class="cls-1" cx="45" cy="17" r="2"></circle><path class="cls-4" d="M24,12.87v2.13c0,2.21,1.79,4,4,4h8c2.21,0,4-1.79,4-4v-2.13l-8,2.13-8-2.13Z"></path><polygon class="cls-5" points="32 15 17 11 32 3 47 11 32 15"></polygon><polyline class="cls-4" points="20 59 20 33 32 21 44 33 44 59"></polyline><circle class="cls-2" cx="32" cy="35" r="5"></circle><polyline class="cls-1" points="12 20 2 20 6 23 2 26 12 26"></polyline><rect class="cls-5" height="20" width="11" x="9" y="39"></rect><rect class="cls-5" height="20" width="11" x="44" y="39"></rect><polyline class="cls-1" points="28 59 28 51 36 51 36 59"></polyline><polyline class="cls-3" points="44 33 57 33 57 39 44 39"></polyline><polyline class="cls-3" points="20 39 7 39 7 33 20 33"></polyline><rect class="cls-3" height="2" width="60" x="2" y="59"></rect><rect class="cls-2" height="8" width="2" x="31" y="51"></rect><path class="cls-1" d="M32,40c-2.76,0-5-2.24-5-5s2.24-5,5-5"></path><rect class="cls-4" height="14" width="2" x="12" y="19"></rect><polyline class="cls-1" points="52 20 62 20 58 23 62 26 52 26"></polyline><rect class="cls-4" height="14" transform="translate(102 52) rotate(-180)" width="2" x="50" y="19"></rect>
+                        </g>
+                    </svg>
+                </div>
+                <h1 class="hero-title">Find your schools at LexiConnect</h1>
+                <p class="hero-subtitle">Search and find your study materials</p>
+
+                <!-- Search Box -->
+                <div class="search-container">
+                    <input type="text"
+                           id="universitySearch"
+                           class="search-input-large"
+                           placeholder="Search for universities..."
+                           value="@Model.SearchQuery"
+                           autocomplete="off" />
+                    <button class="search-btn-large">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" />
+                        </svg>
+                    </button>
+                    <div id="searchResults" class="search-results-dropdown"></div>
+                </div>
+            </div>
+
+            <!-- Popular Universities Section -->
+            @if (Model.PopularUniversities.Any())
+            {
+                <section class="section">
+                    <h2 class="section-title">Most popular universities and schools</h2>
+                    <div class="universities-list">
+                        @foreach (var uni in Model.PopularUniversities)
+                        {
+                            <a href="@Url.Action("UniversityDetails", "University", new { id = uni.Id })" class="university-link">
+                                <svg viewBox="0 0 24 24" width="20" height="20" class="uni-icon">
+                                    <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3Z" />
+                                </svg>
+                                <span class="uni-name">@uni.Name</span>
+                            </a>
+                        }
+                    </div>
+                </section>
+            }
+
+            <!-- All Universities Section -->
+            <section class="section">
+                <h2 class="section-title">Study Materials by all Universities</h2>
+                <p class="section-subtitle">Search your university by its first letter</p>
+
+                <!-- Alphabet Filter -->
+                <div class="alphabet-filter">
+                    <a href="@Url.Action("Index", new { search = Model.SearchQuery, letter = "All" })"
+                       class="letter-btn @(Model.SelectedLetter == "All" ? "active" : "")">All</a>
+                    @foreach (var letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZĐ")
+                    {
+                        <a href="@Url.Action("Index", new { search = Model.SearchQuery, letter = letter.ToString() })"
+                           class="letter-btn @(Model.SelectedLetter == letter.ToString() ? "active" : "")">@letter</a>
+                    }
+                </div>
+
+                <!-- Universities Grid -->
+                <div class="universities-grid">
+                    @if (Model.Universities.Any())
+                    {
+                        @foreach (var uni in Model.Universities)
+                        {
+                            <a href="@Url.Action("Details", "University", new { id = uni.Id })" class="university-card">
+                                <div class="card-icon">
+                                    @if (!string.IsNullOrEmpty(uni.LogoUrl))
+                                    {
+                                        <img src="@Url.Content(uni.LogoUrl)" alt="@uni.Name" />
+                                    }
+                                    else
+                                    {
+                                        <svg viewBox="0 0 24 24" width="32" height="32">
+                                            <path d="M12 3L1 9L5 11.18V17.18L12 21L19 17.18V11.18L21 10.09V17H23V9L12 3Z" />
+                                        </svg>
+                                    }
+                                </div>
+                                <div class="card-content">
+                                    <h3 class="card-title">@uni.Name</h3>
+                                    @if (!string.IsNullOrEmpty(uni.ShortName))
+                                    {
+                                        <p class="card-subtitle">(@uni.ShortName)</p>
+                                    }
+                                </div>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="no-results">
+                            <svg viewBox="0 0 24 24" width="48" height="48">
+                                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" />
+                            </svg>
+                            <p>No universities found matching your criteria.</p>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Universities.Count >= 30)
+                {
+                    <div class="max-results-notice">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" />
+                        </svg>
+                        <span>Showing maximum 30 results. Use search or filters to narrow down.</span>
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+
+    <script src="~/js/University/AllUniversities.js"></script>
+</body>
+</html>

@@ -1,348 +1,115 @@
-﻿/* Enhanced Document Viewer Styles */
-
-/* Viewer Toolbar */
-.viewer-toolbar {
-    background: #f8f9fa;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+﻿/* Layout chung */
+.page-wrapper {
     display: flex;
-    gap: 10px;
-    align-items: center;
-    border-radius: 8px 8px 0 0;
+    gap: 20px;
 }
 
-.viewer-btn {
-    padding: 6px 12px;
-    border: 1px solid #ddd;
-    background: white;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.3s;
+/* Sidebar trái */
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    border-right: 1px solid #ddd;
+    padding: 15px;
 }
 
-    .viewer-btn:hover {
-        background: #e9ecef;
+    .sidebar h3 {
+        margin-bottom: 10px;
+        font-size: 18px;
     }
 
-    .viewer-btn.active {
-        background: #007bff;
-        color: white;
-        border-color: #007bff;
-    }
-
-/* Viewer Containers */
-.viewer-container {
-    border-radius: 0 0 8px 8px;
-    overflow: hidden;
-    position: relative;
-}
-
-.pdf-viewer, .doc-viewer {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* Text Viewer */
-.text-viewer {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: white;
-    min-height: 600px;
-}
-
-.text-content {
-    padding: 20px;
-    font-family: 'Courier New', monospace;
-    line-height: 1.5;
-    max-height: 800px;
-    overflow-y: auto;
-}
-
-    .text-content pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        margin: 0;
+    .sidebar p {
+        color: #666;
         font-size: 14px;
     }
 
-/* Loading Spinner */
-.loading-spinner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-    color: #666;
-    font-size: 16px;
-}
-
-    .loading-spinner::before {
-        content: '';
-        width: 20px;
-        height: 20px;
-        border: 2px solid #f3f3f3;
-        border-top: 2px solid #3498db;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 10px;
+    .sidebar .uploader {
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
-@keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
-}
-
-/* Error States */
-.viewer-error {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    background: #f8f9fa;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-}
-
-.error-content {
-    text-align: center;
-    max-width: 400px;
-    padding: 20px;
-}
-
-    .error-content h3 {
-        color: #dc3545;
-        margin-bottom: 15px;
-        font-size: 18px;
-    }
-
-    .error-content p {
-        color: #666;
-        margin-bottom: 20px;
-        line-height: 1.5;
-    }
-
-.error-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.preview-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-/* File Preview Enhancements */
-.file-preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 12px;
-    border: 2px dashed #ddd;
-}
-
-.preview-message {
-    text-align: center;
-    max-width: 400px;
-    padding: 30px;
-}
-
-    .preview-message h3 {
-        color: #333;
-        margin-bottom: 15px;
-        font-size: 20px;
-    }
-
-    .preview-message p {
-        color: #666;
-        margin-bottom: 10px;
-        line-height: 1.5;
-    }
-
-        .preview-message p:last-of-type {
-            margin-bottom: 20px;
-            font-weight: 500;
+        .sidebar .uploader img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #eee;
         }
 
-/* Fullscreen Modal */
-.fullscreen-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 9999;
-    display: none;
-    flex-direction: column;
-}
-
-.fullscreen-header {
-    background: #333;
-    color: white;
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-    .fullscreen-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 500;
-    }
-
-.close-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 4px;
-    transition: background 0.3s;
-}
-
-    .close-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-.fullscreen-content {
-    flex: 1;
-    overflow: hidden;
-}
-
-    .fullscreen-content iframe,
-    .fullscreen-content embed {
+    .sidebar .btn-download {
+        margin-top: 20px;
         width: 100%;
-        height: 100%;
+        padding: 10px;
+        background: #28a745;
+        color: white;
         border: none;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
     }
 
-/* Button Enhancements */
-.btn-secondary {
-    background: #6c757d;
+/* Preview bên phải */
+.preview-wrapper {
+    flex: 1;
+    padding: 15px;
+    overflow: auto;
+    height: 90vh;
+    border-left: 1px solid #ddd;
+}
+
+    .preview-wrapper h3 {
+        margin-bottom: 15px;
+    }
+
+/* Action bar */
+.doc-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    padding: 8px 0;
+    z-index: 10;
+}
+
+.btn-download {
+    background: #00c200;
     color: white;
-    text-decoration: none;
-    display: inline-flex;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 18px;
+    font-weight: bold;
+    display: flex;
     align-items: center;
     gap: 6px;
+    cursor: pointer;
 }
 
-    .btn-secondary:hover {
-        background: #5a6268;
-        color: white;
-        text-decoration: none;
+    .btn-download:hover {
+        background: #00a500;
     }
 
-.btn-primary {
-    background: #007bff;
-    color: white;
+.btn-outline {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-    .btn-primary:hover {
-        background: #0056b3;
+    .btn-outline:hover {
+        background: #f5f5f5;
     }
 
-/* Responsive Enhancements */
-@media (max-width: 768px) {
-    .viewer-toolbar {
-        flex-wrap: wrap;
-        padding: 8px;
-    }
-
-    .viewer-btn {
-        font-size: 12px;
-        padding: 5px 8px;
-    }
-
-    .error-actions,
-    .preview-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-
-        .error-actions .btn,
-        .preview-actions .btn {
-            width: 200px;
-            justify-content: center;
-        }
-
-    .fullscreen-header {
-        padding: 10px 15px;
-    }
-
-        .fullscreen-header h3 {
-            font-size: 16px;
-        }
-
-    .text-content {
-        padding: 15px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 480px) {
-    .viewer-toolbar {
-        gap: 5px;
-    }
-
-    .viewer-btn {
-        font-size: 11px;
-        padding: 4px 6px;
-    }
-
-    .preview-message {
-        padding: 20px;
-    }
-
-    .error-content {
-        padding: 15px;
-    }
-}
-
-/* Iframe Loading States */
-iframe[src*="officeapps.live.com"] {
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="25" fill="none" stroke="%23007bff" stroke-width="2" stroke-dasharray="15.71 15.71" transform="rotate(0 50 50)"><animateTransform attributeName="transform" dur="1s" repeatCount="indefinite" type="rotate" values="0 50 50;360 50 50"/></circle></svg>') center center no-repeat;
-    background-size: 50px;
-}
-
-/* Smooth Transitions */
-.viewer-container {
-    transition: opacity 0.3s ease-in-out;
-}
-
-    .viewer-container:not(.active):not([style*="block"]) {
-        opacity: 0;
-    }
-
-/* Print Styles */
-@media print {
-    .viewer-toolbar,
-    .error-actions,
-    .preview-actions {
-        display: none !important;
-    }
-
-    .viewer-container {
-        height: auto !important;
-    }
-
-    iframe, embed {
-        height: auto !important;
-        min-height: 800px;
-    }
+/* PDF preview */
+.doc-preview {
+    width: 100%;
+    min-height: 400px;
+    border: 1px solid #ddd;
+    padding: 10px;
 }
