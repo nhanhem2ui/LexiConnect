@@ -46,24 +46,25 @@ namespace LexiConnect.Controllers
 
         [HttpPost]
         [RequestSizeLimit(10 * 1024 * 1024)] // 10MB limit
-        public async Task<IActionResult> AskWithFile([FromForm] string question, [FromForm] IFormFile? file)
+        [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
+        public async Task<IActionResult> AskWithFile(AskRequestWithFile askRequest)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(question))
+                if (string.IsNullOrWhiteSpace(askRequest.Question))
                 {
-                    return BadRequest(new { error = "Question cannot be empty" });
+                    return Content("{\"error\": \"Question cannot be empty\"}", "application/json");
                 }
 
                 string answer;
-                var contextualPrompt = BuildContextualPrompt(question);
+                var contextualPrompt = BuildContextualPrompt(askRequest.Question);
 
-                if (file != null && file.Length > 0)
+                if (askRequest.File != null && askRequest.File.Length > 0)
                 {
                     // Validate file size
-                    if (file.Length > _maxFileSize)
+                    if (askRequest.File.Length > _maxFileSize)
                     {
-                        return BadRequest(new { error = $"File size exceeds maximum limit of {_maxFileSize / (1024 * 1024)}MB" });
+                        return Content($"{{\"error\": \"File size exceeds maximum limit of {_maxFileSize / (1024 * 1024)}MB\"}}", "application/json");
                     }
 
                     // Validate file type
@@ -78,14 +79,14 @@ namespace LexiConnect.Controllers
                         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     };
 
-                    if (!allowedTypes.Contains(file.ContentType.ToLower()))
+                    if (!allowedTypes.Contains(askRequest.File.ContentType.ToLower()))
                     {
-                        return BadRequest(new { error = "File type not supported. Supported types: PDF, Images (JPEG, PNG, GIF, WebP), Text, Word documents" });
+                        return Content("{\"error\": \"File type not supported. Supported types: PDF, Images (JPEG, PNG, GIF, WebP), Text, Word documents\"}", "application/json");
                     }
 
                     // Process with file
-                    using var stream = file.OpenReadStream();
-                    answer = await _gemini.AskQuestionWithFileAsync(contextualPrompt, stream, file.ContentType);
+                    using var stream = askRequest.File.OpenReadStream();
+                    answer = await _gemini.AskQuestionWithFileAsync(contextualPrompt, stream, askRequest.File.ContentType);
                 }
                 else
                 {
@@ -93,11 +94,13 @@ namespace LexiConnect.Controllers
                     answer = await _gemini.AskQuestionAsync(contextualPrompt);
                 }
 
-                return Ok(new { answer, timestamp = DateTime.UtcNow, hasFile = file != null });
+                return Ok(new { answer, timestamp = DateTime.UtcNow, hasFile = askRequest.File != null });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "An error occurred processing your request", details = ex.Message });
+                Console.WriteLine($"Exception: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return Content($"{{\"error\": \"An error occurred: {ex.Message}\"}}", "application/json");
             }
         }
 
@@ -105,17 +108,24 @@ namespace LexiConnect.Controllers
         {
             var sb = new StringBuilder();
             sb.AppendLine("You are an AI assistant for LexiConnect, a document sharing platform " +
-                "where user uploads their documents in exchanged for points to get other documents.");
+                "where users upload their documents in exchange for points to get other documents.");
             sb.AppendLine("Your role is to help users with:");
             sb.AppendLine("- Answering study questions and academic topics");
             sb.AppendLine("- Finding and navigating documents and resources");
             sb.AppendLine("- Providing information about how to contact support");
             sb.AppendLine("- General guidance about using the platform");
             sb.AppendLine();
+
+            string supportChatUrl = Url.Action("Chat", "Chat", new { id = "A07176C1-5B1F-499B-980B-793005380E1C" }, Request.Scheme) ?? string.Empty;
+            string resetPasswordUrl = Url.Action("ResetPassword", "Auth", Request.Scheme) ?? string.Empty;
+            string universitiesUrl = Url.Action("AllUniversities", "University", Request.Scheme) ?? string.Empty;
+
             sb.AppendLine("Platform Information:");
-            sb.AppendLine("- Support Email: support@lexiconnect.com");
-            sb.AppendLine("- Documents can be found in the Resources section at /resources");
-            sb.AppendLine("- Technical Support: Use the chat support button in the bottom right");
+            sb.AppendLine("- Support Email: lexiconnect@support.com");
+            sb.AppendLine("- Documents can be found in the Resources section at /Documents");
+            sb.AppendLine($"- Technical Support: Use the chat support button in the bottom right, or [click here to contact support]({supportChatUrl}).");
+            sb.AppendLine($"- Reset password by [click here to reset password]({resetPasswordUrl}).");
+            sb.AppendLine($"- About universities's documents are available at LexiConnect, feel free by browsing yourself, [click here]({universitiesUrl}).");
             sb.AppendLine();
             sb.AppendLine($"User Question: {userQuestion}");
             sb.AppendLine();
@@ -128,5 +138,12 @@ namespace LexiConnect.Controllers
     public class AskRequest
     {
         public string Question { get; set; } = string.Empty;
+    }
+    public class AskRequestWithFile
+    {
+        public string Question { get; set; } = string.Empty;
+
+        public IFormFile? File { get; set; }
+
     }
 }

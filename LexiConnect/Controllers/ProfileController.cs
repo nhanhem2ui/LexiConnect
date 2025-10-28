@@ -19,12 +19,13 @@ namespace LexiConnect.Controllers
         private readonly IGenericRepository<University> _universityRepository;
         private readonly IGenericRepository<Major> _majorRepository;
         private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
+        private readonly IGenericRepository<DocumentReview> _documentReviewRepository;
         private readonly IWebHostEnvironment _webHostEnvironment;
         public ProfileController(
             IGenericRepository<Users> userRepository, IGenericRepository<Document> documentRepository,
             IGenericRepository<UserFollower> followerRepository, IGenericRepository<RecentViewed> recentViewedRepository,
             UserManager<Users> userManager, IWebHostEnvironment webHostEnvironment,
-            IGenericRepository<University> universityRepository, IGenericRepository<Major> majorRepository)
+            IGenericRepository<University> universityRepository, IGenericRepository<Major> majorRepository, IGenericRepository<DocumentReview> documentReviewRepository)
         {
             _userRepository = userRepository;
             _documentRepository = documentRepository;
@@ -34,6 +35,7 @@ namespace LexiConnect.Controllers
             _webHostEnvironment = webHostEnvironment;
             _universityRepository = universityRepository;
             _majorRepository = majorRepository;
+            _documentReviewRepository = documentReviewRepository;
         }
 
         [HttpGet]
@@ -255,6 +257,7 @@ namespace LexiConnect.Controllers
                 .ToList();
             return Json(majors);
         }
+
         [HttpGet]
         public async Task<IActionResult> PublicUserProfile(string id)
         {
@@ -288,9 +291,9 @@ namespace LexiConnect.Controllers
                 .ToListAsync();
 
             // Get follower/following counts
-            var followerCount = await _followerRepository.GetAllQueryable(f => f.FollowingId == id)
+            var followerCount = await _followerRepository.GetAllQueryable(f => f.FollowingId.Equals(id))
                 .CountAsync();
-            var followingCount = await _followerRepository.GetAllQueryable(f => f.FollowerId == id)
+            var followingCount = await _followerRepository.GetAllQueryable(f => f.FollowerId.Equals(id))
                 .CountAsync();
 
             // Check if current user is following this user
@@ -304,7 +307,7 @@ namespace LexiConnect.Controllers
             // Calculate statistics
             var totalUploads = documents.Count;
             var totalUpvotes = documents.Sum(d => d.LikeCount);
-            var totalComments = 0; // You'll need to implement comments repository
+            var totalComments = await _documentReviewRepository.GetAllQueryable(d => d.ReviewerId.Equals(id) && d.Comment != string.Empty && d.Comment != null).CountAsync();
             var studentsHelped = documents.Sum(d => d.ViewCount);
 
             // Prepare popular documents with ratings
@@ -374,7 +377,7 @@ namespace LexiConnect.Controllers
                 {
                     FollowerId = currentUser.Id,
                     FollowingId = userId,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
                 };
                 await _followerRepository.AddAsync(newFollow);
                 TempData["Success"] = "You are now following this user.";

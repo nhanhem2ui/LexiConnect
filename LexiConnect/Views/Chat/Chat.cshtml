@@ -26,10 +26,10 @@
                         {
                             <li>
                                 <button class="user-item @(Model.CurrentReceiver?.Id == chatUser.UserId ? "selected" : "")"
-                                        onclick="selectUser('@chatUser.UserId', '@chatUser.UserName', '@Url.Content(chatUser.UserAvatar ?? "image/default-avatar.png")')">
+                                        onclick="selectUser('@chatUser.UserId', '@chatUser.UserName', '@Url.Content(chatUser.UserAvatar ?? "/image/default-avatar.png")')">
                                     <div class="user-avatar-container">
                                         <div class="avatar">
-                                            <img src="@Url.Content(chatUser.UserAvatar ?? "image/default-avatar.png")" alt="@chatUser.UserName" />
+                                            <img src="@Url.Content(chatUser.UserAvatar ?? "/image/default-avatar.png")" alt="@chatUser.UserName" />
                                         </div>
                                         <div class="online-indicator hidden" data-user-id="@chatUser.UserId"></div>
                                     </div>
@@ -65,7 +65,7 @@
                 <div class="chat-header-content">
                     <div class="avatar avatar-sm">
                         <img id="receiverAvatar"
-                             src="@Url.Content(Model.CurrentReceiver?.AvatarUrl ?? "image/default-avatar.png")"
+                             src="@Url.Content(Model.CurrentReceiver?.AvatarUrl ?? "/image/default-avatar.png")"
                              alt="Receiver Avatar" />
                     </div>
                     <span id="receiverName" class="receiver-name">
@@ -92,8 +92,8 @@
                         <div class="chat @(isReceived ? "chat-start" : "chat-end")">
                             <div class="chat-image avatar">
                                 <img src="@Url.Content(isReceived
-                                                                         ? (Model.CurrentReceiver.AvatarUrl ?? "image/default-avatar.png")
-                                                                         : (Model.CurrentUser.AvatarUrl ?? "image/default-avatar.png"))"
+                                                                         ? (Model.CurrentReceiver.AvatarUrl ?? "/image/default-avatar.png")
+                                                                         : (Model.CurrentUser.AvatarUrl ?? "/image/default-avatar.png"))"
                              alt="@(isReceived? Model.CurrentReceiver.UserName : Model.CurrentUser.UserName)" />
                     </div>
                     <div class="chat-header">
@@ -162,9 +162,9 @@
         let connectedUsers = [];
 
         // Store resolved URLs from Razor
-        const defaultAvatarUrl = '@Url.Content("image/default-avatar.png")';
-        const currentUserAvatar = '@Url.Content(Model.CurrentUser?.AvatarUrl ?? "image/default-avatar.png")';
-        const currentReceiverAvatar = '@Url.Content(Model.CurrentReceiver?.AvatarUrl ?? "image/default-avatar.png")';
+        const defaultAvatarUrl = '@Url.Content("/image/default-avatar.png")';
+        const currentUserAvatar = '@Url.Content(Model.CurrentUser?.AvatarUrl ?? "/image/default-avatar.png")';
+        const currentReceiverAvatar = '@Url.Content(Model.CurrentReceiver?.AvatarUrl ?? "/image/default-avatar.png")';
         const currentUserName = '@Html.Raw(Model.CurrentUser?.UserName ?? "You")';
 
         // Initialize SignalR connection
