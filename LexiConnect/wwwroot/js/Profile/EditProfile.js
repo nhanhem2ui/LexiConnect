@@ -8,7 +8,7 @@ document.querySelector('select[name="UniversityId"]').addEventListener('change',
         return;
     }
 
-    fetch(`/Home/GetMajorsByUniversity?universityId=${selectedUniversity}`)
+    fetch(`/Profile/GetMajorsByUniversity?universityId=${selectedUniversity}`)
         .then(response => response.json())
         .then(majors => {
             // Clear current options

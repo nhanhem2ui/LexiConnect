@@ -34,8 +34,17 @@ namespace LexiConnect.Controllers
 
             try
             {
-                // Search in documents
-                var documents = await SearchDocumentsAsync(query, 5);
+                var documents = await _documentRepository.GetAllQueryable()
+                    .Include(d => d.Course)
+                        .ThenInclude(c => c.Major)
+                            .ThenInclude(m => m.University)
+                    .Where(d => d.Title.Contains(query) ||
+                               d.Description.Contains(query) ||
+                               d.Course.CourseName.Contains(query) ||
+                               d.Course.CourseCode.Contains(query))
+                    .OrderByDescending(d => d.UpdatedAt)
+                    .Take(5)
+                    .ToListAsync();
                 foreach (var doc in documents)
                 {
                     suggestions.Add(new
@@ -48,7 +57,14 @@ namespace LexiConnect.Controllers
                 }
 
                 // Search in courses
-                var courses = await SearchCoursesAsync(query, 3);
+                var courses = await _courseRepository.GetAllQueryable()
+                    .Include(c => c.Major)
+                        .ThenInclude(m => m.University)
+                    .Where(c => c.CourseName.Contains(query) ||
+                               c.CourseCode.Contains(query) ||
+                               c.Description.Contains(query))
+                    .Take(3)
+                    .ToListAsync();
 
                 foreach (var course in courses)
                 {
@@ -62,7 +78,11 @@ namespace LexiConnect.Controllers
                 }
 
                 // Search in universities
-                var universities = await SearchUniversitiesAsync(query, 2);
+                var universities = await _universityRepository.GetAllQueryable()
+                .Where(u => u.Name.Contains(query) ||
+                           u.ShortName.Contains(query))
+                .Take(2)
+                .ToListAsync();
                 foreach (var uni in universities)
                 {
                     suggestions.Add(new
@@ -92,52 +112,73 @@ namespace LexiConnect.Controllers
             {
                 return RedirectToAction("Introduction", "Home");
             }
+            var documents = await _documentRepository.GetAllQueryable()
+                    .Include(d => d.Course)
+                        .ThenInclude(c => c.Major)
+                            .ThenInclude(m => m.University)
+                    .Where(d => d.Title.Contains(query) ||
+                               d.Description.Contains(query) ||
+                               d.Course.CourseName.Contains(query) ||
+                               d.Course.CourseCode.Contains(query))
+                    .OrderByDescending(d => d.UpdatedAt)
+                    .Take(5)
+                    .ToListAsync();
+            var courses = await _courseRepository.GetAllQueryable()
+                    .Include(c => c.Major)
+                        .ThenInclude(m => m.University)
+                    .Where(c => c.CourseName.Contains(query) ||
+                               c.CourseCode.Contains(query) ||
+                               c.Description.Contains(query))
+                    .Take(3)
+                    .ToListAsync();
+            var universities = await _universityRepository.GetAllQueryable()
+                .Where(u => u.Name.Contains(query) ||
+                           u.ShortName.Contains(query))
+                .Take(5)
+                .ToListAsync();
 
             var model = new SearchResultsViewModel
             {
                 Query = query,
-                Documents = await SearchDocumentsAsync(query, pageSize, page),
-                Courses = await SearchCoursesAsync(query, 10),
-                Universities = await SearchUniversitiesAsync(query, 5),
+                Documents = documents,
+                Courses = courses,
+                Universities = universities,
                 CurrentPage = page,
                 PageSize = pageSize
             };
 
             return View(model);
         }
-        public async Task<IEnumerable<Document>> SearchDocumentsAsync(string query, int limit, int page = 1)
+
+        [HttpGet]
+        public async Task<IActionResult> UniversitiesSearchSuggestions(string query)
         {
-            return await _documentRepository.GetAllQueryable()
-                .Include(d => d.Course)
-                    .ThenInclude(c => c.Major)
-                        .ThenInclude(m => m.University)
-                .Where(d => d.Title.Contains(query) ||
-                           d.Description.Contains(query) ||
-                           d.Course.CourseName.Contains(query) ||
-                           d.Course.CourseCode.Contains(query))
-                .OrderByDescending(d => d.UpdatedAt)
-                .Skip((page - 1) * limit)
-                .Take(limit)
+            if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+            {
+                return Json(new List<object>());
+            }
+
+            var universities = await _universityRepository.GetAllQueryable(
+                u => u.IsVerified &&
+                    (u.Name.Contains(query) ||
+                     u.ShortName.Contains(query) ||
+                     u.City.Contains(query)),
+                asNoTracking: true)
+                .Include(u => u.Country)
+                .OrderBy(u => u.Name)
+                .Take(10)
+                .Select(u => new
+                {
+                    name = u.Name,
+                    shortName = u.ShortName,
+                    city = u.City,
+                    country = u.Country.CountryName,
+                    logoUrl = u.LogoUrl,
+                    url = Url.Action("Details", "University", new { id = u.Id })
+                })
                 .ToListAsync();
-        }
-        public async Task<IEnumerable<Course>> SearchCoursesAsync(string query, int limit)
-        {
-            return await _courseRepository.GetAllQueryable()
-                    .Include(c => c.Major)
-                        .ThenInclude(m => m.University)
-                    .Where(c => c.CourseName.Contains(query) ||
-                               c.CourseCode.Contains(query) ||
-                               c.Description.Contains(query))
-                    .Take(limit)
-                    .ToListAsync();
-        }
-        public async Task<IEnumerable<University>> SearchUniversitiesAsync(string query, int limit)
-        {
-            return await _universityRepository.GetAllQueryable()
-                .Where(u => u.Name.Contains(query) ||
-                           u.ShortName.Contains(query))
-                .Take(limit)
-                .ToListAsync();
+
+            return Json(universities);
         }
     }
 }

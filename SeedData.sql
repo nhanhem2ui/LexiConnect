@@ -226,3 +226,32 @@ VALUES
 
 SET IDENTITY_INSERT [dbo].[Documents] OFF;
 GO
+-- Create Chats table
+CREATE TABLE [Chats] (
+    [ChatId] NVARCHAR(450) NOT NULL,
+    [Message] NVARCHAR(MAX) NOT NULL,
+    [Timestamp] DATETIME2 NOT NULL,
+    [SenderId] NVARCHAR(450) NULL,
+    [ReceiverId] NVARCHAR(450) NULL,
+    
+    -- Primary Key
+    CONSTRAINT [PK_Chats] PRIMARY KEY ([ChatId]),
+    
+    -- Foreign Key to AspNetUsers for Sender
+    CONSTRAINT [FK_Chats_AspNetUsers_SenderId] 
+        FOREIGN KEY ([SenderId]) 
+        REFERENCES [AspNetUsers] ([Id]) 
+        ON DELETE NO ACTION,
+    
+    -- Foreign Key to AspNetUsers for Receiver
+    CONSTRAINT [FK_Chats_AspNetUsers_ReceiverId] 
+        FOREIGN KEY ([ReceiverId]) 
+        REFERENCES [AspNetUsers] ([Id]) 
+        ON DELETE NO ACTION
+);
+
+-- Create index on SenderId
+CREATE INDEX [IX_Chats_SenderId] ON [Chats] ([SenderId]);
+
+-- Create index on ReceiverId
+CREATE INDEX [IX_Chats_ReceiverId] ON [Chats] ([ReceiverId]);

@@ -303,3 +303,57 @@ main.pb-3 {
     }
 }
 
+/* Quick Links Section */
+.quick-links {
+    margin-bottom: 40px;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.quick-buttons {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-see-all {
+    display: inline-block;
+    background-color: #979797;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+    .btn-see-all:hover {
+        background-color: var(--bs-gray-700);
+        transform: translateY(-2px);
+    }
+
+/* See all link (inline right-aligned in sections) */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+a:hover{
+    color: black
+}
+
+.see-all-link {
+    font-size: 13px;
+    color: #1976d2;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+    .see-all-link:hover {
+        text-decoration: underline;
+        color: #125ca8;
+    }

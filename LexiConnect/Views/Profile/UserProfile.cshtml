@@ -10,7 +10,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Profile - LexiConnect</title>
-    <link rel="stylesheet" href="~/css/Home/UserProfile.css" />
+    <link rel="stylesheet" href="~/css/Profile/UserProfile.css" />
 </head>
 
 <body>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
                 <div class="profile-actions">
-                    <a href="@Url.Action("EditProfile", "Home")" class="btn-edit">Edit Profile</a>
+                    <a href="@Url.Action("EditProfile", "Profile")" class="btn-edit">Edit Profile</a>
                 </div>
             </div>
 
@@ -108,7 +108,7 @@
                 <!-- Subscription Plan Card -->
                 @if (Model.User.SubscriptionPlan != null && Model.User.SubscriptionPlan.PlanId != 1)
                 {
-                    <a href="@Url.Action("ManageSubscription", "Home")" class="subscription-card-link">
+                    <a href="@Url.Action("ExtendSubscription", "Subscription")" class="subscription-card-link">
                         <div class="subscription-card @(Model.ActiveSubscription ? "expired" : "active")">
                             <div class="subscription-header">
                                 <h3 class="card-title">

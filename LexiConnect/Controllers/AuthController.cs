@@ -2,6 +2,7 @@
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -283,7 +284,7 @@ namespace LexiConnect.Controllers
 
         private async Task SignInUserWithClaims(Users user, bool isPersistent)
         {
-            // ✅ Ensure default subscription
+            // Ensure default subscription
             if (user.SubscriptionPlanId == null || user.SubscriptionPlanId == 0)
             {
                 user.SubscriptionPlanId = 1;
@@ -387,9 +388,8 @@ namespace LexiConnect.Controllers
         }
 
         [HttpGet]
-        public IActionResult AccessDenied(string? returnUrl)
+        public IActionResult AccessDenied()
         {
-            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
     }
