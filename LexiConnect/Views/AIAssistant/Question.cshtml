@@ -57,17 +57,27 @@
                             </div>
                         </div>
 
-                        <form id="question-form">
+                        <!-- Hidden iframe for form submission -->
+                        <iframe name="hidden-form-iframe" id="hidden-form-iframe" style="display: none;"></iframe>
+
+                        <form id="question-form"
+                              asp-action="AskWithFile"
+                              asp-controller="AIAssistant"
+                              method="post"
+                              enctype="multipart/form-data"
+                              target="hidden-form-iframe">
                             <div class="input-group">
                                 <button class="btn btn-outline-secondary" type="button" id="attach-file-btn" title="Attach file">
                                     <i class="bi bi-paperclip"></i>
                                 </button>
                                 <input type="file"
                                        id="file-input"
+                                       name="file"
                                        class="d-none"
                                        accept=".pdf,.jpg,.jpeg,.png,.gif,.webp,.txt,.doc,.docx">
                                 <input type="text"
                                        id="question-input"
+                                       name="question"
                                        class="form-control"
                                        placeholder="Ask me anything..."
                                        autocomplete="off"
@@ -93,14 +103,14 @@
                     <button class="btn btn-outline-secondary btn-sm quick-question" data-question="How do I contact support?">
                         📞 Contact Support
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm quick-question" data-question="Where can I find my documents?">
-                        📄 Find Documents
-                    </button>
                     <button class="btn btn-outline-secondary btn-sm quick-question" data-question="How do I reset my password?">
                         🔒 Reset Password
                     </button>
                     <button class="btn btn-outline-secondary btn-sm quick-question" data-question="What study resources are available?">
-                        📚 Study Resources
+                        📄 Study Resources
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm quick-question" data-question="About universities's documents are available at LexiConnect">
+                        📚 Universities
                     </button>
                 </div>
             </div>
@@ -126,7 +136,7 @@
     }
 
     .user-message .message-content {
-        background-color: #6c757d !important; /* Bootstrap secondary */
+        background-color: #6c757d !important;
         color: white;
     }
 
@@ -195,14 +205,26 @@
         const fileSize = document.getElementById('file-size');
         const removeFileBtn = document.getElementById('remove-file');
         const clearChatBtn = document.getElementById('clear-chat');
+        const hiddenIframe = document.getElementById('hidden-form-iframe');
 
         let selectedFile = null;
+        let currentTypingId = null;
 
         attachFileBtn.addEventListener('click', () => fileInput.click());
 
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
+                const maxSize = 10 * 1024 * 1024; // 10MB
+
+                if (file.size > maxSize) {
+                    alert(`File size (${formatFileSize(file.size)}) exceeds the maximum limit of 10MB. Please choose a smaller file.`);
+                    fileInput.value = '';
+                    selectedFile = null;
+                    filePreview.style.display = 'none';
+                    return;
+                }
+
                 selectedFile = file;
                 fileName.textContent = file.name;
                 fileSize.textContent = formatFileSize(file.size);
@@ -231,52 +253,67 @@
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
 
-        questionForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        // Handle form submission
+        questionForm.addEventListener('submit', (e) => {
             const question = questionInput.value.trim();
-            if (!question) return;
-            await sendQuestion(question, selectedFile);
-            questionInput.value = '';
+            if (!question) {
+                e.preventDefault();
+                return;
+            }
+
+            // Show user message immediately
+            addMessage(question, 'user', selectedFile);
+
+            // Show typing indicator
+            currentTypingId = showTypingIndicator();
+
+            // DO NOT clear questionInput.value here -- it will make Question null on the server
+            // questionInput.value = '';  // <-- Removed this line to fix the null Question issue
+
+            const tempFile = selectedFile;
             selectedFile = null;
-            fileInput.value = '';
             filePreview.style.display = 'none';
+
+            // Form will submit to hidden iframe
         });
 
-        async function sendQuestion(question, file = null) {
-            addMessage(question, 'user', file);
-            const typingId = showTypingIndicator();
-
+        // Listen for iframe load (response received)
+        hiddenIframe.addEventListener('load', () => {
             try {
-                let response;
-                if (file) {
-                    const formData = new FormData();
-                    formData.append('question', question);
-                    formData.append('file', file);
-                    response = await fetch('@Url.Action("AskWithFile", "AIAssistant")', { method: 'POST', body: formData });
-                } else {
-                    response = await fetch('@Url.Action("Ask", "AIAssistant")', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ question: question })
-                    });
+                // Get response from iframe
+                const iframeDoc = hiddenIframe.contentDocument || hiddenIframe.contentWindow.document;
+                const responseText = iframeDoc.body.textContent;
+
+                if (responseText) {
+                    const data = JSON.parse(responseText);
+
+                    // Remove typing indicator
+                    if (currentTypingId) {
+                        removeTypingIndicator(currentTypingId);
+                        currentTypingId = null;
+                    }
+
+                    if (data.error) {
+                        addMessage(`Sorry, I encountered an error: ${data.error}`, 'ai');
+                    } else if (data.answer) {
+                        addMessage(data.answer, 'ai');
+                    }
                 }
-
-                removeTypingIndicator(typingId);
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    addMessage(`Sorry, I encountered an error: ${error.error || 'Unknown error'}`, 'ai');
-                    return;
-                }
-
-                const data = await response.json();
-                addMessage(data.answer, 'ai');
             } catch (error) {
-                removeTypingIndicator(typingId);
-                addMessage('Sorry, I\'m having trouble connecting. Please try again later.', 'ai');
-                console.error('Error:', error);
+                console.error('Error parsing response:', error);
+                if (currentTypingId) {
+                    removeTypingIndicator(currentTypingId);
+                    currentTypingId = null;
+                }
+                addMessage('Sorry, I encountered an error processing the response.', 'ai');
             }
-        }
+
+            // Clear the question input AFTER processing the response
+            questionInput.value = '';
+
+            // Reset file input
+            fileInput.value = '';
+        });
 
         function addMessage(text, type, file = null) {
             const messageDiv = document.createElement('div');
@@ -320,11 +357,13 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        function formatMessage(text) {
-            let formatted = escapeHtml(text);
-            formatted = formatted.replace(/\n\n/g, '</p><p class="mb-2">');
-            formatted = formatted.replace(/\n/g, '<br>');
-            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            function formatMessage(text) {
+        let formatted = escapeHtml(text);
+        // Convert Markdown-style links to clickable HTML
+        formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" class="text-decoration-none text-primary">$1</a>');
+        formatted = formatted.replace(/\n\n/g, '</p><p class="mb-2">');
+        formatted = formatted.replace(/\n/g, '<br>');
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             const lines = formatted.split('<br>');
             let inList = false;
             let result = [];
@@ -387,12 +426,13 @@
             btn.addEventListener('click', () => {
                 const question = btn.getAttribute('data-question');
                 questionInput.value = question;
-                sendQuestion(question);
+                questionInput.focus();
             });
         });
 
         questionInput.focus();
     </script>
 }
+
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">

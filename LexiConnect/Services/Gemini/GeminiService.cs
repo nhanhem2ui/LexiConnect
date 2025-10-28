@@ -86,39 +86,38 @@ namespace LexiConnect.Services.Gemini
 
         private async Task<string> UploadFileAsync(Stream fileStream, string mimeType)
         {
-            var uploadUrl = $"https://generativelanguage.googleapis.com/upload/v1beta/files?key={_apiKey}";
+            if (fileStream.Length == 0) throw new ArgumentException("File stream is empty.");
+
+            var uploadUrl = $"https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=multipart&key={_apiKey}";
 
             using var formContent = new MultipartFormDataContent();
 
-            // Add metadata
-            var metadata = new
-            {
-                file = new
-                {
-                    display_name = $"upload_{DateTime.UtcNow.Ticks}"
-                }
-            };
+            // Metadata
+            var metadata = new { file = new { display_name = $"upload_{Guid.NewGuid()}" } };  // Use Guid for uniqueness
             var metadataJson = JsonSerializer.Serialize(metadata);
             formContent.Add(new StringContent(metadataJson, Encoding.UTF8, "application/json"), "metadata");
 
-            // Add file
+            // File
             var streamContent = new StreamContent(fileStream);
             streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
-            formContent.Add(streamContent, "file", "upload");
+            formContent.Add(streamContent, "file", "upload");  // Ensure "file" matches API expectations
 
             var response = await _httpClient.PostAsync(uploadUrl, formContent);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"File upload failed: {response.StatusCode} - {errorContent}");
+            }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(jsonResponse);
 
-            return doc.RootElement
-                .GetProperty("file")
-                .GetProperty("uri")
-                .GetString() ?? throw new Exception("Failed to get file URI");
+            return doc.RootElement.GetProperty("file").GetProperty("uri").GetString()
+                   ?? throw new Exception("Failed to retrieve file URI from response.");
         }
 
-        private string ExtractTextFromResponse(string jsonResponse)
+
+        private static string ExtractTextFromResponse(string jsonResponse)
         {
             try
             {

@@ -6,8 +6,10 @@ using LexiConnect.Services.Firebase;
 using LexiConnect.Services.Gemini;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
 using System.Security.Claims;
@@ -127,6 +129,19 @@ builder.Services.AddAuthentication(options =>
     options.SaveTokens = true;
 });
 
+// Configure form options for file uploads
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10MB
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartHeadersLengthLimit = int.MaxValue;
+});
+
+// Kestrel server limits
+builder.Services.Configure<KestrelServerOptions>(options =>
+{
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB
+});
 
 var app = builder.Build();
 

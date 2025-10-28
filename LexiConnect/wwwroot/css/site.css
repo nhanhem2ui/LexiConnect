@@ -528,7 +528,6 @@ body {
     .message-btn svg {
         width: 20px;
         height: 20px;
-        fill: #6B7680;
         stroke: none;
     }
 
@@ -642,7 +641,6 @@ body {
     width: 20px;
     height: 20px;
     margin-right: 12px;
-    fill: #6B7680;
     flex-shrink: 0;
 }
 

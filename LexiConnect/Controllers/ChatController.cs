@@ -33,17 +33,9 @@ namespace LexiConnect.Controllers
 
             await LoadChatUsers(userId, viewModel);
 
-            if (id != string.Empty)
-            {
-                viewModel.CurrentReceiver = await _userRepository.GetAsync(u => u.Id.Equals(id));
-                if (viewModel.CurrentReceiver == null)
-                {
-                    TempData["Error"] = "Something wrong, please try again";
-                    return RedirectToAction("Homepage", "home");
-                }
+            viewModel.CurrentReceiver = await _userRepository.GetAsync(u => u.Id.Equals(id));
 
-                await LoadChatHistory(userId, id, viewModel);
-            }
+            await LoadChatHistory(userId, id, viewModel);
 
             return View(viewModel);
         }
