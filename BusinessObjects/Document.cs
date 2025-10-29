@@ -76,10 +76,13 @@ namespace BusinessObjects
 
         public int? PageCount { get; set; }
 
+        public int? UniversityId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Many-to-many: Tags
         public virtual ICollection<DocumentTag> Tags { get; set; } = new List<DocumentTag>();
+        public virtual University University { get; set; }
     }
 }
