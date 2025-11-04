@@ -1,17 +1,17 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class UserService : IGenericService<Users>
     {
-        private readonly IGenericService<Users> _repo;
+        private readonly IGenericRepository<Users> _repo;
 
-        public UserService(IGenericService<Users> repo)
+        public UserService(IGenericRepository<Users> repo)
         {
             _repo = repo;
         }
-
         public IQueryable<Users> GetAllQueryable(Expression<Func<Users, bool>>? predicate = null, bool asNoTracking = true)
         {
             return _repo.GetAllQueryable(predicate, asNoTracking);

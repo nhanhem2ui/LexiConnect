@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class SubscriptionPlanService : IGenericService<SubscriptionPlan>
     {
-        private readonly IGenericService<SubscriptionPlan> _repo;
+        private readonly IGenericRepository<SubscriptionPlan> _repo;
 
-        public SubscriptionPlanService(IGenericService<SubscriptionPlan> repo)
+        public SubscriptionPlanService(IGenericRepository<SubscriptionPlan> repo)
         {
             _repo = repo;
         }

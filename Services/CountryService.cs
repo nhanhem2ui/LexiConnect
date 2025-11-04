@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class CountryService : IGenericService<Country>
     {
-        private readonly IGenericService<Country> _repo;
+        private readonly IGenericRepository<Country> _repo;
 
-        public CountryService(IGenericService<Country> repo)
+        public CountryService(IGenericRepository<Country> repo)
         {
             _repo = repo;
         }

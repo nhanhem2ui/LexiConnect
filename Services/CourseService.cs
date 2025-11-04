@@ -1,12 +1,13 @@
-﻿using System.Linq.Expressions;
+﻿using Repositories;
+using System.Linq.Expressions;
 
 namespace Services
 {
     public class CourseService : IGenericService<Course>
     {
-        private readonly IGenericService<Course> _repo;
+        private readonly IGenericRepository<Course> _repo;
 
-        public CourseService(IGenericService<Course> repo)
+        public CourseService(IGenericRepository<Course> repo)
         {
             _repo = repo;
         }
