@@ -2,7 +2,7 @@
 using LexiConnect.Models.VnPay;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Mvc;
-using Repositories;
+using Services;
 using System.Security.Claims;
 
 namespace LexiConnect.Controllers
@@ -10,16 +10,16 @@ namespace LexiConnect.Controllers
     public class PaymentController : Controller
     {
         private readonly IVnPayService _vnPayService;
-        private readonly IGenericRepository<PaymentRecord> _paymentRecordRepository;
-        private readonly IGenericRepository<SubscriptionPlan> _subscriptionPlanRepository;
-        private readonly IGenericRepository<Users> _userRepository;
+        private readonly IGenericService<PaymentRecord> _paymentRecordService;
+        private readonly IGenericService<SubscriptionPlan> _subscriptionPlanService;
+        private readonly IGenericService<Users> _userService;
 
-        public PaymentController(IVnPayService vnPayService, IGenericRepository<PaymentRecord> paymentRecordRepository, IGenericRepository<SubscriptionPlan> subscriptionPlanRepository, IGenericRepository<Users> userRepository)
+        public PaymentController(IVnPayService vnPayService, IGenericService<PaymentRecord> paymentRecordService, IGenericService<SubscriptionPlan> subscriptionPlanService, IGenericService<Users> userService)
         {
             _vnPayService = vnPayService;
-            _paymentRecordRepository = paymentRecordRepository;
-            _subscriptionPlanRepository = subscriptionPlanRepository;
-            _userRepository = userRepository;
+            _paymentRecordService = paymentRecordService;
+            _subscriptionPlanService = subscriptionPlanService;
+            _userService = userService;
         }
 
         [HttpGet]
@@ -50,7 +50,7 @@ namespace LexiConnect.Controllers
                     TempData["Error"] = "Invalid subscription plan.";
                     return RedirectToAction("Homepage", "Home");
                 }
-                var subscription = await _subscriptionPlanRepository.GetAsync(s => s.PlanId == planId);
+                var subscription = await _subscriptionPlanService.GetAsync(s => s.PlanId == planId);
 
 
                 if (User.FindFirst(ClaimTypes.NameIdentifier)?.Value == null)
@@ -58,7 +58,7 @@ namespace LexiConnect.Controllers
                     TempData["Error"] = "An error occur during payment process, please try again";
                     return RedirectToAction("Homepage", "Home");
                 }
-                var user = await _userRepository.GetAsync(u => u.Id.Equals(User.FindFirst(ClaimTypes.NameIdentifier)!.Value));
+                var user = await _userService.GetAsync(u => u.Id.Equals(User.FindFirst(ClaimTypes.NameIdentifier)!.Value));
 
                 //if (orderType.Equals("purchaseSubscription") && subscriptionId != null && user.SubscriptionPlan.Name.Equals("FREE"))
                 if (orderType?.Equals("purchaseSubscription") == true &&
@@ -77,13 +77,13 @@ namespace LexiConnect.Controllers
                         UserId = user.Id,
                         ProcessedAt = DateTime.UtcNow,
                     };
-                    await _paymentRecordRepository.AddAsync(paymentRecord);
+                    await _paymentRecordService.AddAsync(paymentRecord);
 
-                    var premium = await _subscriptionPlanRepository.GetAsync(s => s.Name.Equals("PREMIUM"));
+                    var premium = await _subscriptionPlanService.GetAsync(s => s.Name.Equals("PREMIUM"));
                     user.SubscriptionStartDate = DateTime.UtcNow;
                     user.SubscriptionPlanId = premium.PlanId;
                     user.SubscriptionEndDate = (user.SubscriptionEndDate ?? DateTime.UtcNow).AddMonths(int.Parse(durationMonths ?? "0"));
-                    await _userRepository.UpdateAsync(user);
+                    await _userService.UpdateAsync(user);
                 }
                 else if (orderType.Equals("extendSubscription") && subscriptionId != null)
                 {
@@ -98,11 +98,11 @@ namespace LexiConnect.Controllers
                         UserId = user.Id,
                         ProcessedAt = DateTime.UtcNow,
                     };
-                    await _paymentRecordRepository.AddAsync(paymentRecord);
+                    await _paymentRecordService.AddAsync(paymentRecord);
 
                     user.SubscriptionEndDate = user.SubscriptionStartDate.Value.AddMonths(int.Parse(durationMonths ?? string.Empty));
 
-                    await _userRepository.UpdateAsync(user);
+                    await _userService.UpdateAsync(user);
                 }
 
                 else if (orderType.Equals("upgradeSubscription") && subscriptionId != null)
@@ -130,7 +130,7 @@ namespace LexiConnect.Controllers
         public async Task<IActionResult> ProcessExtends(int PlanId, int DurationMonths, decimal Price, string OptionType, string currency = "USD", string ThirdParty = "VnPay")
         {
 
-            var plan = await _subscriptionPlanRepository.GetAsync(p => p.PlanId == PlanId);
+            var plan = await _subscriptionPlanService.GetAsync(p => p.PlanId == PlanId);
             if (plan == null)
             {
                 TempData["Error"] = "An error while validating payment";
@@ -143,7 +143,7 @@ namespace LexiConnect.Controllers
                 return RedirectToAction("Homepage", "Home");
             }
 
-            var user = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+            var user = await _userService.GetAsync(u => u.Id.Equals(userId));
 
             if (currency != null && currency.Equals("USD"))
             {

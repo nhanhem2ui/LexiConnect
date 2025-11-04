@@ -5,37 +5,37 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
     public class ProfileController : Controller
     {
-        private readonly IGenericRepository<Users> _userRepository;
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<UserFollower> _followerRepository;
+        private readonly IGenericService<Users> _userService;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<UserFollower> _followerService;
         private readonly UserManager<Users> _userManager;
-        private readonly IGenericRepository<University> _universityRepository;
-        private readonly IGenericRepository<Major> _majorRepository;
-        private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
-        private readonly IGenericRepository<DocumentReview> _documentReviewRepository;
+        private readonly IGenericService<University> _universityService;
+        private readonly IGenericService<Major> _majorService;
+        private readonly IGenericService<RecentViewed> _recentViewedService;
+        private readonly IGenericService<DocumentReview> _documentReviewService;
         private readonly IWebHostEnvironment _webHostEnvironment;
         public ProfileController(
-            IGenericRepository<Users> userRepository, IGenericRepository<Document> documentRepository,
-            IGenericRepository<UserFollower> followerRepository, IGenericRepository<RecentViewed> recentViewedRepository,
+            IGenericService<Users> userService, IGenericService<Document> documentService,
+            IGenericService<UserFollower> followerService, IGenericService<RecentViewed> recentViewedService,
             UserManager<Users> userManager, IWebHostEnvironment webHostEnvironment,
-            IGenericRepository<University> universityRepository, IGenericRepository<Major> majorRepository, IGenericRepository<DocumentReview> documentReviewRepository)
+            IGenericService<University> universityService, IGenericService<Major> majorService, IGenericService<DocumentReview> documentReviewService)
         {
-            _userRepository = userRepository;
-            _documentRepository = documentRepository;
-            _followerRepository = followerRepository;
+            _userService = userService;
+            _documentService = documentService;
+            _followerService = followerService;
             _userManager = userManager;
-            _recentViewedRepository = recentViewedRepository;
+            _recentViewedService = recentViewedService;
             _webHostEnvironment = webHostEnvironment;
-            _universityRepository = universityRepository;
-            _majorRepository = majorRepository;
-            _documentReviewRepository = documentReviewRepository;
+            _universityService = universityService;
+            _majorService = majorService;
+            _documentReviewService = documentReviewService;
         }
 
         [HttpGet]
@@ -48,19 +48,19 @@ namespace LexiConnect.Controllers
                 return NotFound("Invalid operant");
             }
 
-            var user = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+            var user = await _userService.GetAsync(u => u.Id.Equals(userId));
 
             if (user != null)
             {
-                var uploadedDocuments = _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(userId));
+                var uploadedDocuments = _documentService.GetAllQueryable(d => d.UploaderId.Equals(userId));
                 var upvotes = 0;
                 foreach (var document in uploadedDocuments)
                 {
                     upvotes += document.LikeCount;
                 }
-                var follower = _followerRepository.GetAllQueryable(u => u.FollowingId == user.Id);
+                var follower = _followerService.GetAllQueryable(u => u.FollowingId == user.Id);
 
-                var recentActivities = _recentViewedRepository
+                var recentActivities = _recentViewedService
                     .GetAllQueryable(c => c.UserId.Equals(user.Id))
                     .Include(c => c.Document)
                     .Include(c => c.Course);
@@ -91,24 +91,24 @@ namespace LexiConnect.Controllers
         [Authorize]
         public async Task<IActionResult> EditProfile()
         {
-            var user = await _userRepository.GetAsync(u => u.Id.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            var user = await _userService.GetAsync(u => u.Id.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier)));
             if (user == null)
             {
                 return NotFound();
             }
 
             // Get document count for the user
-            var documentCount = await _documentRepository.GetAllQueryable(d => d.UploaderId.Equals(user.Id)).CountAsync();
+            var documentCount = await _documentService.GetAllQueryable(d => d.UploaderId.Equals(user.Id)).CountAsync();
 
             // Create view model
             var viewModel = new EditProfileViewModel(user, documentCount);
 
             // Populate dropdown lists
 
-            var universities = _universityRepository.GetAllQueryable(u => u.Id != 0).ToList();
+            var universities = _universityService.GetAllQueryable(u => u.Id != 0).ToList();
             ViewBag.Universities = new SelectList(universities, "Id", "Name", user?.UniversityId);
 
-            var majors = _majorRepository
+            var majors = _majorService
                 .GetAllQueryable(m => m.UniversityId == user.UniversityId)
                 .ToList();
             ViewBag.Majors = new SelectList(majors, "MajorId", "Name", user?.MajorId);
@@ -124,17 +124,17 @@ namespace LexiConnect.Controllers
             if (!ModelState.IsValid)
             {
                 // Repopulate dropdown lists if model is invalid
-                var universities = _universityRepository.GetAllQueryable(u => u.Id != 0).ToList();
+                var universities = _universityService.GetAllQueryable(u => u.Id != 0).ToList();
                 ViewBag.Universities = new SelectList(universities, "Id", "Name", model?.UniversityId);
 
-                var majors = _majorRepository
+                var majors = _majorService
                     .GetAllQueryable(m => m.UniversityId == model.UniversityId)
                     .ToList();
                 ViewBag.Majors = new SelectList(majors, "MajorId", "Name", model?.MajorId);
                 return View(model);
             }
 
-            var user = await _userRepository.GetAsync(u => u.Id.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            var user = await _userService.GetAsync(u => u.Id.Equals(User.FindFirstValue(ClaimTypes.NameIdentifier)));
             if (user == null)
             {
                 return NotFound();
@@ -225,7 +225,7 @@ namespace LexiConnect.Controllers
                 }
 
                 // Update user in database
-                var result = await _userRepository.UpdateAsync(user);
+                var result = await _userService.UpdateAsync(user);
                 if (result)
                 {
                     TempData["SuccessMessage"] = "Profile updated successfully!";
@@ -237,10 +237,10 @@ namespace LexiConnect.Controllers
                 TempData["Error"] = "An error occurred while updating your profile. Please try again.";
             }
 
-            ViewBag.Universities = new SelectList(_universityRepository.GetAllQueryable(u => u.Id != 0)
+            ViewBag.Universities = new SelectList(_universityService.GetAllQueryable(u => u.Id != 0)
                 .ToList(), "Id", "Name", user?.UniversityId);
 
-            ViewBag.Majors = new SelectList(_majorRepository
+            ViewBag.Majors = new SelectList(_majorService
                 .GetAllQueryable(m => m.UniversityId == user.UniversityId)
                 .ToList(), "MajorId", "Name", user?.MajorId);
 
@@ -251,7 +251,7 @@ namespace LexiConnect.Controllers
         [Authorize]
         public IActionResult GetMajorsByUniversity(int universityId)
         {
-            var majors = _majorRepository
+            var majors = _majorService
                 .GetAllQueryable(m => m.UniversityId == universityId)
                 .Select(m => new { m.MajorId, m.Name })
                 .ToList();
@@ -267,7 +267,7 @@ namespace LexiConnect.Controllers
             }
 
             // Get the target user with related data
-            var user = await _userRepository.GetAllQueryable(u => u.Id == id)
+            var user = await _userService.GetAllQueryable(u => u.Id == id)
                 .Include(u => u.University)
                 .Include(u => u.Major)
                 .Include(u => u.SubscriptionPlan)
@@ -283,7 +283,7 @@ namespace LexiConnect.Controllers
             var isOwnProfile = currentUser?.Id == id;
 
             // Get user's documents
-            var documents = await _documentRepository.GetAllQueryable(d =>
+            var documents = await _documentService.GetAllQueryable(d =>
                 d.UploaderId == id && d.Status == "approved")
                 .Include(d => d.Course)
                 .OrderByDescending(d => d.ViewCount)
@@ -291,23 +291,23 @@ namespace LexiConnect.Controllers
                 .ToListAsync();
 
             // Get follower/following counts
-            var followerCount = await _followerRepository.GetAllQueryable(f => f.FollowingId.Equals(id))
+            var followerCount = await _followerService.GetAllQueryable(f => f.FollowingId.Equals(id))
                 .CountAsync();
-            var followingCount = await _followerRepository.GetAllQueryable(f => f.FollowerId.Equals(id))
+            var followingCount = await _followerService.GetAllQueryable(f => f.FollowerId.Equals(id))
                 .CountAsync();
 
             // Check if current user is following this user
             var isFollowing = false;
             if (currentUser != null && !isOwnProfile)
             {
-                isFollowing = await _followerRepository.ExistsAsync(f =>
+                isFollowing = await _followerService.ExistsAsync(f =>
                     f.FollowerId == currentUser.Id && f.FollowingId == id);
             }
 
             // Calculate statistics
             var totalUploads = documents.Count;
             var totalUpvotes = documents.Sum(d => d.LikeCount);
-            var totalComments = await _documentReviewRepository.GetAllQueryable(d => d.ReviewerId.Equals(id) && d.Comment != string.Empty && d.Comment != null).CountAsync();
+            var totalComments = await _documentReviewService.GetAllQueryable(d => d.ReviewerId.Equals(id) && d.Comment != string.Empty && d.Comment != null).CountAsync();
             var studentsHelped = documents.Sum(d => d.ViewCount);
 
             // Prepare popular documents with ratings
@@ -360,14 +360,14 @@ namespace LexiConnect.Controllers
             }
 
             // Check if already following
-            var existingFollow = await _followerRepository.GetAllQueryable(f =>
+            var existingFollow = await _followerService.GetAllQueryable(f =>
                 f.FollowerId == currentUser.Id && f.FollowingId == userId)
                 .FirstOrDefaultAsync();
 
             if (existingFollow != null)
             {
                 // Unfollow
-                await _followerRepository.DeleteAsync(existingFollow.Id);
+                await _followerService.DeleteAsync(existingFollow.Id);
                 TempData["Success"] = "You have unfollowed this user.";
             }
             else
@@ -379,7 +379,7 @@ namespace LexiConnect.Controllers
                     FollowingId = userId,
                     CreatedAt = DateTime.Now,
                 };
-                await _followerRepository.AddAsync(newFollow);
+                await _followerService.AddAsync(newFollow);
                 TempData["Success"] = "You are now following this user.";
             }
 
@@ -394,7 +394,7 @@ namespace LexiConnect.Controllers
                 return NotFound();
             }
 
-            var followers = await _followerRepository.GetAllQueryable(f => f.FollowingId == id)
+            var followers = await _followerService.GetAllQueryable(f => f.FollowingId == id)
                 .Include(f => f.Follower)
                     .ThenInclude(u => u.University)
                 .OrderByDescending(f => f.CreatedAt)
@@ -415,7 +415,7 @@ namespace LexiConnect.Controllers
                 return NotFound();
             }
 
-            var following = await _followerRepository.GetAllQueryable(f => f.FollowerId == id)
+            var following = await _followerService.GetAllQueryable(f => f.FollowerId == id)
                 .Include(f => f.Following)
                     .ThenInclude(u => u.University)
                 .OrderByDescending(f => f.CreatedAt)

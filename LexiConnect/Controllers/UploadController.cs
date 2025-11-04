@@ -36,19 +36,19 @@
 //    public class UploadController : Controller
 //    {
 //        private readonly IWebHostEnvironment _environment;
-//        private readonly IGenericRepository<Document> _documentRepository;
-//        private readonly IGenericRepository<Course> _courseRepository;
+//        private readonly IGenericService<Document> _documentService;
+//        private readonly IGenericService<Course> _courseService;
 
 //        private readonly UserManager<Users> _userManager;
 //        private readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
 //        private readonly string[] _allowedExtensions = { ".pdf", ".doc", ".docx" };
 
-//        public UploadController(IWebHostEnvironment environment, IGenericRepository<Document> documentRepository, UserManager<Users> userManager, IGenericRepository<Course> courseRepository)
+//        public UploadController(IWebHostEnvironment environment, IGenericService<Document> documentService, UserManager<Users> userManager, IGenericService<Course> courseService)
 //        {
 //            _environment = environment;
-//            _documentRepository = documentRepository;
+//            _documentService = documentService;
 //            _userManager = userManager;
-//            _courseRepository = courseRepository;
+//            _courseService = courseService;
 
 //        }
 
@@ -144,7 +144,7 @@
 
 //            try
 //            {
-//                var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+//                var document = await _documentService.GetAsync(d => d.DocumentId == id);
 //                if (document == null)
 //                    return Json(new { success = false, error = "Document not found" });
 
@@ -182,7 +182,7 @@
 //                }
 
 //                // Delete from database
-//                await _documentRepository.DeleteAsync(document.DocumentId);
+//                await _documentService.DeleteAsync(document.DocumentId);
 
 //                // Update TempData to remove the deleted document ID
 //                if (TempData["DocumentIds"] != null)
@@ -240,7 +240,7 @@
 //                var documents = new List<SingleDocumentModel>();
 //                foreach (var docId in documentIds)
 //                {
-//                    var document = await _documentRepository.GetAsync(d => d.DocumentId == docId);
+//                    var document = await _documentService.GetAsync(d => d.DocumentId == docId);
 //                    if (document != null)
 //                    {
 //                        documents.Add(new SingleDocumentModel
@@ -262,7 +262,7 @@
 //                    return RedirectToAction("Index");
 //                }
 //                // Get all courses for the dropdown
-//                var courses = _courseRepository.GetAllQueryable().Select(c => new SelectListItem
+//                var courses = _courseService.GetAllQueryable().Select(c => new SelectListItem
 //                {
 //                    Value = c.CourseId.ToString(),
 //                    Text = $"{c.CourseCode} - {c.CourseName}"
@@ -312,7 +312,7 @@
 //                    // Update documents with additional details
 //                    foreach (var documentModel in model.Documents)
 //                    {
-//                        var document = await _documentRepository.GetAsync(d => d.DocumentId == documentModel.DocumentId);
+//                        var document = await _documentService.GetAsync(d => d.DocumentId == documentModel.DocumentId);
 //                        if (document != null)
 //                        {
 //                            // Update document with form data
@@ -329,7 +329,7 @@
 //                            // Update status to pending for review
 //                            document.Status = "pending";
 
-//                            await _documentRepository.UpdateAsync(document);
+//                            await _documentService.UpdateAsync(document);
 //                            updatedCount++;
 //                        }
 //                        else
@@ -430,7 +430,7 @@
 //                }
 
 //                // Save to database
-//                bool saved = await _documentRepository.AddAsync(document);
+//                bool saved = await _documentService.AddAsync(document);
 //                if (saved)
 //                {
 //                    result.Success = true;
@@ -962,7 +962,6 @@ using iText.IO.Font.Constants;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Pdf;
-using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
@@ -971,17 +970,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 using System.ComponentModel.DataAnnotations;
-
-// ✅ ALIAS ĐỂ TRÁNH XUNG ĐỘT
-using ITextPath = iText.Kernel.Geom.Path;
-using SystemPath = System.IO.Path;
+using Document = BusinessObjects.Document;
 using ITextPageSize = iText.Kernel.Geom.PageSize;
 using ITextTextAlignment = iText.Layout.Properties.TextAlignment;
-using Document = BusinessObjects.Document;
-using Table = iText.Layout.Element.Table;
 using Paragraph = iText.Layout.Element.Paragraph;
+// ✅ ALIAS ĐỂ TRÁNH XUNG ĐỘT
+using SystemPath = System.IO.Path;
+using Table = iText.Layout.Element.Table;
 using Text = iText.Layout.Element.Text;
 
 namespace LexiConnect.Controllers
@@ -989,18 +986,18 @@ namespace LexiConnect.Controllers
     public class UploadController : Controller
     {
         private readonly IWebHostEnvironment _environment;
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Course> _courseRepository;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<Course> _courseService;
         private readonly UserManager<Users> _userManager;
         private readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
         private readonly string[] _allowedExtensions = { ".pdf", ".doc", ".docx" };
 
-        public UploadController(IWebHostEnvironment environment, IGenericRepository<Document> documentRepository, UserManager<Users> userManager, IGenericRepository<Course> courseRepository)
+        public UploadController(IWebHostEnvironment environment, IGenericService<Document> documentService, UserManager<Users> userManager, IGenericService<Course> courseService)
         {
             _environment = environment;
-            _documentRepository = documentRepository;
+            _documentService = documentService;
             _userManager = userManager;
-            _courseRepository = courseRepository;
+            _courseService = courseService;
         }
 
         // GET: Upload
@@ -1086,7 +1083,7 @@ namespace LexiConnect.Controllers
 
             try
             {
-                var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
                 if (document == null)
                     return Json(new { success = false, error = "Document not found" });
 
@@ -1120,7 +1117,7 @@ namespace LexiConnect.Controllers
                     }
                 }
 
-                await _documentRepository.DeleteAsync(document.DocumentId);
+                await _documentService.DeleteAsync(document.DocumentId);
 
                 if (TempData["DocumentIds"] != null)
                 {
@@ -1172,7 +1169,7 @@ namespace LexiConnect.Controllers
                 var documents = new List<SingleDocumentModel>();
                 foreach (var docId in documentIds)
                 {
-                    var document = await _documentRepository.GetAsync(d => d.DocumentId == docId);
+                    var document = await _documentService.GetAsync(d => d.DocumentId == docId);
                     if (document != null)
                     {
                         documents.Add(new SingleDocumentModel
@@ -1193,7 +1190,7 @@ namespace LexiConnect.Controllers
                     return RedirectToAction("Index");
                 }
 
-                var courses = _courseRepository.GetAllQueryable().Select(c => new SelectListItem
+                var courses = _courseService.GetAllQueryable().Select(c => new SelectListItem
                 {
                     Value = c.CourseId.ToString(),
                     Text = $"{c.CourseCode} - {c.CourseName}"
@@ -1240,7 +1237,7 @@ namespace LexiConnect.Controllers
 
                     foreach (var documentModel in model.Documents)
                     {
-                        var document = await _documentRepository.GetAsync(d => d.DocumentId == documentModel.DocumentId);
+                        var document = await _documentService.GetAsync(d => d.DocumentId == documentModel.DocumentId);
                         if (document != null)
                         {
                             document.Title = documentModel.Title;
@@ -1252,7 +1249,7 @@ namespace LexiConnect.Controllers
                             document.PointsToDownload = GetDownloadPointsForDocumentType(document.DocumentType);
                             document.Status = "pending";
 
-                            await _documentRepository.UpdateAsync(document);
+                            await _documentService.UpdateAsync(document);
                             updatedCount++;
                         }
                         else
@@ -1343,7 +1340,7 @@ namespace LexiConnect.Controllers
                     document.ThumbnailUrl = await GeneratePdfThumbnail(filePath, thumbnailPath, uniqueFileName);
                 }
 
-                bool saved = await _documentRepository.AddAsync(document);
+                bool saved = await _documentService.AddAsync(document);
                 if (saved)
                 {
                     result.Success = true;
@@ -1850,7 +1847,7 @@ namespace LexiConnect.Controllers
                 int cleanedCount = 0;
                 foreach (var id in ids)
                 {
-                    var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                    var document = await _documentService.GetAsync(d => d.DocumentId == id);
                     if (document != null && document.Status == "pending") // Only cleanup pending documents
                     {
                         // Delete main physical file
@@ -1884,7 +1881,7 @@ namespace LexiConnect.Controllers
                         }
 
                         // Remove from database
-                        await _documentRepository.DeleteAsync(document.DocumentId);
+                        await _documentService.DeleteAsync(document.DocumentId);
                         cleanedCount++;
                     }
                 }
@@ -1912,7 +1909,7 @@ namespace LexiConnect.Controllers
 
                 // Find all pending documents uploaded by current user in last 24 hours
                 var cutoffTime = DateTime.UtcNow.AddHours(-24);
-                var tempDocuments = _documentRepository.GetAllQueryable(d =>
+                var tempDocuments = _documentService.GetAllQueryable(d =>
                     d.UploaderId == currentUser.Id &&
                     d.Status == "pending" &&
                     d.CreatedAt < cutoffTime).ToList();
@@ -1951,7 +1948,7 @@ namespace LexiConnect.Controllers
                     }
 
                     // Remove from database
-                    await _documentRepository.DeleteAsync(document.DocumentId);
+                    await _documentService.DeleteAsync(document.DocumentId);
                     cleanedCount++;
                 }
 

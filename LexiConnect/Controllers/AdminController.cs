@@ -5,31 +5,31 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 
 namespace LexiConnect.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Users> _usersRepository;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<Users> _usersService;
         private readonly UserManager<Users> _userManager;
-        public AdminController(IGenericRepository<Document> documentRepository, IGenericRepository<Users> userRepository, UserManager<Users> userManager)
+        public AdminController(IGenericService<Document> documentService, IGenericService<Users> userService, UserManager<Users> userManager)
         {
-            _documentRepository = documentRepository;
-            _usersRepository = userRepository;
+            _documentService = documentService;
+            _usersService = userService;
             _userManager = userManager;
         }
 
         [HttpGet]
         public async Task<IActionResult> AdminManagement()
         {
-            var totalDocuments = _documentRepository.GetAllQueryable()
+            var totalDocuments = _documentService.GetAllQueryable()
                 .Include(d => d.Course)
                 .Include(d => d.Uploader);
 
-            var users = _usersRepository.GetAllQueryable().Include(u => u.SubscriptionPlan);
+            var users = _usersService.GetAllQueryable().Include(u => u.SubscriptionPlan);
             var pendingDocuments = totalDocuments.Where(d => d.Status == "pending" || d.Status == "processing");
             var flaggedContent = totalDocuments.Where(d => d.Status == "flagged");
 
@@ -70,7 +70,7 @@ namespace LexiConnect.Controllers
             ViewBag.SortOrder = sortOrder;
 
             // Start with base query including related entities
-            var query = _documentRepository.GetAllQueryable()
+            var query = _documentService.GetAllQueryable()
                 .Include(d => d.Uploader)
                     .ThenInclude(u => u.University)
                 .Include(d => d.Course)
@@ -154,7 +154,7 @@ namespace LexiConnect.Controllers
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             // Calculate statistics
-            var allDocuments = await _documentRepository.GetAllQueryable().ToListAsync();
+            var allDocuments = await _documentService.GetAllQueryable().ToListAsync();
 
             var model = new DocumentManagementViewModel
             {
@@ -231,7 +231,7 @@ namespace LexiConnect.Controllers
 
             // Course filter dropdown (populated dynamically)
             var courseOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Courses" } };
-            var courses = _documentRepository.GetAllQueryable()
+            var courses = _documentService.GetAllQueryable()
                 .Include(d => d.Course)
                 .Select(d => d.Course)
                 .Distinct()
@@ -250,7 +250,7 @@ namespace LexiConnect.Controllers
 
             // Uploader filter dropdown (populated dynamically)
             var uploaderOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Uploaders" } };
-            var uploaders = _documentRepository.GetAllQueryable()
+            var uploaders = _documentService.GetAllQueryable()
                 .Include(d => d.Uploader)
                 .Select(d => d.Uploader)
                 .Distinct()
@@ -273,12 +273,12 @@ namespace LexiConnect.Controllers
         [HttpPost]
         public async Task<IActionResult> ApproveDocument(int id)
         {
-            var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+            var document = await _documentService.GetAsync(d => d.DocumentId == id);
             if (document != null)
             {
                 document.Status = "approved";
                 document.ApprovedAt = DateTime.Now;
-                await _documentRepository.UpdateAsync(document);
+                await _documentService.UpdateAsync(document);
             }
             return RedirectToAction(nameof(DocumentManagement));
         }
@@ -286,12 +286,12 @@ namespace LexiConnect.Controllers
         [HttpPost]
         public async Task<IActionResult> RejectDocument(int id, string rejectionReason = "")
         {
-            var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+            var document = await _documentService.GetAsync(d => d.DocumentId == id);
             if (document != null)
             {
                 document.Status = "rejected";
                 document.RejectionReason = rejectionReason;
-                await _documentRepository.UpdateAsync(document);
+                await _documentService.UpdateAsync(document);
             }
             return RedirectToAction(nameof(DocumentManagement));
         }
@@ -301,7 +301,7 @@ namespace LexiConnect.Controllers
         {
             try
             {
-                await _documentRepository.DeleteAsync(id);
+                await _documentService.DeleteAsync(id);
                 return Json(new { success = true, message = "Document deleted successfully." });
             }
             catch (Exception ex)
@@ -327,7 +327,7 @@ namespace LexiConnect.Controllers
             ViewBag.SortBy = sortBy;
             ViewBag.SortOrder = sortOrder;
 
-            var query = _usersRepository.GetAllQueryable()
+            var query = _usersService.GetAllQueryable()
                 .Include(u => u.University)
                 .Include(u => u.Major)
                 .Include(u => u.SubscriptionPlan)
@@ -405,7 +405,7 @@ namespace LexiConnect.Controllers
                 .ToListAsync();
 
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            var allUsers = await _usersRepository.GetAllQueryable().ToListAsync();
+            var allUsers = await _usersService.GetAllQueryable().ToListAsync();
 
             var model = new UserManagementViewModel
             {
@@ -460,7 +460,7 @@ namespace LexiConnect.Controllers
             }, "Value", "Text", sortOrder);
 
             var universityOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Universities" } };
-            var universities = _usersRepository.GetAllQueryable()
+            var universities = _usersService.GetAllQueryable()
                 .Include(u => u.University)
                 .Where(u => u.University != null)
                 .Select(u => u.University)
@@ -548,7 +548,7 @@ namespace LexiConnect.Controllers
         {
             try
             {
-                var user = await _usersRepository.GetAsync(u => u.Id == id);
+                var user = await _usersService.GetAsync(u => u.Id == id);
                 if (user != null)
                 {
                     user.PointsBalance += pointsChange;
@@ -556,7 +556,7 @@ namespace LexiConnect.Controllers
                     {
                         user.TotalPointsEarned += pointsChange;
                     }
-                    await _usersRepository.UpdateAsync(user);
+                    await _usersService.UpdateAsync(user);
                     return Json(new { success = true, message = "Points adjusted successfully." });
                 }
                 return Json(new { success = false, message = "User not found." });
