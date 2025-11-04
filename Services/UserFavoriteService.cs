@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class UserFavoriteService : IGenericService<UserFavorite>
     {
-        private readonly IGenericService<UserFavorite> _repo;
+        private readonly IGenericRepository<UserFavorite> _repo;
 
-        public UserFavoriteService(IGenericService<UserFavorite> repo)
+        public UserFavoriteService(IGenericRepository<UserFavorite> repo)
         {
             _repo = repo;
         }

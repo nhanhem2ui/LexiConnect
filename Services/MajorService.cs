@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class MajorService : IGenericService<Major>
     {
-        private readonly IGenericService<Major> _repo;
+        private readonly IGenericRepository<Major> _repo;
 
-        public MajorService(IGenericService<Major> repo)
+        public MajorService(IGenericRepository<Major> repo)
         {
             _repo = repo;
         }

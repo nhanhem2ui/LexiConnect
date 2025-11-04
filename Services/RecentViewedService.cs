@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class RecentViewedService : IGenericService<RecentViewed>
     {
-        private readonly IGenericService<RecentViewed> _repo;
+        private readonly IGenericRepository<RecentViewed> _repo;
 
-        public RecentViewedService(IGenericService<RecentViewed> repo)
+        public RecentViewedService(IGenericRepository<RecentViewed> repo)
         {
             _repo = repo;
         }

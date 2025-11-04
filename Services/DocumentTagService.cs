@@ -6,9 +6,9 @@ namespace Services
 {
     public class DocumentTagService : IGenericService<DocumentTag>
     {
-        private readonly IGenericService<DocumentTag> _repo;
+        private readonly IGenericRepository<DocumentTag> _repo;
 
-        public DocumentTagService(IGenericService<DocumentTag> repo)
+        public DocumentTagService(IGenericRepository<DocumentTag> repo)
         {
             _repo = repo;
         }

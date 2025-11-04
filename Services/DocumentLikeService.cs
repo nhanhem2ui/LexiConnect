@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class DocumentLikeService : IGenericService<DocumentLike>
     {
-        private readonly IGenericService<DocumentLike> _repo;
+        private readonly IGenericRepository<DocumentLike> _repo;
 
-        public DocumentLikeService(IGenericService<DocumentLike> repo)
+        public DocumentLikeService(IGenericRepository<DocumentLike> repo)
         {
             _repo = repo;
         }

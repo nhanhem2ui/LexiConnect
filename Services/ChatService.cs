@@ -1,13 +1,14 @@
 ﻿using BusinessObjects;
+using Repositories;
 using System.Linq.Expressions;
 
 namespace Services
 {
     public class ChatService : IGenericService<Chat>
     {
-        private readonly IGenericService<Chat> _repo;
+        private readonly IGenericRepository<Chat> _repo;
 
-        public ChatService(IGenericService<Chat> repo)
+        public ChatService(IGenericRepository<Chat> repo)
         {
             _repo = repo;
         }

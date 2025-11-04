@@ -6,9 +6,9 @@ namespace Services
 {
     public class DocumentReviewService : IGenericService<DocumentReview>
     {
-        private readonly IGenericService<DocumentReview> _repo;
+        private readonly IGenericRepository<DocumentReview> _repo;
 
-        public DocumentReviewService(IGenericService<DocumentReview> repo)
+        public DocumentReviewService(IGenericRepository<DocumentReview> repo)
         {
             _repo = repo;
         }
