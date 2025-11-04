@@ -2,24 +2,24 @@
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 
 namespace LexiConnect.Controllers
 {
     public class SearchController : Controller
     {
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Course> _courseRepository;
-        private readonly IGenericRepository<University> _universityRepository;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<Course> _courseService;
+        private readonly IGenericService<University> _universityService;
 
         public SearchController(
-            IGenericRepository<Document> documentRepository,
-            IGenericRepository<Course> courseRepository,
-            IGenericRepository<University> universityRepository)
+            IGenericService<Document> documentService,
+            IGenericService<Course> courseService,
+            IGenericService<University> universityService)
         {
-            _documentRepository = documentRepository;
-            _courseRepository = courseRepository;
-            _universityRepository = universityRepository;
+            _documentService = documentService;
+            _courseService = courseService;
+            _universityService = universityService;
         }
 
         [HttpGet]
@@ -34,7 +34,7 @@ namespace LexiConnect.Controllers
 
             try
             {
-                var documents = await _documentRepository.GetAllQueryable()
+                var documents = await _documentService.GetAllQueryable()
                     .Include(d => d.Course)
                         .ThenInclude(c => c.Major)
                             .ThenInclude(m => m.University)
@@ -57,7 +57,7 @@ namespace LexiConnect.Controllers
                 }
 
                 // Search in courses
-                var courses = await _courseRepository.GetAllQueryable()
+                var courses = await _courseService.GetAllQueryable()
                     .Include(c => c.Major)
                         .ThenInclude(m => m.University)
                     .Where(c => c.CourseName.Contains(query) ||
@@ -78,7 +78,7 @@ namespace LexiConnect.Controllers
                 }
 
                 // Search in universities
-                var universities = await _universityRepository.GetAllQueryable()
+                var universities = await _universityService.GetAllQueryable()
                 .Where(u => u.Name.Contains(query) ||
                            u.ShortName.Contains(query))
                 .Take(2)
@@ -112,7 +112,7 @@ namespace LexiConnect.Controllers
             {
                 return RedirectToAction("Introduction", "Home");
             }
-            var documents = await _documentRepository.GetAllQueryable()
+            var documents = await _documentService.GetAllQueryable()
                     .Include(d => d.Course)
                         .ThenInclude(c => c.Major)
                             .ThenInclude(m => m.University)
@@ -123,7 +123,7 @@ namespace LexiConnect.Controllers
                     .OrderByDescending(d => d.UpdatedAt)
                     .Take(5)
                     .ToListAsync();
-            var courses = await _courseRepository.GetAllQueryable()
+            var courses = await _courseService.GetAllQueryable()
                     .Include(c => c.Major)
                         .ThenInclude(m => m.University)
                     .Where(c => c.CourseName.Contains(query) ||
@@ -131,7 +131,7 @@ namespace LexiConnect.Controllers
                                c.Description.Contains(query))
                     .Take(3)
                     .ToListAsync();
-            var universities = await _universityRepository.GetAllQueryable()
+            var universities = await _universityService.GetAllQueryable()
                 .Where(u => u.Name.Contains(query) ||
                            u.ShortName.Contains(query))
                 .Take(5)
@@ -158,7 +158,7 @@ namespace LexiConnect.Controllers
                 return Json(new List<object>());
             }
 
-            var universities = await _universityRepository.GetAllQueryable(
+            var universities = await _universityService.GetAllQueryable(
                 u => u.IsVerified &&
                     (u.Name.Contains(query) ||
                      u.ShortName.Contains(query) ||

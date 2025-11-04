@@ -1,21 +1,21 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using BusinessObjects;
 using LexiConnect.Models.ViewModels;
-using Repositories;
-using BusinessObjects;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Services;
 
 namespace LexiConnect.Controllers
 {
     public class UniversityController : Controller
     {
-        private readonly IGenericRepository<University> _universityRepo;
-        private readonly IGenericRepository<Course> _courseRepo;
-        private readonly IGenericRepository<Document> _documentRepo;
+        private readonly IGenericService<University> _universityRepo;
+        private readonly IGenericService<Course> _courseRepo;
+        private readonly IGenericService<Document> _documentRepo;
 
         public UniversityController(
-            IGenericRepository<University> universityRepo,
-            IGenericRepository<Course> courseRepo,
-            IGenericRepository<Document> documentRepo)
+            IGenericService<University> universityRepo,
+            IGenericService<Course> courseRepo,
+            IGenericService<Document> documentRepo)
         {
             _universityRepo = universityRepo;
             _courseRepo = courseRepo;

@@ -3,7 +3,7 @@ using LexiConnect.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 using System.Security.Claims;
 using static LexiConnect.Models.ChatModel;
 
@@ -12,13 +12,13 @@ namespace LexiConnect.Controllers
     [Authorize]
     public class ChatController : Controller
     {
-        private readonly IGenericRepository<Users> _userRepository;
-        private readonly IGenericRepository<Chat> _chatRepository;
+        private readonly IGenericService<Users> _userService;
+        private readonly IGenericService<Chat> _chatService;
 
-        public ChatController(IGenericRepository<Users> userRepository, IGenericRepository<Chat> chatRepository)
+        public ChatController(IGenericService<Users> userService, IGenericService<Chat> chatService)
         {
-            _userRepository = userRepository;
-            _chatRepository = chatRepository;
+            _userService = userService;
+            _chatService = chatService;
         }
 
         public async Task<IActionResult> ChatAsync(string id)
@@ -28,12 +28,12 @@ namespace LexiConnect.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Signin", "Auth");
 
-            viewModel.CurrentUser = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+            viewModel.CurrentUser = await _userService.GetAsync(u => u.Id.Equals(userId));
             if (viewModel.CurrentUser == null) return RedirectToAction("Signin", "Auth");
 
             await LoadChatUsers(userId, viewModel);
 
-            viewModel.CurrentReceiver = await _userRepository.GetAsync(u => u.Id.Equals(id));
+            viewModel.CurrentReceiver = await _userService.GetAsync(u => u.Id.Equals(id));
 
             await LoadChatHistory(userId, id, viewModel);
 
@@ -52,7 +52,7 @@ namespace LexiConnect.Controllers
 
             try
             {
-                var messages = await _chatRepository
+                var messages = await _chatService
                     .GetAllQueryable(c => (c.SenderId == userId && c.ReceiverId == receiverId) ||
                                          (c.SenderId == receiverId && c.ReceiverId == userId))
                     .Include(c => c.Sender)
@@ -93,7 +93,7 @@ namespace LexiConnect.Controllers
             try
             {
                 // Get all messages where the user is either sender or receiver
-                var userMessages = await _chatRepository
+                var userMessages = await _chatService
                     .GetAllQueryable(c => c.SenderId == currentUserId || c.ReceiverId == currentUserId)
                     .Include(c => c.Sender)
                     .Include(c => c.Receiver)
@@ -144,7 +144,7 @@ namespace LexiConnect.Controllers
         {
             try
             {
-                viewModel.ChatHistory = await _chatRepository
+                viewModel.ChatHistory = await _chatService
                      .GetAllQueryable(c => (c.SenderId == currentUserId && c.ReceiverId == receiverId) ||
                                           (c.SenderId == receiverId && c.ReceiverId == currentUserId))
                      .Include(c => c.Sender)

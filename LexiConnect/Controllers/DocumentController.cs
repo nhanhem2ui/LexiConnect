@@ -3,34 +3,34 @@ using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 
 namespace LexiConnect.Controllers
 {
     public class DocumentController : Controller
     {
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Course> _courseRepository;
-        private readonly IGenericRepository<Users> _userRepository;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<Course> _courseService;
+        private readonly IGenericService<Users> _userService;
         private readonly UserManager<Users> _userManager;
         private readonly IWebHostEnvironment _environment;
-        private readonly IGenericRepository<DocumentLike> _documentLikeRepository;
+        private readonly IGenericService<DocumentLike> _documentLikeService;
 
         public DocumentController(
-            IGenericRepository<Document> documentRepository,
-            IGenericRepository<Course> courseRepository,
-            IGenericRepository<Users> userRepository,
-            IGenericRepository<DocumentLike> documentLikeRepository,
+            IGenericService<Document> documentService,
+            IGenericService<Course> courseService,
+            IGenericService<Users> userService,
+            IGenericService<DocumentLike> documentLikeService,
             UserManager<Users> userManager,
             IWebHostEnvironment environment)
         {
-            _documentRepository = documentRepository;
-            _courseRepository = courseRepository;
-            _userRepository = userRepository;
+            _documentService = documentService;
+            _courseService = courseService;
+            _userService = userService;
             _userManager = userManager;
             _environment = environment;
-            _documentRepository = documentRepository;   
-            _documentLikeRepository = documentLikeRepository;
+            _documentService = documentService;
+            _documentLikeService = documentLikeService;
         }
 
 
@@ -42,7 +42,7 @@ namespace LexiConnect.Controllers
             try
             {
                 // Get document with eager loading for related entities
-                var document = await _documentRepository.GetAllQueryable(d => d.DocumentId == id)
+                var document = await _documentService.GetAllQueryable(d => d.DocumentId == id)
                     .Include(d => d.Course)
                     .Include(d => d.Uploader)
                     .Include(d => d.Uploader.University)
@@ -51,7 +51,7 @@ namespace LexiConnect.Controllers
                 if (document == null)
                 {
                     TempData["Error"] = "Document not found.";
-                    return RedirectToAction("Homepage", "Home");   
+                    return RedirectToAction("Homepage", "Home");
                 }
 
                 // Determine which file to use for viewing (PDF version if available)
@@ -72,7 +72,7 @@ namespace LexiConnect.Controllers
 
                 // Increment view count
                 document.ViewCount++;
-                await _documentRepository.UpdateAsync(document);
+                await _documentService.UpdateAsync(document);
 
                 // Get uploader statistics
                 var uploaderStats = await GetUploaderStats(document.UploaderId);
@@ -96,13 +96,13 @@ namespace LexiConnect.Controllers
             }
         }
 
-       
+
 
         public async Task<IActionResult> ViewFile(int id)
         {
             try
             {
-                var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
                 if (document == null)
                 {
                     return NotFound("Document not found");
@@ -159,12 +159,12 @@ namespace LexiConnect.Controllers
         // Download action
         [HttpGet]
         //[ValidateAntiForgeryToken]
-        
+
         public async Task<IActionResult> Download(int id)
         {
             try
             {
-                var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
                 if (document == null)
                 {
                     return Json(new { success = false, message = "Document not found" });
@@ -185,7 +185,7 @@ namespace LexiConnect.Controllers
 
                 // Increment download count and deduct points
                 document.DownloadCount++;
-                await _documentRepository.UpdateAsync(document);
+                await _documentService.UpdateAsync(document);
                 await DeductDownloadPoints(document);
 
                 var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
@@ -207,7 +207,7 @@ namespace LexiConnect.Controllers
         }
 
 
-       
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -220,7 +220,7 @@ namespace LexiConnect.Controllers
                     return Json(new { success = false, message = "Please login to like documents" });
                 }
 
-                var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
                 if (document == null)
                 {
                     return Json(new { success = false, message = "Document not found" });
@@ -233,7 +233,7 @@ namespace LexiConnect.Controllers
                 }
 
                 // Kiểm tra xem user đã like document này chưa
-                var existingLike = await _documentLikeRepository.GetAsync(dl =>
+                var existingLike = await _documentLikeService.GetAsync(dl =>
                     dl.DocumentId == id && dl.UserId == currentUser.Id);
 
                 bool isLiked = false;
@@ -242,7 +242,7 @@ namespace LexiConnect.Controllers
                 if (existingLike != null)
                 {
                     // User đã like rồi -> Unlike
-                    await _documentLikeRepository.DeleteAsync(existingLike.Id);
+                    await _documentLikeService.DeleteAsync(existingLike.Id);
                     document.LikeCount = Math.Max(0, document.LikeCount - 1);
                     isLiked = false;
                 }
@@ -255,12 +255,12 @@ namespace LexiConnect.Controllers
                         UserId = currentUser.Id,
                         LikedAt = DateTime.Now
                     };
-                    await _documentLikeRepository.AddAsync(newLike);
+                    await _documentLikeService.AddAsync(newLike);
                     document.LikeCount++;
                     isLiked = true;
                 }
 
-                await _documentRepository.UpdateAsync(document);
+                await _documentService.UpdateAsync(document);
                 newLikeCount = document.LikeCount;
 
                 return Json(new
@@ -279,15 +279,15 @@ namespace LexiConnect.Controllers
         // Helper methods
         private async Task<UploaderStatsViewModel> GetUploaderStats(string uploaderId)
         {
-            var uploader = await _userRepository.GetAllQueryable(u => u.Id == uploaderId)
+            var uploader = await _userService.GetAllQueryable(u => u.Id == uploaderId)
                 .Include(u => u.University)
                 .FirstOrDefaultAsync();
 
             if (uploader == null)
                 return new UploaderStatsViewModel();
 
-            var documentsCount = _documentRepository.GetAllQueryable(d => d.UploaderId == uploaderId).Count();
-            var totalLikes = _documentRepository.GetAllQueryable(d => d.UploaderId == uploaderId)
+            var documentsCount = _documentService.GetAllQueryable(d => d.UploaderId == uploaderId).Count();
+            var totalLikes = _documentService.GetAllQueryable(d => d.UploaderId == uploaderId)
                 .Sum(d => d.LikeCount);
 
             return new UploaderStatsViewModel

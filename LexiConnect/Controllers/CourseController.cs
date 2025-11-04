@@ -2,18 +2,18 @@
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
     public class CourseController : Controller
     {
-        private readonly IGenericRepository<Course> _courseRepo;
-        private readonly IGenericRepository<Document> _documentRepo;
-        private readonly IGenericRepository<UserFollowCourse> _userFollowCourseRepo;
+        private readonly IGenericService<Course> _courseRepo;
+        private readonly IGenericService<Document> _documentRepo;
+        private readonly IGenericService<UserFollowCourse> _userFollowCourseRepo;
 
-        public CourseController(IGenericRepository<Course> courseRepo, IGenericRepository<Document> documentRepo, IGenericRepository<UserFollowCourse> userFollowCourseRepo)
+        public CourseController(IGenericService<Course> courseRepo, IGenericService<Document> documentRepo, IGenericService<UserFollowCourse> userFollowCourseRepo)
         {
             _courseRepo = courseRepo;
             _documentRepo = documentRepo;

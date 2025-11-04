@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
+using Services;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,6 +60,25 @@ builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepos
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 builder.Services.AddScoped<IGenericRepository<UserFollowCourse>, UserFollowCourseRepository>();
 builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
+
+//Service
+builder.Services.AddScoped<IGenericService<Country>, CountryService>();
+builder.Services.AddScoped<IGenericService<Course>, CourseService>();
+builder.Services.AddScoped<IGenericService<Document>, DocumentService>();
+builder.Services.AddScoped<IGenericService<DocumentReview>, DocumentReviewService>();
+builder.Services.AddScoped<IGenericService<DocumentTag>, DocumentTagService>();
+builder.Services.AddScoped<IGenericService<DocumentLike>, DocumentLikeService>();
+builder.Services.AddScoped<IGenericService<Major>, MajorService>();
+builder.Services.AddScoped<IGenericService<PointTransaction>, PointTransactionService>();
+builder.Services.AddScoped<IGenericService<SubscriptionPlan>, SubscriptionPlanService>();
+builder.Services.AddScoped<IGenericService<University>, UniversityService>();
+builder.Services.AddScoped<IGenericService<UserFavorite>, UserFavoriteService>();
+builder.Services.AddScoped<IGenericService<UserFollower>, UserFollowerService>();
+builder.Services.AddScoped<IGenericService<RecentViewed>, RecentViewedService>();
+builder.Services.AddScoped<IGenericService<PaymentRecord>, PaymentRecordService>();
+builder.Services.AddScoped<IGenericService<Users>, UserService>();
+builder.Services.AddScoped<IGenericService<UserFollowCourse>, UserFollowCourseService>();
+builder.Services.AddScoped<IGenericService<Chat>, ChatService>();
 
 builder.Services.AddScoped<AppDbContext>();
 builder.Services.AddScoped<ISender, EmailSender>();

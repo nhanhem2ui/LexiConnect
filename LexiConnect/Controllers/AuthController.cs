@@ -2,11 +2,10 @@
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Authentication.Google;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Repositories;
+using Services;
 using System.Security.Claims;
 using System.Text;
 
@@ -17,18 +16,18 @@ namespace LexiConnect.Controllers
         private readonly UserManager<Users> _userManager;
         private readonly SignInManager<Users> _signInManager;
         private readonly ISender _emailSender;
-        private readonly IGenericRepository<University> _universityRepository;
+        private readonly IGenericService<University> _universityService;
 
         public AuthController(
             UserManager<Users> userManager,
             SignInManager<Users> signInManager,
             ISender emailSender,
-            IGenericRepository<University> universityRepository)
+            IGenericService<University> universityService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
-            _universityRepository = universityRepository;
+            _universityService = universityService;
         }
 
         [HttpGet]
@@ -292,7 +291,7 @@ namespace LexiConnect.Controllers
             }
 
             if (user.University == null)
-                user.University = await _universityRepository.GetAsync(u => u.Id == user.UniversityId);
+                user.University = await _universityService.GetAsync(u => u.Id == user.UniversityId);
 
             var claims = new List<Claim>
             {
