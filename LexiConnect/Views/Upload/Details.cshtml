@@ -92,11 +92,40 @@
                     <input type="hidden" asp-for="Documents[i].DocumentId" />
                     <input type="hidden" asp-for="Documents[i].FileName" />
 
-                    <div class="doc-row">
+                    @* <div class="doc-row">
                         <div class="doc-group">
                             <label>🏛️ University</label>
                             <input asp-for="Documents[i].University" class="doc-input" placeholder="Search University" />
                             <span asp-validation-for="Documents[i].University" class="doc-feedback"></span>
+                        </div>
+                    </div> *@
+
+
+                    <!-- Thay thế phần University trong form -->
+                    <div class="doc-row">
+                        <div class="doc-group">
+                            <label>🏛️ University</label>
+
+                            <!-- Hidden field để lưu UniversityId -->
+                            <input type="hidden" asp-for="Documents[i].UniversityId" class="university-id-input" />
+
+                            <!-- Input search với autocomplete -->
+                            <div class="university-search-container">
+                                <input type="text"
+                                       class="doc-input university-search-input"
+                                       placeholder="Search University"
+                                       autocomplete="off"
+                                       data-index="@i" />
+
+                                <!-- Dropdown results -->
+                                <div class="university-dropdown" data-index="@i" style="display: none;">
+                                    <div class="university-dropdown-loading">
+                                        <span>Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <span asp-validation-for="Documents[i].UniversityId" class="doc-feedback"></span>
                         </div>
                     </div>
 
@@ -181,6 +210,7 @@
     <partial name="_ValidationScriptsPartial" />
     <script src="~/js/Upload/Details.js"></script>
     <script src="~/js/Upload/FileCleanup.js"></script>
+    <script src="~/js/Upload/UniversitySearch.js"></script>
 
 
 }

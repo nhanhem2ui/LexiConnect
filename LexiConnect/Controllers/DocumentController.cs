@@ -10,27 +10,31 @@ namespace LexiConnect.Controllers
     public class DocumentController : Controller
     {
         private readonly IGenericService<Document> _documentService;
-        private readonly IGenericService<Course> _courseService;
         private readonly IGenericService<Users> _userService;
         private readonly UserManager<Users> _userManager;
         private readonly IWebHostEnvironment _environment;
         private readonly IGenericService<DocumentLike> _documentLikeService;
+        private readonly IGenericService<UserFavorite> _userFavoriteService;
+        private readonly IGenericService<RecentViewed> _recentViewedService;
+
 
         public DocumentController(
             IGenericService<Document> documentService,
-            IGenericService<Course> courseService,
             IGenericService<Users> userService,
             IGenericService<DocumentLike> documentLikeService,
+             IGenericService<UserFavorite> userFavoriteService,
+             IGenericService<RecentViewed> recentViewedService,
             UserManager<Users> userManager,
             IWebHostEnvironment environment)
         {
             _documentService = documentService;
-            _courseService = courseService;
             _userService = userService;
             _userManager = userManager;
             _environment = environment;
             _documentService = documentService;
             _documentLikeService = documentLikeService;
+            _userFavoriteService = userFavoriteService;
+            _recentViewedService = recentViewedService;
         }
 
 
@@ -74,6 +78,19 @@ namespace LexiConnect.Controllers
                 document.ViewCount++;
                 await _documentService.UpdateAsync(document);
 
+                bool isFavorited = false;
+                if (User.Identity.IsAuthenticated)
+                {
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    if (currentUser != null)
+                    {
+                        await AddOrUpdateRecentViewed(document.DocumentId, currentUser.Id);
+
+                        // Kiểm tra xem đã favorite chưa
+                        isFavorited = await _userFavoriteService.ExistsAsync(uf =>
+                            uf.DocumentId == document.DocumentId && uf.UserId == currentUser.Id);
+                    }
+                }
                 // Get uploader statistics
                 var uploaderStats = await GetUploaderStats(document.UploaderId);
 
@@ -84,7 +101,8 @@ namespace LexiConnect.Controllers
                     UploaderStats = uploaderStats,
                     FileUrl = viewFilePath, // This will be the PDF path if available
                     FilePDFpath = document.FilePDFpath,
-                    CanDownload = await CanUserDownload(document)
+                    CanDownload = await CanUserDownload(document),
+                    IsFavorited = isFavorited // Thêm trường này
                 };
 
                 return View(viewModel);
@@ -96,6 +114,34 @@ namespace LexiConnect.Controllers
             }
         }
 
+        private async Task AddOrUpdateRecentViewed(int documentId, string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+                return;
+
+            // Kiểm tra xem user đã xem document này chưa
+            var existingView = await _recentViewedService.GetAsync(rv =>
+                rv.UserId == userId && rv.DocumentId == documentId);
+
+            if (existingView != null)
+            {
+                // Nếu đã tồn tại, cập nhật thời gian xem
+                existingView.ViewedAt = DateTime.UtcNow;
+                await _recentViewedService.UpdateAsync(existingView);
+            }
+            else
+            {
+                // Nếu chưa tồn tại, tạo mới
+                var recentView = new RecentViewed
+                {
+                    DocumentId = documentId,
+
+                    UserId = userId,
+                    ViewedAt = DateTime.UtcNow
+                };
+                await _recentViewedService.AddAsync(recentView);
+            }
+        }
 
 
         public async Task<IActionResult> ViewFile(int id)
@@ -167,22 +213,24 @@ namespace LexiConnect.Controllers
                 var document = await _documentService.GetAsync(d => d.DocumentId == id);
                 if (document == null)
                 {
-                    return Json(new { success = false, message = "Document not found" });
+                    TempData["Error"] = "Document not found.";
+                    return RedirectToAction("DetailDocument", new { id });
                 }
 
                 // Check if user can download
                 if (!await CanUserDownload(document))
                 {
-                    return Json(new { success = false, message = "Insufficient points to download" });
+                    TempData["Error"] = " Insufficient points to download this document.";
+                    return RedirectToAction("DetailDocument", new { id });
                 }
 
-                // For download, always use the original file
+                // Always use the original file for download
                 string filePath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
                 if (!System.IO.File.Exists(filePath))
                 {
-                    return Json(new { success = false, message = "Original file not found" });
+                    TempData["Error"] = "File not found on server.";
+                    return RedirectToAction("DetailDocument", new { id });
                 }
-
                 // Increment download count and deduct points
                 document.DownloadCount++;
                 await _documentService.UpdateAsync(document);
@@ -207,6 +255,68 @@ namespace LexiConnect.Controllers
         }
 
 
+
+        // Thêm phương thức ToggleFavorite
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ToggleFavorite(int id)
+        {
+            try
+            {
+                if (!User.Identity.IsAuthenticated)
+                {
+                    return Json(new { success = false, message = "Please login to favorite documents" });
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
+                if (document == null)
+                {
+                    return Json(new { success = false, message = "Document not found" });
+                }
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                {
+                    return Json(new { success = false, message = "User not found" });
+                }
+
+                // Kiểm tra xem user đã favorite document này chưa
+                var existingFavorite = await _userFavoriteService.GetAsync(uf =>
+                    uf.DocumentId == id && uf.UserId == currentUser.Id);
+
+                bool isFavorited = false;
+
+                if (existingFavorite != null)
+                {
+                    // User đã favorite rồi -> Remove favorite
+                    await _userFavoriteService.DeleteAsync(existingFavorite.Id);
+                    isFavorited = false;
+                }
+                else
+                {
+                    // User chưa favorite -> Add favorite
+                    var newFavorite = new UserFavorite
+                    {
+                        DocumentId = id,
+                        UserId = currentUser.Id,
+                        CreatedAt = DateTime.Now
+                    };
+                    await _userFavoriteService.AddAsync(newFavorite);
+                    isFavorited = true;
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    isFavorited = isFavorited,
+                    message = isFavorited ? "Added to favorites" : "Removed from favorites"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
 
 
         [HttpPost]

@@ -21,18 +21,40 @@
 
         <div style="margin-top:20px;">
             <p><strong>Uploaded by:</strong></p>
-            <div class="uploader">
-                <img src="@Model.UploaderStats.AvatarUrl" alt="avatar" />
+            <a asp-controller="Profile"
+               asp-action="PublicUserProfile"
+               asp-route-id="@Model.UploaderStats.UploaderId"
+               class="uploader-link">
+
+                <div class="uploader">
+                    <img src="@Model.UploaderStats.AvatarUrl" alt="avatar" />
+                    <div>
+                        <div class="uploader-name">@Model.UploaderStats.FullName</div>
+                        <div class="uploader-university">@Model.UploaderStats.UniversityName</div>
+                    </div>
+                </div>
+
+            </a>
+            <!-- Thêm thống kê uploader -->
+            <div class="uploader-stats">
                 <div>
-                    <div>@Model.UploaderStats.FullName</div>
-                    <div style="font-size:12px; color:#888;">@Model.UploaderStats.UniversityName</div>
+                    <i class="fa-solid fa-user-group"></i>
+                    <span>@Model.UploaderStats.FollowerCount</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>@Model.UploaderStats.UploadCount</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-heart"></i>
+                    <span>@Model.UploaderStats.LikeCount</span>
                 </div>
             </div>
         </div>
 
         <div style="margin-top:20px; font-size:14px; color:#444;">
             <p><strong>Views:</strong> @Model.Document.ViewCount</p>
-            <p><strong>Likes:</strong> @Model.Document.LikeCount</p>
+            @* <p><strong>Likes:</strong> @Model.Document.LikeCount</p> *@
             <p><strong>Can Download:</strong> @(Model.CanDownload ? "Yes" : "No")</p>
         </div>
 
@@ -50,9 +72,18 @@
                 Download
             </button>
             <button class="btn-outline"><i class="fa fa-magic"></i> AI Tools</button>
-            <button class="btn-outline"><i class="fa fa-thumbs-up" style="color:green;"></i> 0</button>
+            <button class="btn-outline"><i class="fa fa-thumbs-up" style="color:green;"></i>  <span>@Model.Document.LikeCount</span> </button>
             <button class="btn-outline"><i class="fa fa-thumbs-down" style="color:red;"></i> 0</button>
             <button class="btn-outline"><i class="fa fa-bookmark"></i> Save</button>
+
+            <!-- Nút Favorite -->
+            <button class="btn-outline btn-favorite @(Model.IsFavorited ? "active" : "")"
+                    id="favoriteBtn"
+                    data-document-id="@Model.Document.DocumentId">
+                <i class="fa-heart @(Model.IsFavorited ? "fa-solid" : "fa-regular")" id="favoriteIcon"></i>
+                <span id="favoriteText">@(Model.IsFavorited ? "Favorited" : "Favorite")</span>
+            </button>
+
             <button class="btn-outline"><i class="fa fa-share"></i></button>
         </div>
 
@@ -61,58 +92,32 @@
     </div>
 </div>
 
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: '@TempData["Error"]',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+}
+
+
+
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
-@* <script>
-    const url = '@Url.Content(Model.FileUrl)';
-    const pdfjsLib = window['pdfjsLib'];
-
-    let container = document.getElementById("pdf-container");
-
-    pdfjsLib.getDocument(url).promise.then(function (pdf) {
-        console.log("PDF loaded", pdf.numPages);
-
-        let totalPages = Math.min(pdf.numPages, 5);
-
-        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-            pdf.getPage(pageNum).then(function (page) {
-                let scale = 1.2;
-                let viewport = page.getViewport({ scale: scale });
-
-                let canvas = document.createElement("canvas");
-                canvas.style.display = "block";
-                canvas.style.margin = "0 auto 20px auto";
-                let context = canvas.getContext("2d");
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                container.appendChild(canvas);
-
-                let renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-                page.render(renderContext);
-            });
-        }
-
-        if (pdf.numPages > totalPages) {
-            let more = document.createElement("div");
-            more.style.color = "red";
-            more.style.textAlign = "center";
-            more.style.fontWeight = "bold";
-            more.innerText = "Login or upgrade to view all pages.";
-            container.appendChild(more);
-        }
-    }).catch(err => {
-        console.error("PDF.js error:", err);
-    });
-</script> *@
 
 <script>
-    // Truyền url từ server xuống JS
+    // Truyền các URL từ server xuống JS
     window.pdfFileUrl = '@Url.Content(Model.FileUrl)';
+    window.toggleFavoriteUrl = '@Url.Action("ToggleFavorite", "Document")';
 </script>
 
 <script src="~/js/Document/DetailDocument.js"></script>

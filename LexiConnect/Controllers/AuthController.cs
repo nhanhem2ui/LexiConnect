@@ -53,8 +53,8 @@ namespace LexiConnect.Controllers
                 UserName = model.Username,
                 FullName = model.Username,
                 Email = model.Email,
-                UniversityId = 0,
-                MajorId = 0,
+                UniversityId = 1,
+                MajorId = 1,
                 PointsBalance = 0,
                 TotalPointsEarned = 0,
                 SubscriptionPlanId = 1, // still set at creation
