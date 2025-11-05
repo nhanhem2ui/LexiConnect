@@ -198,4 +198,238 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// AI Tools JavaScript for Document Detail
+(function () {
+    let documentFile = null;
+    let documentId = null;
+    let currentTypingId = null;
+
+    const aiChatContainer = document.getElementById('ai-chat-container');
+    const aiQuestionInput = document.getElementById('ai-question-input');
+    const aiSendBtn = document.getElementById('ai-send-btn');
+    const aiQuickPrompts = document.querySelectorAll('.ai-quick-prompt');
+
+    // Get document ID from the page (you'll need to add this as a data attribute)
+    documentId = document.querySelector('[data-document-id]')?.getAttribute('data-document-id');
+
+    // When modal is shown, load the document
+    const aiModal = document.getElementById('aiToolsModal');
+    aiModal?.addEventListener('shown.bs.modal', async function () {
+        if (!documentFile && documentId) {
+            await loadDocument();
+        }
+        aiQuestionInput?.focus();
+    });
+
+    // Load document file
+    async function loadDocument() {
+        try {
+            const response = await fetch(`/Document/GetDocumentFileForAI?id=${documentId}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to load document');
+            }
+
+            const blob = await response.blob();
+            const filename = response.headers.get('content-disposition')?.split('filename=')[1]?.replace(/"/g, '') || 'document.pdf';
+
+            documentFile = new File([blob], filename, { type: blob.type });
+
+            console.log('Document loaded successfully:', documentFile.name);
+        } catch (error) {
+            console.error('Error loading document:', error);
+            addAIMessage('Sorry, I could not load the document. Please try again.');
+        }
+    }
+
+    // Send question
+    async function sendQuestion(question) {
+        if (!question.trim()) return;
+
+        // Add user message
+        addUserMessage(question);
+        aiQuestionInput.value = '';
+
+        // Show typing indicator
+        currentTypingId = showTypingIndicator();
+
+        try {
+            const formData = new FormData();
+            formData.append('question', question);
+
+            if (documentFile) {
+                formData.append('file', documentFile);
+            }
+
+            const response = await fetch('/AIAssistant/AskWithFile', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                }
+            });
+
+            const data = await response.json();
+
+            // Remove typing indicator
+            if (currentTypingId) {
+                removeTypingIndicator(currentTypingId);
+                currentTypingId = null;
+            }
+
+            if (data.error) {
+                addAIMessage(`Sorry, I encountered an error: ${data.error}`);
+            } else if (data.answer) {
+                addAIMessage(data.answer);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            if (currentTypingId) {
+                removeTypingIndicator(currentTypingId);
+                currentTypingId = null;
+            }
+            addAIMessage('Sorry, I encountered an error processing your request.');
+        }
+    }
+
+    // Add user message to chat
+    function addUserMessage(text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message mb-3';
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-start justify-content-end">
+                <div class="message-content bg-secondary text-white p-3 rounded shadow-sm" style="max-width: 80%;">
+                    <p class="mb-0">${escapeHtml(text)}</p>
+                </div>
+                <div class="avatar bg-secondary text-white rounded-circle ms-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </div>
+        `;
+        aiChatContainer.appendChild(messageDiv);
+        aiChatContainer.scrollTop = aiChatContainer.scrollHeight;
+    }
+
+    // Add AI message to chat
+    function addAIMessage(text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ai-message mb-3';
+        messageDiv.innerHTML = `
+            <div class="d-flex align-items-start">
+                <div class="avatar bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div class="message-content bg-white p-3 rounded shadow-sm" style="max-width: 80%;">
+                    ${formatMessage(text)}
+                </div>
+            </div>
+        `;
+        aiChatContainer.appendChild(messageDiv);
+        aiChatContainer.scrollTop = aiChatContainer.scrollHeight;
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai-message mb-3';
+        typingDiv.id = 'typing-indicator-' + Date.now();
+        typingDiv.innerHTML = `
+            <div class="d-flex align-items-start">
+                <div class="avatar bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                    <i class="bi bi-robot"></i>
+                </div>
+                <div class="message-content bg-white p-3 rounded shadow-sm">
+                    <div class="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+        `;
+        aiChatContainer.appendChild(typingDiv);
+        aiChatContainer.scrollTop = aiChatContainer.scrollHeight;
+        return typingDiv.id;
+    }
+
+    // Remove typing indicator
+    function removeTypingIndicator(id) {
+        const indicator = document.getElementById(id);
+        if (indicator) indicator.remove();
+    }
+
+    // Format message with markdown-like syntax
+    function formatMessage(text) {
+        let formatted = escapeHtml(text);
+
+        // Convert Markdown links
+        formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" class="text-decoration-none text-primary">$1</a>');
+
+        // Paragraphs and line breaks
+        formatted = formatted.replace(/\n\n/g, '</p><p class="mb-2">');
+        formatted = formatted.replace(/\n/g, '<br>');
+
+        // Bold text
+        formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        // Handle bullet lists
+        const lines = formatted.split('<br>');
+        let inList = false;
+        let result = [];
+
+        for (let line of lines) {
+            if (line.trim().match(/^[-•*]\s+/)) {
+                if (!inList) {
+                    result.push('<ul class="mb-2 mt-2">');
+                    inList = true;
+                }
+                result.push('<li>' + line.replace(/^[-•*]\s+/, '') + '</li>');
+            } else {
+                if (inList) {
+                    result.push('</ul>');
+                    inList = false;
+                }
+                result.push(line);
+            }
+        }
+
+        if (inList) result.push('</ul>');
+        formatted = result.join('<br>');
+
+        return `<div>${formatted}</div>`;
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Event listeners
+    aiSendBtn?.addEventListener('click', () => {
+        const question = aiQuestionInput.value.trim();
+        if (question) {
+            sendQuestion(question);
+        }
+    });
+
+    aiQuestionInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const question = aiQuestionInput.value.trim();
+            if (question) {
+                sendQuestion(question);
+            }
+        }
+    });
+
+    aiQuickPrompts?.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const prompt = btn.getAttribute('data-prompt');
+            aiQuestionInput.value = prompt;
+            aiQuestionInput.focus();
+        });
+    });
+})();
 

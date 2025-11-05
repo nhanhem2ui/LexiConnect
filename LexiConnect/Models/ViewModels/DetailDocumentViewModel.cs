@@ -1,5 +1,5 @@
 ﻿using BusinessObjects;
-using LexiConnect.Controllers;
+using static LexiConnect.Controllers.DocumentController;
 
 namespace LexiConnect.Models.ViewModels
 {
