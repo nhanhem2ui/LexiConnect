@@ -155,7 +155,7 @@
                 <div class="documents-grid">
                     @foreach (var doc in Model.RecentDocuments)
                     {
-                        <a href="@Url.Action("ViewDocument", "Home", new { id = doc.DocumentId })" class="document-card-small">
+                        <a href="@Url.Action("DetailDocument", "Document", new { id = doc.DocumentId })" class="document-card-small">
                             <div class="document-thumbnail-small">
                                 @if (!string.IsNullOrEmpty(doc.ThumbnailUrl))
                                 {

@@ -22,7 +22,7 @@ namespace LexiConnect.Controllers
             _documentRepo = documentRepo;
         }
 
-        public async Task<IActionResult> Details(int id, string sort = "name", string search = "", string letter = "All")
+        public async Task<IActionResult> UniversityDetails(int id, string sort = "name", string search = "", string letter = "All")
         {
             var university = await _universityRepo.GetAllQueryable(u => u.Id == id)
                 .Include(u => u.Country)

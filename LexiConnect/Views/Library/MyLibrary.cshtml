@@ -1,0 +1,92 @@
+﻿@model LexiConnect.Models.ViewModels.LibraryViewModel
+@{
+    ViewData["Title"] = "My Library - LexiConnect";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/Library/MyLibrary.css" />
+</head>
+
+<div class="lib-dashboard-page">
+    <div class="lib-dashboard-container">
+
+        <!-- Sidebar -->
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="lib-main-content">
+
+            <!-- Tiêu đề trang -->
+            <div class="lib-page-header">
+                <h2 class="section-title">📚 My Library</h2>
+            </div>
+
+            <!-- Favorite Documents Section -->
+            <div class="lib-content-section">
+                <div class="section-header">
+                    <h3 class="section-title">⭐ Favorite Documents</h3>
+                    <a asp-controller="Document" asp-action="Favorites" class="see-all-link">See all →</a>
+                </div>
+
+                @if (Model.FavoriteDocuments.Any())
+                {
+                    <div class="documents-grid">
+                        @foreach (var doc in Model.FavoriteDocuments)
+                        {
+                            <div class="document-card">
+                                <div class="document-header">
+                                    <h4 class="document-title" title="@doc.Title">@doc.Title</h4>
+                                    <p class="document-meta">Course: @doc.Course?.CourseName</p>
+                                    <p class="document-meta">Views: @doc.ViewCount | Likes: @doc.LikeCount</p>
+                                </div>
+                                <div class="document-actions">
+                                    <a asp-controller="Document"
+                                       asp-action="DetailDocument"
+                                       asp-route-id="@doc.DocumentId"
+                                       class="btn-view">View</a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>No favorite documents yet.</p>
+                }
+            </div>
+
+            <!-- Followed Courses Section -->
+            <div class="lib-content-section">
+                <div class="section-header">
+                    <h3 class="section-title">🎓 Followed Courses</h3>
+                    <a asp-controller="Course" asp-action="AllCourses" class="see-all-link">See all →</a>
+                </div>
+
+                @if (Model.FollowedCourses.Any())
+                {
+                    <div class="courses-grid">
+                        @foreach (var course in Model.FollowedCourses)
+                        {
+                            <div class="course-card">
+                                <h4 class="course-title" title="@course.CourseName">@course.CourseName</h4>
+                                <p class="course-desc">@course.Description</p>
+                                <a asp-controller="Course"
+                                   asp-action="Detail"
+                                   asp-route-id="@course.CourseId"
+                                   class="btn-view">View Course</a>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>No followed courses yet.</p>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/Home/HomePage.js" asp-append-version="true"></script>

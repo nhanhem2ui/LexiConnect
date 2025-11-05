@@ -11,6 +11,8 @@ namespace LexiConnect.Models.ViewModels
         public string FilePDFpath { get; set; }
 
         public bool CanDownload { get; set; }
+
+        public bool IsFavorited { get; set; }
         public List<CommentViewModel> Comments { get; set; } = new List<CommentViewModel>();
 
         // Helper property to check if viewing PDF version

@@ -52,29 +52,32 @@
                     </div>
                 </div>
 
-                <!-- Recently Viewed Section -->
+                <!-- Recently Viewed Document Section -->
                 <div class="content-section">
                     <div class="section-header">
-                        <h2 class="section-title">Recently Viewed</h2>
+                        <h2 class="section-title">Recently Viewed Document</h2>
                         <a asp-controller="Document" asp-action="Recent" class="see-all-link">See all →</a>
                     </div>
-                    <div class="documents-grid">
+                    <div class="recently-viewed">
                         @foreach (var recent in Model.RecentVieweds)
                         {
-                            <div class="document-card">
-                                <div class="document-header">
-                                    <div>
-                                        <h3 class="document-title">@recent.Document.Title</h3>
-                                        <p class="document-meta"># PRF192, #Programming</p>
-                                        <p class="document-meta">100 Document</p>
+                            <div class="top-document-card"
+                                 onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = recent.Document.DocumentId })'">
+                                <div class="document-preview">
+                                    <div class="document-preview-title">
+                                        @recent.Document.Title
                                     </div>
                                 </div>
-                                <div class="document-actions">
-                                    <button class="btn-add">+ Add to library</button>
+                                <h3 class="document-title">@recent.Document.Description</h3>
+
+                                <div class="completion-badge">
+                                    <span>👁️</span>
+                                    <span class="completion-percentage">@recent.Document.ViewCount</span>
                                 </div>
                             </div>
                         }
                     </div>
+
                 </div>
 
                 <!-- Top Documents Section -->
@@ -101,12 +104,6 @@
                                 <button class="like-button @(isLiked ? "liked" : "")"
                                         data-id="@doc.DocumentId">
                                     @(isLiked ? "👎" : "👍")
-                                </button>
-
-                                <button class="download-button">
-                                    <a asp-controller="Document" asp-action="Download" asp-route-id="@doc.DocumentId">
-                                        Download
-                                    </a>
                                 </button>
 
                                 <div class="completion-badge">

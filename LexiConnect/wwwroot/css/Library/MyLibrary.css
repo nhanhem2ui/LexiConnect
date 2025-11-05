@@ -1,0 +1,111 @@
+﻿.lib-dashboard-container {
+    display: flex;
+    min-height: calc(100vh - 140px); /* Account for header/footer */
+    background-color: #f8f9fa;
+    width: 100%;
+}
+
+.sidebar {
+    width: 280px;
+    background-color: #ffffff;
+    border-right: 1px solid #e9ecef;
+    padding: 0;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+}
+
+
+.sidebar-nav {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+
+
+.lib-main-content {
+    flex: 1;
+    padding: 30px 40px;
+    width: 1200px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+.lib-page-header {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+}
+
+.lib-content-section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.see-all-link {
+    color: #0078d7;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+    .see-all-link:hover {
+        text-decoration: underline;
+    }
+
+.documents-grid, .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.document-card, .course-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+    .document-card:hover, .course-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+.btn-view {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: #0078d7;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+    .btn-view:hover {
+        background-color: #005fa3;
+    }
+
+.document-card h4,
+.course-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

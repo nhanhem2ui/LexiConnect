@@ -10,11 +10,11 @@ namespace BusinessObjects
         public int Id { get; set; }
 
         [ForeignKey(nameof(Document))]
-        public int DocumentId { get; set; } = -100;
+        public int? DocumentId { get; set; }
         public virtual Document? Document { get; set; }
 
         [ForeignKey(nameof(Course))]
-        public int CourseId { get; set; } = -100;
+        public int? CourseId { get; set; } 
         public virtual Course? Course { get; set; }
 
         [ForeignKey(nameof(User))]
