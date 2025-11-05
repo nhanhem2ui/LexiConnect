@@ -45,8 +45,8 @@ namespace LexiConnect.Controllers
         }
 
         [HttpPost]
-        [RequestSizeLimit(10 * 1024 * 1024)] // 10MB limit
-        [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
+        [RequestSizeLimit(5 * 1024 * 1024)] // 5MB limit
+        [RequestFormLimits(MultipartBodyLengthLimit = 5 * 1024 * 1024)]
         public async Task<IActionResult> AskWithFile(AskRequestWithFile askRequest)
         {
             try

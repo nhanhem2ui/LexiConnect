@@ -46,8 +46,13 @@ namespace LexiConnect.Services.Gemini
 
         public async Task<string> AskQuestionWithFileAsync(string question, Stream fileStream, string mimeType)
         {
-            // Step 1: Upload file to Gemini Files API
+            // Step 1: Upload file
             var fileUri = await UploadFileAsync(fileStream, mimeType);
+
+            // Extract the file ID (Gemini expects "files/..." only)
+            var filePath = fileUri.Contains("files/")
+                ? fileUri.Substring(fileUri.IndexOf("files/"))
+                : fileUri;
 
             // Step 2: Generate content with file reference
             var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
@@ -56,66 +61,79 @@ namespace LexiConnect.Services.Gemini
             {
                 contents = new[]
                 {
+            new
+            {
+                parts = new object[]
+                {
+                    new { text = question },
                     new
                     {
-                        parts = new object[]
+                        file_data = new
                         {
-                            new { text = question },
-                            new
-                            {
-                                file_data = new
-                                {
-                                    mime_type = mimeType,
-                                    file_uri = fileUri
-                                }
-                            }
+                            mimeType = mimeType,
+                            fileUri = fileUri
                         }
                     }
                 }
+            }
+        }
             };
 
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
-
             var jsonResponse = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"Gemini generateContent failed: {response.StatusCode} - {jsonResponse}");
+
             return ExtractTextFromResponse(jsonResponse);
         }
 
+
         private async Task<string> UploadFileAsync(Stream fileStream, string mimeType)
         {
-            if (fileStream.Length == 0) throw new ArgumentException("File stream is empty.");
+            if (fileStream == null || fileStream.Length == 0)
+                throw new ArgumentException("File stream is empty.");
 
             var uploadUrl = $"https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=multipart&key={_apiKey}";
 
-            using var formContent = new MultipartFormDataContent();
+            //Build multipart/related body manually
+            var boundary = "====Boundary" + DateTime.Now.Ticks.ToString("x");
+            using var content = new MultipartContent("related", boundary);
 
-            // Metadata
-            var metadata = new { file = new { display_name = $"upload_{Guid.NewGuid()}" } };  // Use Guid for uniqueness
-            var metadataJson = JsonSerializer.Serialize(metadata);
-            formContent.Add(new StringContent(metadataJson, Encoding.UTF8, "application/json"), "metadata");
-
-            // File
-            var streamContent = new StreamContent(fileStream);
-            streamContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
-            formContent.Add(streamContent, "file", "upload");  // Ensure "file" matches API expectations
-
-            var response = await _httpClient.PostAsync(uploadUrl, formContent);
-            if (!response.IsSuccessStatusCode)
+            //Metadata must include a "file" object wrapper
+            var metadata = new
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                throw new Exception($"File upload failed: {response.StatusCode} - {errorContent}");
-            }
+                file = new
+                {
+                    display_name = $"upload_{Guid.NewGuid()}"
+                }
+            };
+            var metadataJson = JsonSerializer.Serialize(metadata);
+            var metadataContent = new StringContent(metadataJson, Encoding.UTF8, "application/json");
+            content.Add(metadataContent);
 
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(jsonResponse);
+            //File part
+            var fileContent = new StreamContent(fileStream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
+            content.Add(fileContent);
 
+            //Proper content type for Gemini
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("multipart/related");
+            content.Headers.ContentType.Parameters.Add(new System.Net.Http.Headers.NameValueHeaderValue("boundary", boundary));
+
+            var response = await _httpClient.PostAsync(uploadUrl, content);
+            var responseText = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
+                throw new Exception($"File upload failed: {response.StatusCode} - {responseText}");
+
+            using var doc = JsonDocument.Parse(responseText);
             return doc.RootElement.GetProperty("file").GetProperty("uri").GetString()
                    ?? throw new Exception("Failed to retrieve file URI from response.");
         }
-
 
         private static string ExtractTextFromResponse(string jsonResponse)
         {

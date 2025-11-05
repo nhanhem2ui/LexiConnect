@@ -1,11 +1,13 @@
 ﻿using BusinessObjects;
 using LexiConnect.Models.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Services;
 
 namespace LexiConnect.Controllers
 {
+    [Authorize]
     public class UniversityController : Controller
     {
         private readonly IGenericService<University> _universityRepo;
@@ -22,7 +24,7 @@ namespace LexiConnect.Controllers
             _documentRepo = documentRepo;
         }
 
-        public async Task<IActionResult> Details(int id, string sort = "name", string search = "", string letter = "All")
+        public async Task<IActionResult> UniversityDetails(int id, string sort = "name", string search = "", string letter = "All")
         {
             var university = await _universityRepo.GetAllQueryable(u => u.Id == id)
                 .Include(u => u.Country)
@@ -154,7 +156,6 @@ namespace LexiConnect.Controllers
                 University = university,
                 TotalCourses = courses.Count,
                 TotalDocuments = contentCategories.Values.Sum(),
-                TotalStudents = 12500, // This would come from actual data
                 Courses = courses,
                 CurrentSort = sort,
                 SearchQuery = search,
