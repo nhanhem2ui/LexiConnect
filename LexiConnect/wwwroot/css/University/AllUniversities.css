@@ -228,6 +228,15 @@ body {
     gap: 16px;
 }
 
+.sidebar {
+    width: 280px;
+    background-color: #ffffff;
+    border-right: 1px solid #e9ecef;
+    padding: 0;
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0;
+}
+
 .university-link {
     display: flex;
     align-items: center;

@@ -479,34 +479,77 @@ namespace LexiConnect.Controllers
             return !string.IsNullOrEmpty(document.FilePDFpath) &&
                    System.IO.File.Exists(Path.Combine(_environment.WebRootPath, document.FilePDFpath.TrimStart('/')));
         }
-    }
 
-    // View Models
-    public class DocumentDetailViewModel
-    {
-        public Document Document { get; set; }
-        public UploaderStatsViewModel UploaderStatus { get; set; }
-        public string FileUrl { get; set; }
-        public bool CanDownload { get; set; }
-        public List<CommentViewModel> Comments { get; set; } = new List<CommentViewModel>();
-    }
+        [HttpGet]
+        public async Task<IActionResult> GetDocumentFileForAI(int id)
+        {
+            try
+            {
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
+                if (document == null)
+                {
+                    return NotFound(new { error = "Document not found" });
+                }
 
-    public class UploaderStatsViewModel
-    {
-        public string UploaderId { get; set; }
-        public string FullName { get; set; }
-        public string AvatarUrl { get; set; }
-        public string UniversityName { get; set; }
-        public int FollowerCount { get; set; }
-        public int UploadCount { get; set; }
-        public int LikeCount { get; set; }
-    }
+                // Get the file path (prefer PDF if available)
+                string filePath = GetViewFilePath(document);
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    return NotFound(new { error = "Document file not found" });
+                }
 
-    public class CommentViewModel
-    {
-        public int CommentId { get; set; }
-        public string UserName { get; set; }
-        public string Content { get; set; }
-        public DateTime CreatedAt { get; set; }
+                string fullPath = Path.Combine(_environment.WebRootPath, filePath.TrimStart('/'));
+                if (!System.IO.File.Exists(fullPath))
+                {
+                    return NotFound(new { error = "File not found on disk" });
+                }
+
+                // Get file info
+                var fileInfo = new FileInfo(fullPath);
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(fullPath);
+
+                // Determine content type
+                string contentType = GetContentTypeForFile(filePath, document);
+                string extension = Path.GetExtension(filePath).ToLowerInvariant();
+
+                // Return file with proper headers
+                Response.Headers.Append("X-Document-Title", document.Title);
+                Response.Headers.Append("X-Document-Id", document.DocumentId.ToString());
+
+                return File(fileBytes, contentType, $"{document.Title}{extension}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Error retrieving document: {ex.Message}" });
+            }
+        }
+        // View Models
+        public class DocumentDetailViewModel
+        {
+            public Document Document { get; set; }
+            public UploaderStatsViewModel UploaderStatus { get; set; }
+            public string FileUrl { get; set; }
+            public bool CanDownload { get; set; }
+            public List<CommentViewModel> Comments { get; set; } = new List<CommentViewModel>();
+        }
+
+        public class UploaderStatsViewModel
+        {
+            public string UploaderId { get; set; }
+            public string FullName { get; set; }
+            public string AvatarUrl { get; set; }
+            public string UniversityName { get; set; }
+            public int FollowerCount { get; set; }
+            public int UploadCount { get; set; }
+            public int LikeCount { get; set; }
+        }
+
+        public class CommentViewModel
+        {
+            public int CommentId { get; set; }
+            public string UserName { get; set; }
+            public string Content { get; set; }
+            public DateTime CreatedAt { get; set; }
+        }
     }
 }
