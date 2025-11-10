@@ -1,0 +1,94 @@
+﻿@model IEnumerable<BusinessObjects.Quiz>
+@{
+    ViewData["Title"] = "My Generated Quizzes";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">My Generated Quizzes</h5>
+            <a href="/AIAssistant/Question" class="btn btn-light btn-sm">
+                <i class="bi bi-plus-circle"></i> Generate New Quiz
+            </a>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Subject</th>
+                                <th>Difficulty</th>
+                                <th>Visibility</th>
+                                <th>Created</th>
+                                <th style="width: 150px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var quiz in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@quiz.Title</strong><br />
+                                        <small class="text-muted">@quiz.Description</small>
+                                    </td>
+                                    <td>@quiz.Subject</td>
+                                    <td>
+                                        @if (quiz.Difficulty == "Easy")
+                                        {
+                                            <span class="badge bg-success">Easy</span>
+                                        }
+                                        else if (quiz.Difficulty == "Medium")
+                                        {
+                                            <span class="badge bg-warning text-dark">Medium</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Hard</span>
+                                        }
+                                </td>
+                                <td>
+                                    @(quiz.IsPublic ?
+                                                                    Html.Raw("<span class='badge bg-primary'>Public</span>") :
+                                                                    Html.Raw("<span class='badge bg-secondary'>Private</span>"))
+                            </td>
+                            <td>@quiz.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a href="@Url.Action("TakeQuiz", "Quizzes", new { id = quiz.QuizId })"
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="bi bi-play-circle"></i> Take Quiz
+                                </a>
+                            </td>
+                        </tr>
+                                                }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted py-4">
+                    <i class="bi bi-inbox fs-3 mb-2"></i>
+                    <p>No quizzes found. Try generating one!</p>
+                    <a href="/AIAssistant/Question" class="btn btn-primary btn-sm">Generate New Quiz</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-header {
+        font-weight: 600;
+    }
+
+    .table th, .table td {
+        vertical-align: middle !important;
+    }
+
+    .badge {
+        font-size: 0.85rem;
+    }
+</style>

@@ -1,0 +1,69 @@
+﻿@model LexiConnect.Controllers.QuizSessionViewModel
+@{
+    ViewData["Title"] = "Take Quiz - " + Model.Title;
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">@Model.Title</h5>
+            <small>@Model.Subject - @Model.Difficulty</small>
+        </div>
+        <div class="card-body">
+            <form id="quizForm">
+                @foreach (var q in Model.Questions)
+                {
+                    <div class="mb-4">
+                        <h6>@q.QuestionOrder. @q.QuestionText</h6>
+                        <div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="q@q.QuestionId" value="A" id="q@q.QuestionId-A">
+                                <label class="form-check-label" for="q@q.QuestionId-A">@q.OptionA</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="q@q.QuestionId" value="B" id="q@q.QuestionId-B">
+                                <label class="form-check-label" for="q@q.QuestionId-B">@q.OptionB</label>
+                            </div>
+                            @if (!string.IsNullOrEmpty(q.OptionC))
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="q@q.QuestionId" value="C" id="q@q.QuestionId-C">
+                                    <label class="form-check-label" for="q@q.QuestionId-C">@q.OptionC</label>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(q.OptionD))
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="q@q.QuestionId" value="D" id="q@q.QuestionId-D">
+                                    <label class="form-check-label" for="q@q.QuestionId-D">@q.OptionD</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <button type="button" class="btn btn-primary" id="submitQuiz">Submit</button>
+            </form>
+
+            <div id="result" class="mt-4"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("submitQuiz").addEventListener("click", function () {
+        let correct = 0;
+        let total = @Model.Questions.Count;
+        @foreach (var q in Model.Questions)
+        {
+                <text>
+                    const selected_@q.QuestionId = document.querySelector('input[name="q@q.QuestionId"]:checked');
+                    if (selected_@q.QuestionId && selected_@q.QuestionId === "@q.CorrectAnswer") {
+                        correct++;
+                    }
+                </text>
+        }
+        document.getElementById("result").innerHTML =
+            `<div class='alert alert-info'><strong>Result:</strong> ${correct} / ${total} correct</div>`;
+    });
+</script>
