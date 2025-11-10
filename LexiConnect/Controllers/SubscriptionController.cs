@@ -2,28 +2,28 @@
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 using System.Security.Claims;
 
 namespace LexiConnect.Controllers
 {
     public class SubscriptionController : Controller
     {
-        private readonly IGenericRepository<SubscriptionPlan> _subscriptionPlanRepository;
-        private readonly IGenericRepository<Users> _userRepository;
+        private readonly IGenericService<SubscriptionPlan> _subscriptionPlanService;
+        private readonly IGenericService<Users> _userService;
 
-        public SubscriptionController(IGenericRepository<SubscriptionPlan> subscriptionPlanRepository,
-            IGenericRepository<Users> userRepository)
+        public SubscriptionController(IGenericService<SubscriptionPlan> subscriptionPlanService,
+            IGenericService<Users> userService)
         {
-            _subscriptionPlanRepository = subscriptionPlanRepository;
-            _userRepository = userRepository;
+            _subscriptionPlanService = subscriptionPlanService;
+            _userService = userService;
         }
 
         [HttpGet]
-        
+
         public async Task<IActionResult> Pricing()
         {
-            var plans = _subscriptionPlanRepository.GetAllQueryable();
+            var plans = _subscriptionPlanService.GetAllQueryable();
             var planFeatures = new List<PlanFeature>();
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var currentUser = new Users();
@@ -32,7 +32,7 @@ namespace LexiConnect.Controllers
 
             if (userId != null)
             {
-                currentUser = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+                currentUser = await _userService.GetAsync(u => u.Id.Equals(userId));
                 if (currentUser?.SubscriptionPlanId != null && currentUser.SubscriptionEndDate > DateTime.UtcNow)
                 {
                     hasActivePremium = true;
@@ -107,7 +107,7 @@ namespace LexiConnect.Controllers
                 return RedirectToAction("Signin", "Auth");
             }
 
-            var currentUser = await _userRepository.GetAsync(u => u.Id.Equals(userId));
+            var currentUser = await _userService.GetAsync(u => u.Id.Equals(userId));
 
             SubscriptionPlan? currentPlan = null;
             List<ExtensionOption> extensionOptions = new();
@@ -123,7 +123,7 @@ namespace LexiConnect.Controllers
             if (isCurrentlyFree)
             {
                 // For free users, get the premium plan options
-                premiumPlan = await _subscriptionPlanRepository.GetAsync(p => p.Name.Equals("PREMIUM"));
+                premiumPlan = await _subscriptionPlanService.GetAsync(p => p.Name.Equals("PREMIUM"));
                 if (premiumPlan != null)
                 {
                     extensionOptions = GetPremiumPurchaseOptions(premiumPlan);
@@ -136,7 +136,7 @@ namespace LexiConnect.Controllers
                     currentUser.SubscriptionEndDate.HasValue &&
                     currentUser.SubscriptionEndDate.Value > DateTime.UtcNow)
                 {
-                    currentPlan = await _subscriptionPlanRepository.GetAsync(p => p.PlanId == currentUser.SubscriptionPlanId);
+                    currentPlan = await _subscriptionPlanService.GetAsync(p => p.PlanId == currentUser.SubscriptionPlanId);
                     if (currentPlan != null)
                     {
                         extensionOptions = GetExtensionOptions(currentPlan, currentUser.SubscriptionEndDate.Value);
@@ -154,7 +154,7 @@ namespace LexiConnect.Controllers
             var viewModel = new SubscriptionExtensionViewModel
             {
                 CurrentPlan = isCurrentlyFree ?
-                    (await _subscriptionPlanRepository.GetAsync(s => s.Name.Equals("FREE")) ?? new()) :
+                    (await _subscriptionPlanService.GetAsync(s => s.Name.Equals("FREE")) ?? new()) :
                     (currentPlan ?? new()),
                 CurrentSubscriptionEndDate = currentUser?.SubscriptionEndDate ?? DateTime.MinValue,
                 CurrentPlanFeatures = isCurrentlyFree ? new List<string>
@@ -228,7 +228,7 @@ namespace LexiConnect.Controllers
         private async Task<SubscriptionPlan?> GetUpgradePlanAsync(SubscriptionPlan currentPlan)
         {
             // Get the next higher tier plan
-            var upgradePlan = await _subscriptionPlanRepository
+            var upgradePlan = await _subscriptionPlanService
                 .GetAllQueryable(p => p.IsActive && p.Price > currentPlan.Price && p.PlanId != currentPlan.PlanId, asNoTracking: true)
                 .OrderBy(p => p.Price)
                 .FirstOrDefaultAsync();

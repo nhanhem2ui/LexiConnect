@@ -111,6 +111,12 @@ namespace BusinessObjects
                 .HasForeignKey(u => u.CountryId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder.Entity<Document>()
+                .HasOne(d => d.University)
+                .WithMany(u => u.Documents)
+                .HasForeignKey(d => d.UniversityId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // =============== REVIEW AND TRANSACTION RELATIONSHIPS ===============
             modelBuilder.Entity<DocumentReview>()
                 .HasOne(dr => dr.Document)

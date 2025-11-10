@@ -195,3 +195,190 @@ textarea.doc-input {
 }
 
 
+/* UniversitySearch.css - Styling for university search dropdown */
+
+.university-search-container {
+    position: relative;
+    width: 100%;
+}
+
+.university-search-input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+    .university-search-input.university-selected {
+        border-color: #28a745;
+        background-color: #f0fff4;
+    }
+
+.university-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    margin-top: 4px;
+}
+
+.university-dropdown-loading,
+.university-dropdown-empty,
+.university-dropdown-error {
+    padding: 16px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+.university-dropdown-error {
+    color: #dc3545;
+}
+
+.university-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+}
+
+    .university-item:last-child {
+        border-bottom: none;
+    }
+
+    .university-item:hover,
+    .university-item-active {
+        background-color: #f8f9fa;
+    }
+
+.university-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    margin-right: 12px;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.university-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.university-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: #212529;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.university-location {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 2px;
+}
+
+.university-short-name {
+    font-size: 12px;
+    color: #868e96;
+    font-style: italic;
+}
+
+.university-name mark {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+/* Scrollbar styling */
+.university-dropdown::-webkit-scrollbar {
+    width: 8px;
+}
+
+.university-dropdown::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.university-dropdown::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+    .university-dropdown::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+/* Loading animation */
+.university-dropdown-loading::after {
+    content: '...';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0%, 20% {
+        content: '.';
+    }
+
+    40% {
+        content: '..';
+    }
+
+    60%, 100% {
+        content: '...';
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .university-dropdown {
+        max-height: 300px;
+    }
+
+    .university-item {
+        padding: 10px 12px;
+    }
+
+    .university-logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    .university-name {
+        font-size: 14px;
+    }
+
+    .university-location,
+    .university-short-name {
+        font-size: 12px;
+    }
+}
+
+/* Focus state */
+.university-search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Validation feedback */
+.university-search-input.is-invalid {
+    border-color: #dc3545;
+}
+
+    .university-search-input.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+

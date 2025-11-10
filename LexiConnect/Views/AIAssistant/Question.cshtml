@@ -215,10 +215,10 @@
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
-                const maxSize = 10 * 1024 * 1024; // 10MB
+                const maxSize = 5 * 1024 * 1024; // 5MB
 
                 if (file.size > maxSize) {
-                    alert(`File size (${formatFileSize(file.size)}) exceeds the maximum limit of 10MB. Please choose a smaller file.`);
+                    alert(`File size (${formatFileSize(file.size)}) exceeds the maximum limit of 5MB. Please choose a smaller file.`);
                     fileInput.value = '';
                     selectedFile = null;
                     filePreview.style.display = 'none';

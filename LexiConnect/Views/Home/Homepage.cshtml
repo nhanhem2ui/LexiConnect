@@ -5,6 +5,7 @@
 
 <head>
     <link rel="stylesheet" href="~/css/Home/Homepage.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
 
 <div class="dashboard-page">
@@ -17,6 +18,14 @@
         {
             <!-- Main Content -->
             <div class="main-content">
+                <!-- Welcome Banner -->
+                <div class="welcome-banner">
+                    <div class="welcome-content">
+                        <h1 class="welcome-title">Welcome back! 👋</h1>
+                        <p class="welcome-subtitle">Ready to explore and share knowledge today?</p>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="action-buttons">
                     <a href="#" class="btn-action">
@@ -38,93 +47,216 @@
                     <h2 class="section-title">Explore More</h2>
                     <div class="quick-buttons">
                         <a asp-controller="University" asp-action="AllUniversities" class="btn-see-all">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M5 8V17.0192M9 8V17M15 8V17M19 8V17.0192M5 17.0192C5.31428 17 5.70173 17 6.2 17H17.8C18.2983 17 18.6857 17 19 17.0192M5 17.0192C4.60779 17.0431 4.32953 17.097 4.09202 17.218C3.71569 17.4097 3.40973 17.7157 3.21799 18.092C3 18.5198 3 19.0799 3 20.2V21H21V20.2C21 19.0799 21 18.5198 20.782 18.092C20.5903 17.7157 20.2843 17.4097 19.908 17.218C19.6705 17.097 19.3922 17.0431 19 17.0192M3 5.5V8H21V5.5L12 3L3 5.5Z" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path> </g></svg>
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M5 8V17.0192M9 8V17M15 8V17M19 8V17.0192M5 17.0192C5.31428 17 5.70173 17 6.2 17H17.8C18.2983 17 18.6857 17 19 17.0192M5 17.0192C4.60779 17.0431 4.32953 17.097 4.09202 17.218C3.71569 17.4097 3.40973 17.7157 3.21799 18.092C3 18.5198 3 19.0799 3 20.2V21H21V20.2C21 19.0799 21 18.5198 20.782 18.092C20.5903 17.7157 20.2843 17.4097 19.908 17.218C19.6705 17.097 19.3922 17.0431 19 17.0192M3 5.5V8H21V5.5L12 3L3 5.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
                             See All Universities
-                            </a>
+                        </a>
                         <a href="#" class="btn-see-all">
-                            <svg fill="#000000" viewBox="0 0 16 16" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><path d="M16 6.28a1.23 1.23 0 0 0-.62-1.07l-6.74-4a1.27 1.27 0 0 0-1.28 0l-6.75 4a1.25 1.25 0 0 0 0 2.15l1.92 1.12v2.81a1.28 1.28 0 0 0 .62 1.09l4.25 2.45a1.28 1.28 0 0 0 1.24 0l4.25-2.45a1.28 1.28 0 0 0 .62-1.09V8.45l1.24-.73v2.72H16V6.28zm-3.73 5L8 13.74l-4.22-2.45V9.22l3.58 2.13a1.29 1.29 0 0 0 1.28 0l3.62-2.16zM8 10.27l-6.75-4L8 2.26l6.75 4z"></path></g></svg>
+                            <svg fill="currentColor" viewBox="0 0 16 16" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16 6.28a1.23 1.23 0 0 0-.62-1.07l-6.74-4a1.27 1.27 0 0 0-1.28 0l-6.75 4a1.25 1.25 0 0 0 0 2.15l1.92 1.12v2.81a1.28 1.28 0 0 0 .62 1.09l4.25 2.45a1.28 1.28 0 0 0 1.24 0l4.25-2.45a1.28 1.28 0 0 0 .62-1.09V8.45l1.24-.73v2.72H16V6.28zm-3.73 5L8 13.74l-4.22-2.45V9.22l3.58 2.13a1.29 1.29 0 0 0 1.28 0l3.62-2.16zM8 10.27l-6.75-4L8 2.26l6.75 4z" />
+                            </svg>
                             See All High Schools
-                            </a>
-                        <a href="#" class="btn-see-all">
-                            <svg viewBox="0 0 24 24" width="24" height="24" id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"><defs><style>.cls-1{fill:none;stroke:#020202;stroke-miterlimit:10;stroke-width:1.91px;}</style></defs><line class="cls-1" x1="6.27" y1="14.86" x2="13.91" y2="14.86"></line><line class="cls-1" x1="6.27" y1="11.05" x2="13.91" y2="11.05"></line><line class="cls-1" x1="6.27" y1="18.68" x2="13.91" y2="18.68"></line><polygon class="cls-1" points="16.77 8.18 16.77 22.5 3.41 22.5 3.41 5.32 13.91 5.32 16.77 8.18"></polygon><polyline class="cls-1" points="16.77 18.68 20.59 18.68 20.59 4.36 17.73 1.5 7.23 1.5 7.23 5.32"></polyline></g></svg>
+                        </a>
+                        <a href="@Url.Action("AllDocuments", "Document")" class="btn-see-all">
+                            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+                                <line x1="6.27" y1="14.86" x2="13.91" y2="14.86" stroke-width="1.91" />
+                                <line x1="6.27" y1="11.05" x2="13.91" y2="11.05" stroke-width="1.91" />
+                                <line x1="6.27" y1="18.68" x2="13.91" y2="18.68" stroke-width="1.91" />
+                                <polygon points="16.77 8.18 16.77 22.5 3.41 22.5 3.41 5.32 13.91 5.32 16.77 8.18" stroke-width="1.91" />
+                                <polyline points="16.77 18.68 20.59 18.68 20.59 4.36 17.73 1.5 7.23 1.5 7.23 5.32" stroke-width="1.91" />
+                            </svg>
                             See All Documents
-                            </a>
+                        </a>
                     </div>
                 </div>
 
-                <!-- Recently Viewed Section -->
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Recently Viewed</h2>
-                        <a asp-controller="Document" asp-action="Recent" class="see-all-link">See all →</a>
-                    </div>
-                    <div class="documents-grid">
-                        @foreach (var recent in Model.RecentVieweds)
-                        {
-                            <div class="document-card">
-                                <div class="document-header">
-                                    <div>
-                                        <h3 class="document-title">@recent.Document.Title</h3>
-                                        <p class="document-meta"># PRF192, #Programming</p>
-                                        <p class="document-meta">100 Document</p>
+                <!-- Recently Viewed Document Section -->
+                @if (Model.RecentVieweds != null && Model.RecentVieweds.Any())
+                {
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Recently Viewed Documents</h2>
+                            <a asp-controller="Document" asp-action="Recent" class="see-all-link">
+                                See all <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                        <div class="recently-viewed">
+                            @foreach (var recent in Model.RecentVieweds)
+                            {
+                                <div class="top-document-card"
+                                     onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = recent.Document.DocumentId })'">
+                                    <div class="document-preview">
+                                        <div class="document-preview-title">
+                                            @recent.Document.Title
+                                        </div>
+                                    </div>
+                                    <h3 class="document-title">@(string.IsNullOrEmpty(recent.Document.Description) ? recent.Document.Title : recent.Document.Description)</h3>
+
+                                    <div class="completion-badge">
+                                        <i class="bi bi-eye"></i>
+                                        <span class="completion-percentage">@recent.Document.ViewCount views</span>
+                                    </div>
+                                    <div class="document-time">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i> Viewed @recent.ViewedAt.ToString("MMM dd, yyyy")
+                                        </small>
                                     </div>
                                 </div>
-                                <div class="document-actions">
-                                    <button class="btn-add">+ Add to library</button>
-                                </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
-                </div>
+                }
 
                 <!-- Top Documents Section -->
-                <div class="content-section">
-                    <div class="section-header">
-                        <h2 class="section-title">Top Documents</h2>
-                        <a asp-controller="Document" asp-action="Top" class="see-all-link">See all →</a>
-                    </div>
-                    <div class="top-documents">
-                        @foreach (var doc in Model.TopDocuments)
-                        {
-                            var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
-                            && Model.UserLikedDocuments[doc.DocumentId];
+                @if (Model.TopDocuments != null && Model.TopDocuments.Any())
+                {
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Top Documents</h2>
+                            <a asp-controller="Document" asp-action="Top" class="see-all-link">
+                                See all <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                        <div class="top-documents">
+                            @foreach (var doc in Model.TopDocuments)
+                            {
+                                var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId)
+                                && Model.UserLikedDocuments[doc.DocumentId];
 
-                            <div class="top-document-card"
-                                 onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = doc.DocumentId })'">
-                                <div class="document-preview">
-                                    <div class="document-preview-title">
-                                        @doc.Title
+                                <div class="top-document-card"
+                                     onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = doc.DocumentId })'">
+                                    <div class="document-preview">
+                                        <div class="document-preview-title">
+                                            @doc.Title
+                                        </div>
+                                    </div>
+                                    <h3 class="document-title">@(string.IsNullOrEmpty(doc.Description) ? doc.Title : doc.Description)</h3>
+
+                                    <button class="like-button @(isLiked ? "liked" : "")"
+                                            data-id="@doc.DocumentId"
+                                            onclick="event.stopPropagation();">
+                                        @(isLiked ? "❤️" : "🤍")
+                                    </button>
+
+                                    @if (doc.DownloadCount > 0)
+                                    {
+                                        <span class="stats-divider"></span>
+                                        <span>⬇️ @doc.DownloadCount</span>
+                                    }
+
+                                    <div class="completion-badge">
+                                        <i class="bi bi-heart-fill"></i>
+                                        <span class="completion-percentage">@doc.LikeCount likes</span>
                                     </div>
                                 </div>
-                                <h3 class="document-title">@doc.Description</h3>
-
-                                <button class="like-button @(isLiked ? "liked" : "")"
-                                        data-id="@doc.DocumentId">
-                                    @(isLiked ? "👎" : "👍")
-                                </button>
-
-                                <button class="download-button">
-                                    <a asp-controller="Document" asp-action="Download" asp-route-id="@doc.DocumentId">
-                                        Download
-                                    </a>
-                                </button>
-
-                                <div class="completion-badge">
-                                    <span>👍🏼</span>
-                                    <span class="completion-percentage">@doc.LikeCount</span>
-                                </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     </div>
-                </div>
+                }
+
+                <!-- Empty State -->
+                @if ((Model.RecentVieweds == null || !Model.RecentVieweds.Any()) &&
+                            (Model.TopDocuments == null || !Model.TopDocuments.Any()))
+                {
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <h3>No documents yet</h3>
+                        <p>Start exploring and viewing documents to see them here!</p>
+                        <a asp-controller="University" asp-action="AllUniversities" class="btn-see-all">
+                            <i class="bi bi-search"></i> Browse Universities
+                        </a>
+                    </div>
+                }
             </div>
         }
         else
         {
-            <h1>Please log in</h1>
+            <div class="main-content">
+                <div class="login-prompt">
+                    <div class="login-icon">🔐</div>
+                    <h2>Please log in to continue</h2>
+                    <p>Access your personalized dashboard and explore shared knowledge</p>
+                    <a asp-controller="Auth" asp-action="Signin" class="btn-see-all">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign In
+                    </a>
+                </div>
+            </div>
         }
     </div>
 </div>
+<style>
+    /* Welcome Banner */
+    .welcome-banner {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        border-radius: 16px;
+        padding: 32px;
+        margin-bottom: 32px;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .welcome-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+        margin: 0 0 8px 0;
+    }
+
+    .welcome-subtitle {
+        font-size: 16px;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    /* Document time */
+    .document-time {
+        margin-top: 8px;
+        font-size: 12px;
+    }
+
+    /* Empty State */
+    .empty-state,
+    .login-prompt {
+        text-align: center;
+        padding: 80px 24px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .empty-icon,
+    .login-icon {
+        font-size: 64px;
+        margin-bottom: 24px;
+        animation: bounce 2s infinite;
+    }
+
+    @@keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .empty-state h3,
+    .login-prompt h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p,
+    .login-prompt p {
+        color: #6b7280;
+        margin-bottom: 24px;
+        font-size: 16px;
+    }
+</style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="~/js/Home/HomePage.js" asp-append-version="true"></script>
+

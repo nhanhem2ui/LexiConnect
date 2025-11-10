@@ -7,11 +7,11 @@ using LexiConnect.Services.Gemini;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Repositories;
+using Services;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -60,12 +60,30 @@ builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 builder.Services.AddScoped<IGenericRepository<UserFollowCourse>, UserFollowCourseRepository>();
 builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
 
-builder.Services.AddScoped<AppDbContext>();
+//Service
+builder.Services.AddScoped<IGenericService<Country>, CountryService>();
+builder.Services.AddScoped<IGenericService<Course>, CourseService>();
+builder.Services.AddScoped<IGenericService<Document>, DocumentService>();
+builder.Services.AddScoped<IGenericService<DocumentReview>, DocumentReviewService>();
+builder.Services.AddScoped<IGenericService<DocumentTag>, DocumentTagService>();
+builder.Services.AddScoped<IGenericService<DocumentLike>, DocumentLikeService>();
+builder.Services.AddScoped<IGenericService<Major>, MajorService>();
+builder.Services.AddScoped<IGenericService<PointTransaction>, PointTransactionService>();
+builder.Services.AddScoped<IGenericService<SubscriptionPlan>, SubscriptionPlanService>();
+builder.Services.AddScoped<IGenericService<University>, UniversityService>();
+builder.Services.AddScoped<IGenericService<UserFavorite>, UserFavoriteService>();
+builder.Services.AddScoped<IGenericService<UserFollower>, UserFollowerService>();
+builder.Services.AddScoped<IGenericService<RecentViewed>, RecentViewedService>();
+builder.Services.AddScoped<IGenericService<PaymentRecord>, PaymentRecordService>();
+builder.Services.AddScoped<IGenericService<Users>, UserService>();
+builder.Services.AddScoped<IGenericService<UserFollowCourse>, UserFollowCourseService>();
+builder.Services.AddScoped<IGenericService<Chat>, ChatService>();
+
 builder.Services.AddScoped<ISender, EmailSender>();
 
 //External
 builder.Services.AddScoped<IVnPayService, VnPayService>();
-builder.Services.AddSingleton<IFirebaseStorageService ,FirebaseStorageService>();
+builder.Services.AddSingleton<IFirebaseStorageService, FirebaseStorageService>();
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 
 // Configure Identity
@@ -145,11 +163,11 @@ builder.Services.Configure<KestrelServerOptions>(options =>
 
 var app = builder.Build();
 
-// make ASP.NET respect X-Forwarded headers from proxy
-app.UseForwardedHeaders(new ForwardedHeadersOptions
-{
-    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-});
+//// make ASP.NET respect X-Forwarded headers from proxy
+//app.UseForwardedHeaders(new ForwardedHeadersOptions
+//{
+//    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+//});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -163,14 +181,15 @@ app.UseStaticFiles();
 
 app.UseStatusCodePagesWithReExecute("/Home/NotFoundPage");
 
-app.UseForwardedHeaders(); 
+app.UseForwardedHeaders();
 app.UseCookiePolicy();
-app.UseSession();
 
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSession();
 
 app.MapControllerRoute(
     name: "default",
