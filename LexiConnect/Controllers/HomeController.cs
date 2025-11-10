@@ -1,10 +1,9 @@
 using BusinessObjects;
 using LexiConnect.Models;
 using LexiConnect.Models.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
 using System.Diagnostics;
 using System.Security.Claims;
 
@@ -12,24 +11,24 @@ namespace LexiConnect.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IGenericRepository<University> _universityRepository;
-        private readonly IGenericRepository<Major> _majorRepository;
-        private readonly IGenericRepository<Course> _courseRepository;
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<RecentViewed> _recentViewedRepository;
-        private readonly IGenericRepository<DocumentLike> _documentLikeRepository;
+        private readonly IGenericService<University> _universityService;
+        private readonly IGenericService<Major> _majorService;
+        private readonly IGenericService<Course> _courseService;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<RecentViewed> _recentViewedService;
+        private readonly IGenericService<DocumentLike> _documentLikeService;
 
-        public HomeController(IGenericRepository<University> universityRepository,
-            IGenericRepository<Course> courseRepository, IGenericRepository<Document> documentRepository,
-            IGenericRepository<RecentViewed> recentViewedRepository,
-            IGenericRepository<Major> majorRepository, IGenericRepository<DocumentLike> documentLikeRepository)
+        public HomeController(IGenericService<University> universityService,
+            IGenericService<Course> courseService, IGenericService<Document> documentService,
+            IGenericService<RecentViewed> recentViewedService,
+            IGenericService<Major> majorService, IGenericService<DocumentLike> documentLikeService)
         {
-            _universityRepository = universityRepository;
-            _courseRepository = courseRepository;
-            _documentRepository = documentRepository;
-            _recentViewedRepository = recentViewedRepository;
-            _documentLikeRepository = documentLikeRepository;
-            _majorRepository = majorRepository;
+            _universityService = universityService;
+            _courseService = courseService;
+            _documentService = documentService;
+            _recentViewedService = recentViewedService;
+            _documentLikeService = documentLikeService;
+            _majorService = majorService;
         }
 
         [HttpGet]
@@ -40,12 +39,12 @@ namespace LexiConnect.Controllers
                 return RedirectToAction("Homepage");
             }
 
-            var universities = _universityRepository
+            var universities = _universityService
                 .GetAllQueryable(u => u.IsVerified && u.Id != 0)
                 .OrderBy(u => Guid.NewGuid())
                 .Take(3);
 
-            var courses = _courseRepository
+            var courses = _courseService
                 .GetAllQueryable(c => c.IsActive && c.CourseId != 0)
                 .Include(c => c.Major)
                 .ThenInclude(m => m.University)
@@ -64,13 +63,15 @@ namespace LexiConnect.Controllers
         [HttpGet]
         public IActionResult Homepage()
         {
-            var recentvieweds = _recentViewedRepository
+            var recentvieweds = _recentViewedService
                 .GetAllQueryable()
+                .Include(r => r.Document)
                 .OrderBy(u => Guid.NewGuid())
                 .Take(3);
 
-            var topdocuments = _documentRepository
+            var topdocuments = _documentService
                 .GetAllQueryable()
+                .Where(c=>c.Status=="approved")
                 .Include(c => c.Course)
                 .Include(c => c.Uploader)
                 .Include(c => c.ApprovedByUser)
@@ -114,7 +115,7 @@ namespace LexiConnect.Controllers
                 return userLikedDocuments;
             }
 
-            var likedDocumentIds = await _documentLikeRepository
+            var likedDocumentIds = await _documentLikeService
                 .GetAllQueryable(dl => dl.UserId == userId, asNoTracking: true)
                 .Select(dl => dl.DocumentId)
                 .ToListAsync();

@@ -1,4 +1,4 @@
-﻿@model LexiConnect.Models.ViewModels.DetailDocumentViewModel
+﻿    @model LexiConnect.Models.ViewModels.DetailDocumentViewModel
 @{
     ViewData["Title"] = "Document Detail";
 }
@@ -21,22 +21,47 @@
 
         <div style="margin-top:20px;">
             <p><strong>Uploaded by:</strong></p>
-            <div class="uploader">
-                <img src="@Model.UploaderStats.AvatarUrl" alt="avatar" />
+            <a asp-controller="Profile"
+               asp-action="PublicUserProfile"
+               asp-route-id="@Model.UploaderStats.UploaderId"
+               class="uploader-link">
+
+                <div class="uploader">
+                    <img src="@Model.UploaderStats.AvatarUrl" alt="avatar" />
+                    <div>
+                        <div class="uploader-name">@Model.UploaderStats.FullName</div>
+                        <div class="uploader-university">@Model.UploaderStats.UniversityName</div>
+                    </div>
+                </div>
+
+            </a>
+            <!-- Thêm thống kê uploader -->
+            <div class="uploader-stats">
                 <div>
-                    <div>@Model.UploaderStats.FullName</div>
-                    <div style="font-size:12px; color:#888;">@Model.UploaderStats.UniversityName</div>
+                    <i class="fa-solid fa-user-group"></i>
+                    <span>@Model.UploaderStats.FollowerCount</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-file-lines"></i>
+                    <span>@Model.UploaderStats.UploadCount</span>
+                </div>
+                <div>
+                    <i class="fa-solid fa-heart"></i>
+                    <span>@Model.UploaderStats.LikeCount</span>
                 </div>
             </div>
         </div>
 
         <div style="margin-top:20px; font-size:14px; color:#444;">
             <p><strong>Views:</strong> @Model.Document.ViewCount</p>
-            <p><strong>Likes:</strong> @Model.Document.LikeCount</p>
+            @* <p><strong>Likes:</strong> @Model.Document.LikeCount</p> *@
             <p><strong>Can Download:</strong> @(Model.CanDownload ? "Yes" : "No")</p>
         </div>
 
         <button class="btn-download">Download</button>
+
+        <!-- Add Bootstrap Icons if not already included -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     </div>
 
     <!-- Preview phải -->
@@ -49,11 +74,42 @@
                     onclick="location.href='@Url.Action("Download", "Document", new { id = Model.Document.DocumentId })'">
                 Download
             </button>
-            <button class="btn-outline"><i class="fa fa-magic"></i> AI Tools</button>
-            <button class="btn-outline"><i class="fa fa-thumbs-up" style="color:green;"></i> 0</button>
+            <button class="btn-outline"
+                             data-bs-toggle="modal"
+                             data-bs-target="#aiToolsModal"
+                             data-document-id="@Model.Document.DocumentId">
+                <i class="fa fa-magic"></i> AI Tools
+            </button>
+            <button class="btn-outline"><i class="fa fa-thumbs-up" style="color:green;"></i>  <span>@Model.Document.LikeCount</span> </button>
             <button class="btn-outline"><i class="fa fa-thumbs-down" style="color:red;"></i> 0</button>
             <button class="btn-outline"><i class="fa fa-bookmark"></i> Save</button>
+
+            <!-- Nút Favorite -->
+            <button class="btn-outline btn-favorite @(Model.IsFavorited ? "active" : "")"
+                    id="favoriteBtn"
+                    data-document-id="@Model.Document.DocumentId">
+                <i class="fa-heart @(Model.IsFavorited ? "fa-solid" : "fa-regular")" id="favoriteIcon"></i>
+                <span id="favoriteText">@(Model.IsFavorited ? "Favorited" : "Favorite")</span>
+            </button>
+
             <button class="btn-outline"><i class="fa fa-share"></i></button>
+            
+            <!-- Admin Actions (only visible for admins) -->
+            @if (User.IsInRole("Admin"))
+            {
+                <button class="btn-outline btn-approve" 
+                        data-bs-toggle="modal"
+                        data-bs-target="#approveModal"
+                        data-document-id="@Model.Document.DocumentId">
+                    <i class="fa fa-check" style="color:green;"></i> Approve
+                </button>
+                <button class="btn-outline btn-deny" 
+                        data-bs-toggle="modal"
+                        data-bs-target="#denyModal"
+                        data-document-id="@Model.Document.DocumentId">
+                    <i class="fa fa-times" style="color:red;"></i> Deny
+                </button>
+            }
         </div>
 
         <!-- PDF Preview -->
@@ -61,58 +117,277 @@
     </div>
 </div>
 
+<!-- AI Tools Modal -->
+<div class="modal fade" id="aiToolsModal" tabindex="-1" aria-labelledby="aiToolsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-robot fs-4 me-3"></i>
+                    <div>
+                        <h5 class="modal-title mb-0" id="aiToolsModalLabel">AI Document Analysis</h5>
+                        <small>Ask questions about: @Model.Document.Title</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Chat Container -->
+                <div id="ai-chat-container" class="p-4" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                    <!-- Welcome Message -->
+                    <div class="message ai-message mb-3">
+                        <div class="d-flex align-items-start">
+                            <div class="avatar bg-secondary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; min-width: 40px;">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div class="message-content bg-white p-3 rounded shadow-sm" style="max-width: 80%;">
+                                <p class="mb-0">Hello! I've loaded the document "<strong>@Model.Document.Title</strong>". I can help you with:</p>
+                                <ul class="mb-0 mt-2">
+                                    <li>Summarizing the document</li>
+                                    <li>Answering questions about its content</li>
+                                    <li>Explaining difficult concepts</li>
+                                    <li>Finding specific information</li>
+                                </ul>
+                                <p class="mb-0 mt-2">What would you like to know?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="border-top p-3 bg-white">
+                    <div class="input-group">
+                        <input type="text"
+                               id="ai-question-input"
+                               class="form-control"
+                               placeholder="Ask about this document..."
+                               autocomplete="off">
+                        <button class="btn btn-secondary" type="button" id="ai-send-btn">
+                            <i class="bi bi-send-fill"></i> Ask
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-lightbulb"></i> Quick prompts:
+                        </small>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            <button class="btn btn-outline-secondary btn-sm ai-quick-prompt" data-prompt="Summarize this document">
+                                📄 Summarize
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm ai-quick-prompt" data-prompt="What are the main topics covered?">
+                                📚 Main Topics
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm ai-quick-prompt" data-prompt="Explain the key concepts">
+                                💡 Key Concepts
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Approve Document Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="approveModalLabel">
+                    <i class="fa fa-check-circle me-2"></i>Approve Document
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="approveForm">
+                    <input type="hidden" id="approveDocumentId" name="id" />
+                    
+                    <!-- VIP Document Checkbox -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isVipDocument" name="isPremiumOnly">
+                            <label class="form-check-label" for="isVipDocument">
+                                <strong>Tài liệu VIP</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted">Đánh dấu nếu đây là tài liệu VIP (chỉ dành cho thành viên Premium)</small>
+                    </div>
+
+                    <!-- Points Input -->
+                    <div class="mb-3">
+                        <label for="pointsAwarded" class="form-label">
+                            <strong>Điểm cho tài liệu <span class="text-danger">*</span></strong>
+                        </label>
+                        <input type="number" 
+                               class="form-control" 
+                               id="pointsAwarded" 
+                               name="pointsAwarded" 
+                               min="0" 
+                               max="1000" 
+                               value="0" 
+                               required>
+                        <small class="text-muted">Nhập số điểm để đánh giá chất lượng tài liệu (0-1000)</small>
+                        <div class="invalid-feedback">
+                            Vui lòng nhập số điểm hợp lệ (0-1000)
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="confirmApproveBtn">
+                    <i class="fa fa-check me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Deny Document Modal -->
+<div class="modal fade" id="denyModal" tabindex="-1" aria-labelledby="denyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="denyModalLabel">
+                    <i class="fa fa-times-circle me-2"></i>Deny Document
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="denyForm">
+                    <input type="hidden" id="denyDocumentId" name="id" />
+                    
+                    <!-- Rejection Reason Textarea -->
+                    <div class="mb-3">
+                        <label for="rejectionReason" class="form-label">
+                            <strong>Lý do từ chối <span class="text-danger">*</span></strong>
+                        </label>
+                        <textarea class="form-control" 
+                                  id="rejectionReason" 
+                                  name="rejectionReason" 
+                                  rows="4" 
+                                  maxlength="500" 
+                                  placeholder="Nhập lý do từ chối tài liệu này..."
+                                  required></textarea>
+                        <small class="text-muted">Nhập lý do từ chối (tối đa 500 ký tự)</small>
+                        <div class="invalid-feedback">
+                            Vui lòng nhập lý do từ chối
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDenyBtn">
+                    <i class="fa fa-times me-1"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add these styles if not already present -->
+<style>
+    .ai-message .message-content {
+        background-color: white;
+    }
+
+    .user-message .message-content {
+        background-color: #6c757d !important;
+        color: white;
+    }
+
+    .typing-indicator {
+        display: inline-block;
+    }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+            .typing-indicator span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .typing-indicator span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+    @@keyframes typing {
+        0%, 60%, 100%
+
+    {
+        transform: translateY(0);
+    }
+
+    30% {
+        transform: translateY(-10px);
+    }
+
+    }
+
+    #ai-chat-container {
+        scroll-behavior: smooth;
+    }
+
+    .message {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    }
+</style>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (TempData["Error"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops!',
+                text: '@TempData["Error"]',
+                confirmButtonText: 'OK'
+            });
+        </script>
+    }
+}
+
+
+
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
-@* <script>
-    const url = '@Url.Content(Model.FileUrl)';
-    const pdfjsLib = window['pdfjsLib'];
 
-    let container = document.getElementById("pdf-container");
-
-    pdfjsLib.getDocument(url).promise.then(function (pdf) {
-        console.log("PDF loaded", pdf.numPages);
-
-        let totalPages = Math.min(pdf.numPages, 5);
-
-        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
-            pdf.getPage(pageNum).then(function (page) {
-                let scale = 1.2;
-                let viewport = page.getViewport({ scale: scale });
-
-                let canvas = document.createElement("canvas");
-                canvas.style.display = "block";
-                canvas.style.margin = "0 auto 20px auto";
-                let context = canvas.getContext("2d");
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-
-                container.appendChild(canvas);
-
-                let renderContext = {
-                    canvasContext: context,
-                    viewport: viewport
-                };
-                page.render(renderContext);
-            });
-        }
-
-        if (pdf.numPages > totalPages) {
-            let more = document.createElement("div");
-            more.style.color = "red";
-            more.style.textAlign = "center";
-            more.style.fontWeight = "bold";
-            more.innerText = "Login or upgrade to view all pages.";
-            container.appendChild(more);
-        }
-    }).catch(err => {
-        console.error("PDF.js error:", err);
-    });
-</script> *@
+<!-- Anti-forgery token form for JavaScript -->
+<form asp-antiforgery="true" style="display: none;"></form>
 
 <script>
-    // Truyền url từ server xuống JS
+    // Truyền các URL từ server xuống JS
     window.pdfFileUrl = '@Url.Content(Model.FileUrl)';
+    window.toggleFavoriteUrl = '@Url.Action("ToggleFavorite", "Document")';
+    window.isPremiumOnly = @Model.IsPremiumOnly.ToString().ToLower(); // Thêm dòng này
+
+    window.approveDocumentUrl = '@Url.Action("ApproveDocument", "Admin")';
+    window.rejectDocumentUrl = '@Url.Action("RejectDocument", "Admin")';
+    window.adminManagementUrl = '@Url.Action("AdminManagement", "Admin")';
 </script>
 
 <script src="~/js/Document/DetailDocument.js"></script>

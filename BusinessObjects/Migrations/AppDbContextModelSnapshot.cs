@@ -158,6 +158,9 @@ namespace BusinessObjects.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("UniversityId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -173,6 +176,8 @@ namespace BusinessObjects.Migrations
                     b.HasIndex("ApprovedBy");
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("UniversityId");
 
                     b.HasIndex("UploaderId");
 
@@ -515,10 +520,10 @@ namespace BusinessObjects.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CourseId")
+                    b.Property<int?>("CourseId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DocumentId")
+                    b.Property<int?>("DocumentId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
@@ -1097,6 +1102,11 @@ namespace BusinessObjects.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("BusinessObjects.University", "University")
+                        .WithMany("Documents")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("BusinessObjects.Users", "Uploader")
                         .WithMany("UploadedDocuments")
                         .HasForeignKey("UploaderId")
@@ -1106,6 +1116,8 @@ namespace BusinessObjects.Migrations
                     b.Navigation("ApprovedByUser");
 
                     b.Navigation("Course");
+
+                    b.Navigation("University");
 
                     b.Navigation("Uploader");
                 });
@@ -1186,14 +1198,12 @@ namespace BusinessObjects.Migrations
                     b.HasOne("Course", "Course")
                         .WithMany()
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BusinessObjects.Document", "Document")
                         .WithMany()
                         .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("BusinessObjects.Users", "User")
                         .WithMany()
@@ -1375,6 +1385,11 @@ namespace BusinessObjects.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BusinessObjects.University", b =>
+                {
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("BusinessObjects.Users", b =>

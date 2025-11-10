@@ -255,3 +255,79 @@ CREATE INDEX [IX_Chats_SenderId] ON [Chats] ([SenderId]);
 
 -- Create index on ReceiverId
 CREATE INDEX [IX_Chats_ReceiverId] ON [Chats] ([ReceiverId]);
+GO
+-- ================================================
+-- TABLE: Quiz
+-- ================================================
+CREATE TABLE [dbo].[Quizzes] (
+    [QuizId] INT IDENTITY(1,1) PRIMARY KEY,
+    [CreatorId] NVARCHAR(450) NOT NULL, -- matches IdentityUser<string> key
+    [Title] NVARCHAR(200) NOT NULL,
+    [Description] NVARCHAR(1000) NULL,
+    [Subject] NVARCHAR(100) NULL,
+    [Difficulty] NVARCHAR(20) NOT NULL DEFAULT('Medium'),
+    [CourseId] INT NULL,
+    [UniversityId] INT NULL,
+    [IsPublic] BIT NOT NULL DEFAULT(0),
+    [IsActive] BIT NOT NULL DEFAULT(1),
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT(GETUTCDATE()),
+    [UpdatedAt] DATETIME2 NULL,
+
+    CONSTRAINT [FK_Quiz_Creator]
+        FOREIGN KEY ([CreatorId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE CASCADE,
+
+    CONSTRAINT [FK_Quiz_Course]
+        FOREIGN KEY ([CourseId]) REFERENCES [dbo].[Courses]([CourseId]) ON DELETE SET NULL,
+
+    CONSTRAINT [FK_Quiz_University]
+        FOREIGN KEY ([UniversityId]) REFERENCES [dbo].[Universities]([Id]) ON DELETE SET NULL
+);
+GO
+
+-- ================================================
+-- TABLE: QuizQuestion
+-- ================================================
+CREATE TABLE [dbo].[QuizQuestions] (
+    [QuestionId] INT IDENTITY(1,1) PRIMARY KEY,
+    [QuizId] INT NOT NULL,
+    [QuestionOrder] INT NOT NULL DEFAULT(0),
+    [QuestionText] NVARCHAR(MAX) NOT NULL,
+    [QuestionType] NVARCHAR(20) NOT NULL DEFAULT('MultipleChoice'),
+    [Points] INT NOT NULL DEFAULT(1),
+    [OptionA] NVARCHAR(500) NOT NULL,
+    [OptionB] NVARCHAR(500) NOT NULL,
+    [OptionC] NVARCHAR(500) NULL,
+    [OptionD] NVARCHAR(500) NULL,
+    [CorrectAnswer] NVARCHAR(1) NOT NULL,
+    [Explanation] NVARCHAR(1000) NULL,
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT(GETUTCDATE()),
+
+    CONSTRAINT [FK_QuizQuestion_Quiz]
+        FOREIGN KEY ([QuizId]) REFERENCES [dbo].[Quizzes]([QuizId]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_QuizQuestions_QuizId]
+    ON [dbo].[QuizQuestions]([QuizId]);
+GO
+
+-- ================================================
+-- TABLE: AIUsageLimit
+-- ================================================
+CREATE TABLE [dbo].[AIUsageLimits] (
+    [UsageLimitId] INT IDENTITY(1,1) PRIMARY KEY,
+    [UserId] NVARCHAR(450) NOT NULL,
+    [MonthlyLimit] INT NULL DEFAULT(10),
+    [UsedThisMonth] INT NOT NULL DEFAULT(0),
+    [MonthYear] NVARCHAR(7) NOT NULL,   -- format: YYYY-MM
+    [LastUsedAt] DATETIME2 NULL,
+    [LastResetDate] DATETIME2 NULL,
+
+    CONSTRAINT [FK_AIUsageLimit_User]
+        FOREIGN KEY ([UserId]) REFERENCES [dbo].[AspNetUsers]([Id]) ON DELETE CASCADE
+);
+GO
+
+CREATE INDEX [IX_AIUsageLimits_User_MonthYear]
+    ON [dbo].[AIUsageLimits]([UserId], [MonthYear]);
+GO

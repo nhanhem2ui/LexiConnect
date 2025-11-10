@@ -1,6 +1,11 @@
-﻿using LexiConnect.Services.Gemini;
+﻿using BusinessObjects;
+using LexiConnect.Services.Gemini;
+using LexiConnect.Services.Quizzes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Services;
+using System.Security.Claims;
 using System.Text;
 
 namespace LexiConnect.Controllers
@@ -10,17 +15,57 @@ namespace LexiConnect.Controllers
     {
         private readonly IGeminiService _gemini;
         private readonly IWebHostEnvironment _env;
-        private readonly long _maxFileSize = 10 * 1024 * 1024; // 10MB
+        private readonly IGenericService<AIUsageLimit> _usageLimitService;
+        private readonly IQuizGenerationService _quizGenerationService;
+        private readonly IGenericService<Quiz> _quizService;
+        private readonly IGenericService<Users> _userService;
+        private readonly long _maxFileSize = 5 * 1024 * 1024; // 5MB
 
-        public AIAssistantController(IGeminiService gemini, IWebHostEnvironment env)
+        public AIAssistantController(
+            IGeminiService gemini,
+            IWebHostEnvironment env,
+            IGenericService<AIUsageLimit> usageLimitService,
+            IQuizGenerationService quizGenerationService,
+            IGenericService<Quiz> quizService,
+            IGenericService<Users> userService)
         {
             _gemini = gemini;
             _env = env;
+            _usageLimitService = usageLimitService;
+            _quizService = quizService;
+            _quizGenerationService = quizGenerationService;
+            _userService = userService;
         }
 
-        public IActionResult Question()
+        public async Task<IActionResult> Question()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return RedirectToAction("Login", "Auth");
+
+            // Get usage stats for display
+            var stats = await GetUsageStatsAsync(userId);
+            ViewBag.UsageStats = stats;
+
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUsageStats()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            var stats = await GetUsageStatsAsync(userId);
+
+            return Ok(new
+            {
+                remaining = stats.Remaining,
+                used = stats.Used,
+                total = stats.Total,
+                isUnlimited = stats.Total == null
+            });
         }
 
         [HttpPost]
@@ -28,15 +73,42 @@ namespace LexiConnect.Controllers
         {
             try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { error = "User not authenticated" });
+
                 if (string.IsNullOrWhiteSpace(request.Question))
                 {
                     return BadRequest(new { error = "Question cannot be empty" });
                 }
 
+                // Check AI usage limit
+                var (canUse, message, _) = await CanUseAIAsync(userId);
+                if (!canUse)
+                {
+                    return StatusCode(429, new { error = message, limitReached = true });
+                }
+
+                // Record usage
+                await RecordUsageAsync(userId);
+
                 var contextualPrompt = BuildContextualPrompt(request.Question);
                 var answer = await _gemini.AskQuestionAsync(contextualPrompt);
 
-                return Ok(new { answer, timestamp = DateTime.UtcNow });
+                // Get updated stats
+                var stats = await GetUsageStatsAsync(userId);
+
+                return Ok(new
+                {
+                    answer,
+                    timestamp = DateTime.UtcNow,
+                    usageStats = new
+                    {
+                        remaining = stats.Remaining,
+                        used = stats.Used,
+                        total = stats.Total
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -45,15 +117,26 @@ namespace LexiConnect.Controllers
         }
 
         [HttpPost]
-        [RequestSizeLimit(10 * 1024 * 1024)] // 10MB limit
-        [RequestFormLimits(MultipartBodyLengthLimit = 10 * 1024 * 1024)]
+        [RequestSizeLimit(5 * 1024 * 1024)] // 5MB limit
+        [RequestFormLimits(MultipartBodyLengthLimit = 5 * 1024 * 1024)]
         public async Task<IActionResult> AskWithFile(AskRequestWithFile askRequest)
         {
             try
             {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Content("{\"error\": \"User not authenticated\"}", "application/json");
+
                 if (string.IsNullOrWhiteSpace(askRequest.Question))
                 {
                     return Content("{\"error\": \"Question cannot be empty\"}", "application/json");
+                }
+
+                // Check AI usage limit
+                var (canUse, message, _) = await CanUseAIAsync(userId);
+                if (!canUse)
+                {
+                    return Content($"{{\"error\": \"{message}\", \"limitReached\": true}}", "application/json");
                 }
 
                 string answer;
@@ -94,13 +177,94 @@ namespace LexiConnect.Controllers
                     answer = await _gemini.AskQuestionAsync(contextualPrompt);
                 }
 
-                return Ok(new { answer, timestamp = DateTime.UtcNow, hasFile = askRequest.File != null });
+                // Record usage AFTER successful response
+                await RecordUsageAsync(userId);
+
+                // Get updated stats
+                var stats = await GetUsageStatsAsync(userId);
+
+                return Ok(new
+                {
+                    answer,
+                    timestamp = DateTime.UtcNow,
+                    hasFile = askRequest.File != null,
+                    usageStats = new
+                    {
+                        remaining = stats.Remaining,
+                        used = stats.Used,
+                        total = stats.Total
+                    }
+                });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
                 return Content($"{{\"error\": \"An error occurred: {ex.Message}\"}}", "application/json");
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GenerateQuiz([FromBody] GenerateQuizRequest request)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { error = "User not authenticated" });
+
+                // Check AI usage limit
+                var (canUse, message, _) = await CanUseAIAsync(userId);
+                if (!canUse)
+                {
+                    return StatusCode(429, new { error = message, limitReached = true });
+                }
+
+                // Record usage
+                await RecordUsageAsync(userId);
+
+                // Generate quiz
+                var quizRequest = new QuizGenerationRequest
+                {
+                    UserId = userId,
+                    Title = request.Title,
+                    Description = request.Description,
+                    Subject = request.Subject,
+                    Difficulty = request.Difficulty ?? "Medium",
+                    NumberOfQuestions = request.NumberOfQuestions > 0 ? request.NumberOfQuestions : 5,
+                    CourseId = request.CourseId,
+                    UniversityId = request.UniversityId,
+                    IsPublic = request.IsPublic,
+                    AdditionalContext = request.AdditionalContext
+                };
+
+                var result = await _quizGenerationService.GenerateQuizAsync(quizRequest);
+
+                if (!result.Success)
+                {
+                    return StatusCode(500, new { error = result.Message });
+                }
+
+                // Get updated stats
+                var stats = await GetUsageStatsAsync(userId);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = result.Message,
+                    quizId = result.GeneratedQuiz?.QuizId,
+                    questionsGenerated = result.QuestionsGenerated,
+                    usageStats = new
+                    {
+                        remaining = stats.Remaining,
+                        used = stats.Used,
+                        total = stats.Total
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred generating the quiz", details = ex.Message });
             }
         }
 
@@ -133,17 +297,125 @@ namespace LexiConnect.Controllers
 
             return sb.ToString();
         }
-    }
 
-    public class AskRequest
-    {
-        public string Question { get; set; } = string.Empty;
-    }
-    public class AskRequestWithFile
-    {
-        public string Question { get; set; } = string.Empty;
+        public async Task<(bool CanUse, string Message, AIUsageLimit Limit)> CanUseAIAsync(string userId)
+        {
+            string currentMonth = DateTime.UtcNow.ToString("yyyy-MM");
 
-        public IFormFile? File { get; set; }
+            var limit = await _usageLimitService
+                .GetAllQueryable(l => l.UserId == userId && l.MonthYear == currentMonth)
+                .Include(l => l.User)
+                .FirstOrDefaultAsync();
 
+            var user = limit?.User ?? await _userService.GetAsync(u => u.Id == userId);
+            if (user == null)
+                return (false, "User not found", null!);
+
+            bool isPremium = user.SubscriptionPlanId == 2;
+            int? expectedLimit = isPremium ? null : 10;
+
+            if (limit == null)
+            {
+                limit = new AIUsageLimit
+                {
+                    UserId = userId,
+                    MonthYear = currentMonth,
+                    UsedThisMonth = 0,
+                    MonthlyLimit = expectedLimit,
+                    LastResetDate = DateTime.UtcNow
+                };
+                await _usageLimitService.AddAsync(limit);
+            }
+            else
+            {
+                bool needsUpdate = false;
+
+                var lastReset = limit.LastResetDate ?? DateTime.UtcNow.AddMonths(-1);
+                if (lastReset.Year != DateTime.UtcNow.Year || lastReset.Month != DateTime.UtcNow.Month)
+                {
+                    limit.UsedThisMonth = 0;
+                    limit.LastResetDate = DateTime.UtcNow;
+                    needsUpdate = true;
+                }
+
+                if (limit.MonthlyLimit != expectedLimit)
+                {
+                    limit.MonthlyLimit = expectedLimit;
+                    needsUpdate = true;
+                }
+
+                if (needsUpdate)
+                    await _usageLimitService.UpdateAsync(limit);
+            }
+
+            if (limit.MonthlyLimit == null)
+                return (true, "Unlimited usage", limit);
+
+            if (limit.UsedThisMonth >= limit.MonthlyLimit.Value)
+                return (false, $"Monthly AI limit reached ({limit.MonthlyLimit} requests). Upgrade to Premium for unlimited access.", limit);
+
+            int remaining = limit.MonthlyLimit.Value - limit.UsedThisMonth;
+            return (true, $"{remaining} requests remaining this month", limit);
+        }
+
+        public async Task<bool> RecordUsageAsync(string userId)
+        {
+            // Get the tracked AIUsageLimit from CanUseAIAsync
+            var (canUse, _, limit) = await CanUseAIAsync(userId);
+
+            if (limit == null)
+                return false;
+
+            limit.UsedThisMonth++;
+            limit.LastUsedAt = DateTime.UtcNow;
+            await _usageLimitService.UpdateAsync(limit);
+
+            return true;
+        }
+
+
+        public async Task<(int? Remaining, int Used, int? Total)> GetUsageStatsAsync(string userId)
+        {
+            string currentMonth = DateTime.UtcNow.ToString("yyyy-MM");
+
+            var limit = await _usageLimitService.GetAsync(l => l.UserId == userId && l.MonthYear == currentMonth);
+
+            if (limit == null)
+            {
+                // Initialize usage record if missing
+                await CanUseAIAsync(userId);
+                limit = await _usageLimitService.GetAsync(l => l.UserId == userId && l.MonthYear == currentMonth);
+            }
+
+            if (limit == null)
+                return (10, 0, 10); // default free tier
+
+            int? remaining = limit.MonthlyLimit.HasValue ? limit.MonthlyLimit.Value - limit.UsedThisMonth : null;
+            return (remaining, limit.UsedThisMonth, limit.MonthlyLimit);
+        }
+
+        public class AskRequest
+        {
+            public string Question { get; set; } = string.Empty;
+        }
+
+        public class AskRequestWithFile
+        {
+            public string Question { get; set; } = string.Empty;
+            public IFormFile? File { get; set; }
+        }
+
+        public class GenerateQuizRequest
+        {
+            public string Title { get; set; } = string.Empty;
+            public string? Description { get; set; }
+            public string Subject { get; set; } = string.Empty;
+            public string? Difficulty { get; set; }
+            public int NumberOfQuestions { get; set; } = 5;
+            public int? CourseId { get; set; }
+            public int? UniversityId { get; set; }
+            public bool IsPublic { get; set; } = false;
+            public string? AdditionalContext { get; set; }
+        }
     }
 }

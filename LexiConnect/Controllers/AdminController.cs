@@ -5,31 +5,40 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Repositories;
+using Services;
+using System.IO;
+using System.Text.Json.Serialization;
 
 namespace LexiConnect.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly IGenericRepository<Document> _documentRepository;
-        private readonly IGenericRepository<Users> _usersRepository;
+        private readonly IGenericService<Document> _documentService;
+        private readonly IGenericService<Users> _usersService;
         private readonly UserManager<Users> _userManager;
-        public AdminController(IGenericRepository<Document> documentRepository, IGenericRepository<Users> userRepository, UserManager<Users> userManager)
+        private readonly IWebHostEnvironment _environment;
+        
+        public AdminController(
+            IGenericService<Document> documentService, 
+            IGenericService<Users> userService, 
+            UserManager<Users> userManager,
+            IWebHostEnvironment environment)
         {
-            _documentRepository = documentRepository;
-            _usersRepository = userRepository;
+            _documentService = documentService;
+            _usersService = userService;
             _userManager = userManager;
+            _environment = environment;
         }
 
         [HttpGet]
         public async Task<IActionResult> AdminManagement()
         {
-            var totalDocuments = _documentRepository.GetAllQueryable()
+            var totalDocuments = _documentService.GetAllQueryable()
                 .Include(d => d.Course)
                 .Include(d => d.Uploader);
 
-            var users = _usersRepository.GetAllQueryable().Include(u => u.SubscriptionPlan);
+            var users = _usersService.GetAllQueryable().Include(u => u.SubscriptionPlan);
             var pendingDocuments = totalDocuments.Where(d => d.Status == "pending" || d.Status == "processing");
             var flaggedContent = totalDocuments.Where(d => d.Status == "flagged");
 
@@ -70,7 +79,7 @@ namespace LexiConnect.Controllers
             ViewBag.SortOrder = sortOrder;
 
             // Start with base query including related entities
-            var query = _documentRepository.GetAllQueryable()
+            var query = _documentService.GetAllQueryable()
                 .Include(d => d.Uploader)
                     .ThenInclude(u => u.University)
                 .Include(d => d.Course)
@@ -154,7 +163,7 @@ namespace LexiConnect.Controllers
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
 
             // Calculate statistics
-            var allDocuments = await _documentRepository.GetAllQueryable().ToListAsync();
+            var allDocuments = await _documentService.GetAllQueryable().ToListAsync();
 
             var model = new DocumentManagementViewModel
             {
@@ -231,7 +240,7 @@ namespace LexiConnect.Controllers
 
             // Course filter dropdown (populated dynamically)
             var courseOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Courses" } };
-            var courses = _documentRepository.GetAllQueryable()
+            var courses = _documentService.GetAllQueryable()
                 .Include(d => d.Course)
                 .Select(d => d.Course)
                 .Distinct()
@@ -250,7 +259,7 @@ namespace LexiConnect.Controllers
 
             // Uploader filter dropdown (populated dynamically)
             var uploaderOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Uploaders" } };
-            var uploaders = _documentRepository.GetAllQueryable()
+            var uploaders = _documentService.GetAllQueryable()
                 .Include(d => d.Uploader)
                 .Select(d => d.Uploader)
                 .Distinct()
@@ -271,42 +280,221 @@ namespace LexiConnect.Controllers
 
         // Document action methods
         [HttpPost]
-        public async Task<IActionResult> ApproveDocument(int id)
-        {
-            var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
-            if (document != null)
-            {
-                document.Status = "approved";
-                document.ApprovedAt = DateTime.Now;
-                await _documentRepository.UpdateAsync(document);
-            }
-            return RedirectToAction(nameof(DocumentManagement));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RejectDocument(int id, string rejectionReason = "")
-        {
-            var document = await _documentRepository.GetAsync(d => d.DocumentId == id);
-            if (document != null)
-            {
-                document.Status = "rejected";
-                document.RejectionReason = rejectionReason;
-                await _documentRepository.UpdateAsync(document);
-            }
-            return RedirectToAction(nameof(DocumentManagement));
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> DeleteDocument(int id)
+        public async Task<IActionResult> ApproveDocument(int id, bool isPremiumOnly = false, int pointsAwarded = 0)
         {
             try
             {
-                await _documentRepository.DeleteAsync(id);
+                // Get document with uploader included
+                var document = await _documentService.GetAllQueryable()
+                    .Include(d => d.Uploader)
+                    .FirstOrDefaultAsync(d => d.DocumentId == id);
+
+                if (document != null)
+                {
+                    // Validate points
+                    if (pointsAwarded < 0 || pointsAwarded > 1000)
+                    {
+                        TempData["Error"] = "Điểm phải trong khoảng 0-1000";
+                        return RedirectToAction(nameof(AdminManagement));
+                    }
+
+                    // Check if document was previously approved to avoid adding points multiple times
+                    bool wasPreviouslyApproved = document.Status == "approved";
+
+                    // Update document
+                    document.Status = "approved";
+                    document.ApprovedAt = DateTime.Now;
+                    document.IsPremiumOnly = isPremiumOnly;
+                    document.PointsAwarded = pointsAwarded;
+                    document.ApprovedBy = _userManager.GetUserId(User);
+                    document.UpdatedAt = DateTime.UtcNow;
+                    
+                    await _documentService.UpdateAsync(document);
+
+                    // Update uploader's points only if document was not previously approved
+                    // This prevents adding points multiple times if admin re-approves the document
+                    if (document.Uploader != null && !wasPreviouslyApproved && pointsAwarded > 0)
+                    {
+                        // First time approval: add points to uploader
+                        document.Uploader.PointsBalance += pointsAwarded;
+                        document.Uploader.TotalPointsEarned += pointsAwarded;
+                        
+                        // Save uploader changes
+                        await _usersService.UpdateAsync(document.Uploader);
+                    }
+                    
+                    string successMessage = "Tài liệu đã được phê duyệt thành công";
+                    if (!wasPreviouslyApproved && pointsAwarded > 0)
+                    {
+                        successMessage += $" và {pointsAwarded} điểm đã được cộng cho người upload";
+                    }
+                    else if (wasPreviouslyApproved)
+                    {
+                        successMessage += " (đã được phê duyệt trước đó)";
+                    }
+                    
+                    TempData["Success"] = successMessage;
+                }
+                else
+                {
+                    TempData["Error"] = "Không tìm thấy tài liệu";
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Có lỗi xảy ra khi phê duyệt tài liệu: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(AdminManagement));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RejectDocument([FromBody] RejectDocumentRequest request)
+        {
+            try
+            {
+                if (request == null || request.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid document ID." });
+                }
+
+                // Validate rejection reason (optional but if provided, check length)
+                if (!string.IsNullOrWhiteSpace(request.RejectionReason) && request.RejectionReason.Length > 500)
+                {
+                    return Json(new { success = false, message = "Lý do từ chối không được vượt quá 500 ký tự." });
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == request.Id);
+                if (document == null)
+                {
+                    return Json(new { success = false, message = "Không tìm thấy tài liệu." });
+                }
+
+                document.Status = "rejected";
+                document.RejectionReason = request.RejectionReason?.Trim() ?? string.Empty;
+                document.UpdatedAt = DateTime.UtcNow;
+                await _documentService.UpdateAsync(document);
+                
+                return Json(new { success = true, message = "Tài liệu đã bị từ chối thành công." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Có lỗi xảy ra khi từ chối tài liệu: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteDocument([FromBody] DeleteDocumentRequest request)
+        {
+            try
+            {
+                if (request == null || request.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid document ID." });
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == request.Id);
+                if (document == null)
+                {
+                    return Json(new { success = false, message = "Document not found." });
+                }
+
+                // Delete physical files
+                if (!string.IsNullOrEmpty(document.FilePath))
+                {
+                    string fullPath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        System.IO.File.Delete(fullPath);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(document.FilePDFpath))
+                {
+                    string pdfPath = Path.Combine(_environment.WebRootPath, document.FilePDFpath.TrimStart('/'));
+                    if (System.IO.File.Exists(pdfPath))
+                    {
+                        System.IO.File.Delete(pdfPath);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(document.ThumbnailUrl))
+                {
+                    string thumbnailPath = Path.Combine(_environment.WebRootPath, document.ThumbnailUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(thumbnailPath))
+                    {
+                        System.IO.File.Delete(thumbnailPath);
+                    }
+                }
+
+                // Delete from database
+                await _documentService.DeleteAsync(request.Id);
                 return Json(new { success = true, message = "Document deleted successfully." });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Error deleting document: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateDocument([FromBody] UpdateDocumentRequest request)
+        {
+            try
+            {
+                if (request == null || request.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid document ID." });
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == request.Id);
+                if (document == null)
+                {
+                    return Json(new { success = false, message = "Document not found." });
+                }
+
+                // Update PointsToDownload if provided
+                if (request.PointsToDownload.HasValue)
+                {
+                    if (request.PointsToDownload.Value < 0 || request.PointsToDownload.Value > 1000)
+                    {
+                        return Json(new { success = false, message = "PointsToDownload must be between 0 and 1000." });
+                    }
+                    document.PointsToDownload = request.PointsToDownload.Value;
+                }
+
+                // Update IsPremiumOnly if provided
+                if (request.IsPremiumOnly.HasValue)
+                {
+                    document.IsPremiumOnly = request.IsPremiumOnly.Value;
+                }
+
+                // Update Status if provided
+                if (!string.IsNullOrEmpty(request.Status))
+                {
+                    var validStatuses = new[] { "pending", "approved", "rejected", "flagged", "processing" };
+                    if (!validStatuses.Contains(request.Status.ToLower()))
+                    {
+                        return Json(new { success = false, message = "Invalid status. Valid statuses: pending, approved, rejected, flagged, processing." });
+                    }
+                    document.Status = request.Status.ToLower();
+                    
+                    // Set ApprovedAt if status is approved
+                    if (request.Status.ToLower() == "approved" && !document.ApprovedAt.HasValue)
+                    {
+                        document.ApprovedAt = DateTime.UtcNow;
+                        document.ApprovedBy = _userManager.GetUserId(User);
+                    }
+                }
+
+                document.UpdatedAt = DateTime.UtcNow;
+                await _documentService.UpdateAsync(document);
+
+                return Json(new { success = true, message = "Document updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error updating document: " + ex.Message });
             }
         }
         [HttpGet]
@@ -327,7 +515,7 @@ namespace LexiConnect.Controllers
             ViewBag.SortBy = sortBy;
             ViewBag.SortOrder = sortOrder;
 
-            var query = _usersRepository.GetAllQueryable()
+            var query = _usersService.GetAllQueryable()
                 .Include(u => u.University)
                 .Include(u => u.Major)
                 .Include(u => u.SubscriptionPlan)
@@ -405,7 +593,7 @@ namespace LexiConnect.Controllers
                 .ToListAsync();
 
             var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
-            var allUsers = await _usersRepository.GetAllQueryable().ToListAsync();
+            var allUsers = await _usersService.GetAllQueryable().ToListAsync();
 
             var model = new UserManagementViewModel
             {
@@ -460,7 +648,7 @@ namespace LexiConnect.Controllers
             }, "Value", "Text", sortOrder);
 
             var universityOptions = new List<SelectListItem> { new SelectListItem { Value = "", Text = "All Universities" } };
-            var universities = _usersRepository.GetAllQueryable()
+            var universities = _usersService.GetAllQueryable()
                 .Include(u => u.University)
                 .Where(u => u.University != null)
                 .Select(u => u.University)
@@ -548,7 +736,7 @@ namespace LexiConnect.Controllers
         {
             try
             {
-                var user = await _usersRepository.GetAsync(u => u.Id == id);
+                var user = await _usersService.GetAsync(u => u.Id == id);
                 if (user != null)
                 {
                     user.PointsBalance += pointsChange;
@@ -556,7 +744,7 @@ namespace LexiConnect.Controllers
                     {
                         user.TotalPointsEarned += pointsChange;
                     }
-                    await _usersRepository.UpdateAsync(user);
+                    await _usersService.UpdateAsync(user);
                     return Json(new { success = true, message = "Points adjusted successfully." });
                 }
                 return Json(new { success = false, message = "User not found." });
@@ -566,5 +754,38 @@ namespace LexiConnect.Controllers
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
+    }
+
+    // Request model for UpdateDocument
+    public class UpdateDocumentRequest
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        
+        [JsonPropertyName("pointsToDownload")]
+        public int? PointsToDownload { get; set; }
+        
+        [JsonPropertyName("isPremiumOnly")]
+        public bool? IsPremiumOnly { get; set; }
+        
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+    }
+
+    // Request model for DeleteDocument
+    public class DeleteDocumentRequest
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+    }
+
+    // Request model for RejectDocument
+    public class RejectDocumentRequest
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        
+        [JsonPropertyName("rejectionReason")]
+        public string? RejectionReason { get; set; }
     }
 }

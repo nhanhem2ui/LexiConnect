@@ -4,7 +4,24 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeSearchAndFilters();
     initializeModals();
     highlightSearchTerms();
+    initializeEditButtons();
 });
+
+// Initialize edit document buttons
+function initializeEditButtons() {
+    const editButtons = document.querySelectorAll('.edit-document-btn');
+    editButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const documentId = parseInt(this.getAttribute('data-document-id'));
+            const documentTitle = this.getAttribute('data-document-title');
+            const pointsToDownload = parseInt(this.getAttribute('data-points-to-download')) || 0;
+            const isPremiumOnly = this.getAttribute('data-is-premium-only') === 'true';
+            const status = this.getAttribute('data-status');
+            
+            showEditModal(documentId, documentTitle, pointsToDownload, isPremiumOnly, status);
+        });
+    });
+}
 
 // Initialize search and filter functionality
 function initializeSearchAndFilters() {
@@ -48,6 +65,7 @@ function initializeModals() {
         if (e.target.classList.contains('modal')) {
             closeDeleteModal();
             closeRejectModal();
+            closeEditModal();
         }
     });
 
@@ -56,6 +74,7 @@ function initializeModals() {
         if (e.key === 'Escape') {
             closeDeleteModal();
             closeRejectModal();
+            closeEditModal();
         }
     });
 }
@@ -200,6 +219,97 @@ function performRejectDocument(documentId, rejectionReason) {
 
 function closeRejectModal() {
     const modal = document.getElementById('rejectModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Edit document functionality
+function showEditModal(documentId, documentTitle, pointsToDownload, isPremiumOnly, status) {
+    const modal = document.getElementById('editModal');
+    const titleSpan = document.getElementById('editDocumentTitle');
+    const pointsInput = document.getElementById('editPointsToDownload');
+    const premiumCheckbox = document.getElementById('editIsPremiumOnly');
+    const statusSelect = document.getElementById('editStatus');
+    const confirmBtn = document.getElementById('confirmEditBtn');
+
+    if (!modal || !titleSpan || !pointsInput || !premiumCheckbox || !statusSelect || !confirmBtn) {
+        console.error('Edit modal elements not found');
+        return;
+    }
+
+    titleSpan.textContent = documentTitle;
+    pointsInput.value = pointsToDownload || 0;
+    premiumCheckbox.checked = isPremiumOnly || false;
+    statusSelect.value = status || 'pending';
+    modal.style.display = 'block';
+
+    // Remove any existing event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    // Add new event listener
+    newConfirmBtn.addEventListener('click', function () {
+        performUpdateDocument(documentId);
+    });
+}
+
+function performUpdateDocument(documentId) {
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmEditBtn');
+    const originalText = confirmBtn.textContent;
+    confirmBtn.textContent = 'Saving...';
+    confirmBtn.disabled = true;
+
+    const pointsToDownload = parseInt(document.getElementById('editPointsToDownload').value) || null;
+    const isPremiumOnly = document.getElementById('editIsPremiumOnly').checked;
+    const status = document.getElementById('editStatus').value;
+
+    // Build request body with only provided values
+    const requestBody = {
+        id: documentId
+    };
+
+    if (pointsToDownload !== null) {
+        requestBody.pointsToDownload = pointsToDownload;
+    }
+
+    requestBody.isPremiumOnly = isPremiumOnly;
+    requestBody.status = status;
+
+    fetch('/Admin/UpdateDocument', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': getAntiForgeryToken()
+        },
+        body: JSON.stringify(requestBody)
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Document updated successfully', 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('An error occurred while updating the document', 'error');
+        })
+        .finally(() => {
+            // Reset button state
+            confirmBtn.textContent = originalText;
+            confirmBtn.disabled = false;
+            closeEditModal();
+        });
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editModal');
     if (modal) {
         modal.style.display = 'none';
     }

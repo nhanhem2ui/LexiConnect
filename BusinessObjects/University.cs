@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data;
 
 namespace BusinessObjects
 {
@@ -18,5 +19,6 @@ namespace BusinessObjects
         public bool IsVerified { get; set; }
         public string LogoUrl { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public virtual ICollection<Document> Documents { get; set; }
     }
 }
