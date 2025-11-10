@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Services;
+using System.IO;
+using System.Text.Json.Serialization;
 
 namespace LexiConnect.Controllers
 {
@@ -15,11 +17,18 @@ namespace LexiConnect.Controllers
         private readonly IGenericService<Document> _documentService;
         private readonly IGenericService<Users> _usersService;
         private readonly UserManager<Users> _userManager;
-        public AdminController(IGenericService<Document> documentService, IGenericService<Users> userService, UserManager<Users> userManager)
+        private readonly IWebHostEnvironment _environment;
+        
+        public AdminController(
+            IGenericService<Document> documentService, 
+            IGenericService<Users> userService, 
+            UserManager<Users> userManager,
+            IWebHostEnvironment environment)
         {
             _documentService = documentService;
             _usersService = userService;
             _userManager = userManager;
+            _environment = environment;
         }
 
         [HttpGet]
@@ -340,57 +349,152 @@ namespace LexiConnect.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RejectDocument(int id, string rejectionReason = "")
+        public async Task<IActionResult> RejectDocument([FromBody] RejectDocumentRequest request)
         {
             try
             {
-                // Validate rejection reason
-                if (string.IsNullOrWhiteSpace(rejectionReason))
+                if (request == null || request.Id <= 0)
                 {
-                    TempData["Error"] = "Vui lòng nhập lý do từ chối";
-                    return RedirectToAction(nameof(AdminManagement));
+                    return Json(new { success = false, message = "Invalid document ID." });
                 }
 
-                if (rejectionReason.Length > 500)
+                // Validate rejection reason (optional but if provided, check length)
+                if (!string.IsNullOrWhiteSpace(request.RejectionReason) && request.RejectionReason.Length > 500)
                 {
-                    TempData["Error"] = "Lý do từ chối không được vượt quá 500 ký tự";
-                    return RedirectToAction(nameof(AdminManagement));
+                    return Json(new { success = false, message = "Lý do từ chối không được vượt quá 500 ký tự." });
                 }
 
-                var document = await _documentService.GetAsync(d => d.DocumentId == id);
-                if (document != null)
+                var document = await _documentService.GetAsync(d => d.DocumentId == request.Id);
+                if (document == null)
                 {
-                    document.Status = "rejected";
-                    document.RejectionReason = rejectionReason.Trim();
-                    document.UpdatedAt = DateTime.UtcNow;
-                    await _documentService.UpdateAsync(document);
-                    
-                    TempData["Success"] = "Tài liệu đã bị từ chối";
+                    return Json(new { success = false, message = "Không tìm thấy tài liệu." });
                 }
-                else
-                {
-                    TempData["Error"] = "Không tìm thấy tài liệu";
-                }
+
+                document.Status = "rejected";
+                document.RejectionReason = request.RejectionReason?.Trim() ?? string.Empty;
+                document.UpdatedAt = DateTime.UtcNow;
+                await _documentService.UpdateAsync(document);
+                
+                return Json(new { success = true, message = "Tài liệu đã bị từ chối thành công." });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Có lỗi xảy ra khi từ chối tài liệu: " + ex.Message;
+                return Json(new { success = false, message = "Có lỗi xảy ra khi từ chối tài liệu: " + ex.Message });
             }
-            
-            return RedirectToAction(nameof(AdminManagement));
         }
 
         [HttpPost]
-        public async Task<IActionResult> DeleteDocument(int id)
+        public async Task<IActionResult> DeleteDocument([FromBody] DeleteDocumentRequest request)
         {
             try
             {
-                await _documentService.DeleteAsync(id);
+                if (request == null || request.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid document ID." });
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == request.Id);
+                if (document == null)
+                {
+                    return Json(new { success = false, message = "Document not found." });
+                }
+
+                // Delete physical files
+                if (!string.IsNullOrEmpty(document.FilePath))
+                {
+                    string fullPath = Path.Combine(_environment.WebRootPath, document.FilePath.TrimStart('/'));
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        System.IO.File.Delete(fullPath);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(document.FilePDFpath))
+                {
+                    string pdfPath = Path.Combine(_environment.WebRootPath, document.FilePDFpath.TrimStart('/'));
+                    if (System.IO.File.Exists(pdfPath))
+                    {
+                        System.IO.File.Delete(pdfPath);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(document.ThumbnailUrl))
+                {
+                    string thumbnailPath = Path.Combine(_environment.WebRootPath, document.ThumbnailUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(thumbnailPath))
+                    {
+                        System.IO.File.Delete(thumbnailPath);
+                    }
+                }
+
+                // Delete from database
+                await _documentService.DeleteAsync(request.Id);
                 return Json(new { success = true, message = "Document deleted successfully." });
             }
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Error deleting document: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateDocument([FromBody] UpdateDocumentRequest request)
+        {
+            try
+            {
+                if (request == null || request.Id <= 0)
+                {
+                    return Json(new { success = false, message = "Invalid document ID." });
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == request.Id);
+                if (document == null)
+                {
+                    return Json(new { success = false, message = "Document not found." });
+                }
+
+                // Update PointsToDownload if provided
+                if (request.PointsToDownload.HasValue)
+                {
+                    if (request.PointsToDownload.Value < 0 || request.PointsToDownload.Value > 1000)
+                    {
+                        return Json(new { success = false, message = "PointsToDownload must be between 0 and 1000." });
+                    }
+                    document.PointsToDownload = request.PointsToDownload.Value;
+                }
+
+                // Update IsPremiumOnly if provided
+                if (request.IsPremiumOnly.HasValue)
+                {
+                    document.IsPremiumOnly = request.IsPremiumOnly.Value;
+                }
+
+                // Update Status if provided
+                if (!string.IsNullOrEmpty(request.Status))
+                {
+                    var validStatuses = new[] { "pending", "approved", "rejected", "flagged", "processing" };
+                    if (!validStatuses.Contains(request.Status.ToLower()))
+                    {
+                        return Json(new { success = false, message = "Invalid status. Valid statuses: pending, approved, rejected, flagged, processing." });
+                    }
+                    document.Status = request.Status.ToLower();
+                    
+                    // Set ApprovedAt if status is approved
+                    if (request.Status.ToLower() == "approved" && !document.ApprovedAt.HasValue)
+                    {
+                        document.ApprovedAt = DateTime.UtcNow;
+                        document.ApprovedBy = _userManager.GetUserId(User);
+                    }
+                }
+
+                document.UpdatedAt = DateTime.UtcNow;
+                await _documentService.UpdateAsync(document);
+
+                return Json(new { success = true, message = "Document updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error updating document: " + ex.Message });
             }
         }
         [HttpGet]
@@ -650,5 +754,38 @@ namespace LexiConnect.Controllers
                 return Json(new { success = false, message = "Error: " + ex.Message });
             }
         }
+    }
+
+    // Request model for UpdateDocument
+    public class UpdateDocumentRequest
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        
+        [JsonPropertyName("pointsToDownload")]
+        public int? PointsToDownload { get; set; }
+        
+        [JsonPropertyName("isPremiumOnly")]
+        public bool? IsPremiumOnly { get; set; }
+        
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+    }
+
+    // Request model for DeleteDocument
+    public class DeleteDocumentRequest
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+    }
+
+    // Request model for RejectDocument
+    public class RejectDocumentRequest
+    {
+        [JsonPropertyName("id")]
+        public int Id { get; set; }
+        
+        [JsonPropertyName("rejectionReason")]
+        public string? RejectionReason { get; set; }
     }
 }
