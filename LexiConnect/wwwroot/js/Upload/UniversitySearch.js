@@ -96,7 +96,15 @@ function renderUniversityList(universities, dropdown, hiddenInput, input) {
     // Add click handlers
     dropdown.querySelectorAll('.university-item').forEach(item => {
         item.addEventListener('click', function () {
-            selectUniversity(this, hiddenInput, input, dropdown);
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+
+            // Gán giá trị vào input hidden và text input
+            hiddenInput.value = id;
+            input.value = name;
+
+            // Ẩn dropdown
+            dropdown.style.display = 'none';
         });
     });
 }

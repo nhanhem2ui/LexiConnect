@@ -265,6 +265,8 @@
     // Truyền các URL từ server xuống JS
     window.pdfFileUrl = '@Url.Content(Model.FileUrl)';
     window.toggleFavoriteUrl = '@Url.Action("ToggleFavorite", "Document")';
+    window.isPremiumOnly = @Model.IsPremiumOnly.ToString().ToLower(); // Thêm dòng này
+
 </script>
 
 <script src="~/js/Document/DetailDocument.js"></script>

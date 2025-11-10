@@ -2,6 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", function () {
     const url = window.pdfFileUrl;
+    const isPremiumOnly = window.isPremiumOnly; // Lấy từ biến global
     const pdfjsLib = window['pdfjsLib'];
     let container = document.getElementById("pdf-container");
 
@@ -13,8 +14,16 @@ document.addEventListener("DOMContentLoaded", function () {
     pdfjsLib.getDocument(url).promise.then(function (pdf) {
         console.log("PDF loaded with", pdf.numPages, "pages");
 
-        // Chỉ hiển thị 2 trang đầu tiên
-        const pagesToShow = 2;
+        // Xác định số trang hiển thị dựa trên IsPremiumOnly
+        let pagesToShow;
+        if (isPremiumOnly) {
+            // Nếu là Premium content, chỉ hiển thị 2 trang đầu
+            pagesToShow = 2;
+        } else {
+            // Nếu không phải Premium, hiển thị tất cả
+            pagesToShow = pdf.numPages;
+        }
+
         const totalPages = Math.min(pdf.numPages, pagesToShow);
 
         // Render từng trang
@@ -62,8 +71,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        // Hiển thị thông báo nếu có nhiều hơn 2 trang
-        if (pdf.numPages > pagesToShow) {
+        // Hiển thị thông báo nếu là Premium content và có nhiều hơn số trang được hiển thị
+        if (isPremiumOnly && pdf.numPages > pagesToShow) {
             let messageContainer = document.createElement("div");
             messageContainer.className = "more-pages-message";
             messageContainer.style.textAlign = "center";
@@ -85,12 +94,12 @@ document.addEventListener("DOMContentLoaded", function () {
             message.style.fontWeight = "bold";
             message.style.fontSize = "16px";
             message.style.marginBottom = "8px";
-            message.innerHTML = `🔒  ${pdf.numPages - pagesToShow} page(s) more`;
+            message.innerHTML = `🔒 ${pdf.numPages - pagesToShow} page(s) more`;
 
             let subMessage = document.createElement("div");
             subMessage.style.color = "#636e72";
             subMessage.style.fontSize = "14px";
-            subMessage.innerHTML = "Sign up Preminum to view all the material";
+            subMessage.innerHTML = "Sign up Premium to view all the material";
 
             messageContainer.appendChild(icon);
             messageContainer.appendChild(message);

@@ -5,45 +5,103 @@
 
 <head>
     <link rel="stylesheet" href="~/css/Library/MyLibrary.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 </head>
 
 <div class="lib-dashboard-page">
     <div class="lib-dashboard-container">
-
         <!-- Sidebar -->
         <partial name="_Sidebar" />
 
         <!-- Main Content -->
         <div class="lib-main-content">
-
-            <!-- Tiêu đề trang -->
+            <!-- Page Header -->
             <div class="lib-page-header">
                 <h2 class="section-title">📚 My Library</h2>
+                <p class="subtitle">Your personal collection of documents and courses</p>
             </div>
 
             <!-- Favorite Documents Section -->
             <div class="lib-content-section">
                 <div class="section-header">
                     <h3 class="section-title">⭐ Favorite Documents</h3>
-                    <a asp-controller="Document" asp-action="Favorites" class="see-all-link">See all →</a>
+                    <a asp-controller="Document" asp-action="Favorites" class="see-all-link">
+                        See all <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
 
-                @if (Model.FavoriteDocuments.Any())
+                @if (Model.FavoriteDocuments != null && Model.FavoriteDocuments.Any())
                 {
                     <div class="documents-grid">
                         @foreach (var doc in Model.FavoriteDocuments)
                         {
-                            <div class="document-card">
-                                <div class="document-header">
-                                    <h4 class="document-title" title="@doc.Title">@doc.Title</h4>
-                                    <p class="document-meta">Course: @doc.Course?.CourseName</p>
-                                    <p class="document-meta">Views: @doc.ViewCount | Likes: @doc.LikeCount</p>
+                            <div class="document-card"
+                                 onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = @doc.DocumentId })'">
+
+                                <!-- Document Thumbnail -->
+                                <div class="document-thumbnail">
+                                    @if (!string.IsNullOrEmpty(doc.ThumbnailUrl))
+                                    {
+                                        <img src="@Url.Content(doc.ThumbnailUrl)" alt="@doc.Title" class="thumbnail-image" />
+                                    }
+                                    else
+                                    {
+                                        <div class="thumbnail-placeholder">
+                                            <svg viewBox="0 0 24 24" width="48" height="48">
+                                                <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM16 18H8V16H16V18ZM16 14H8V12H16V14ZM13 9V3.5L18.5 9H13Z" />
+                                            </svg>
+                                            @if (doc.PageCount.HasValue)
+                                            {
+                                                <span class="page-count">@doc.PageCount pages</span>
+                                            }
+                                        </div>
+                                    }
                                 </div>
+
+                                <!-- Document Info -->
+                                <h4 class="document-title" title="@doc.Title">@doc.Title</h4>
+
+                                @if (!string.IsNullOrEmpty(doc.Description))
+                                {
+                                    <p class="document-description">
+                                        @(doc.Description.Length > 80
+                                                                    ? doc.Description.Substring(0, 80) + "..."
+                                                                    : doc.Description)
+                        </p>
+                                                }
+
+                                @if (doc.Course != null)
+                                {
+                                    <p class="document-meta">
+                                        <i class="bi bi-book"></i> @doc.Course.CourseName
+                                    </p>
+                                }
+
+                                <!-- Document Stats -->
+                                <div class="document-stats">
+                                    <span class="stat">
+                                        <i class="bi bi-eye"></i> @doc.ViewCount
+                                    </span>
+                                    <span class="stat">
+                                        <i class="bi bi-heart-fill"></i> @doc.LikeCount
+                                    </span>
+                                    @if (doc.DownloadCount > 0)
+                                    {
+                                        <span class="stat">
+                                            <i class="bi bi-download"></i> @doc.DownloadCount
+                                        </span>
+                                    }
+                                </div>
+
+                                <!-- View Button -->
                                 <div class="document-actions">
                                     <a asp-controller="Document"
                                        asp-action="DetailDocument"
                                        asp-route-id="@doc.DocumentId"
-                                       class="btn-view">View</a>
+                                       class="btn-view"
+                                       onclick="event.stopPropagation();">
+                                        <i class="bi bi-eye"></i> View Document
+                                    </a>
                                 </div>
                             </div>
                         }
@@ -51,7 +109,14 @@
                 }
                 else
                 {
-                    <p>No favorite documents yet.</p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⭐</div>
+                        <h3>No Favorite Documents Yet</h3>
+                        <p>Start exploring and add documents to your favorites!</p>
+                        <a asp-controller="Document" asp-action="AllDocuments" class="empty-state-action">
+                            <i class="bi bi-search"></i> Browse Documents
+                        </a>
+                    </div>
                 }
             </div>
 
@@ -59,31 +124,119 @@
             <div class="lib-content-section">
                 <div class="section-header">
                     <h3 class="section-title">🎓 Followed Courses</h3>
-                    <a asp-controller="Course" asp-action="AllCourses" class="see-all-link">See all →</a>
+                    <a asp-controller="Course" asp-action="AllCourses" class="see-all-link">
+                        See all <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
 
-                @if (Model.FollowedCourses.Any())
+                @if (Model.FollowedCourses != null && Model.FollowedCourses.Any())
                 {
                     <div class="courses-grid">
                         @foreach (var course in Model.FollowedCourses)
                         {
-                            <div class="course-card">
-                                <h4 class="course-title" title="@course.CourseName">@course.CourseName</h4>
-                                <p class="course-desc">@course.Description</p>
-                                <a asp-controller="Course"
-                                   asp-action="Detail"
-                                   asp-route-id="@course.CourseId"
-                                   class="btn-view">View Course</a>
+                            <div class="course-card"
+                                 onclick="location.href='@Url.Action("Detail", "Course", new { id = course.CourseId })'">
+                                <div class="course-header">
+                                    <h4 class="course-title" title="@course.CourseName">@course.CourseName</h4>
+                                </div>
+
+                                <div class="course-body">
+                                    @if (!string.IsNullOrEmpty(course.Description))
+                                    {
+                                        <p class="course-desc">
+                                            @(course.Description.Length > 100
+                                                                            ? course.Description.Substring(0, 100) + "..."
+                                                                            : course.Description)
+                            </p>
+                                                        }
+                                    else
+                                    {
+                                        <p class="course-desc">Explore materials and resources for this course.</p>
+                                    }
+
+                                    <a asp-controller="Course"
+                                       asp-action="Detail"
+                                       asp-route-id="@course.CourseId"
+                                       class="btn-view"
+                                       onclick="event.stopPropagation();">
+                                        <i class="bi bi-book"></i> View Course
+                                    </a>
+                                </div>
                             </div>
                         }
                     </div>
                 }
                 else
                 {
-                    <p>No followed courses yet.</p>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎓</div>
+                        <h3>No Followed Courses Yet</h3>
+                        <p>Discover and follow courses that interest you!</p>
+                        <a asp-controller="Course" asp-action="AllCourses" class="empty-state-action">
+                            <i class="bi bi-compass"></i> Browse Courses
+                        </a>
+                    </div>
                 }
             </div>
 
+            <!-- Quick Stats Section -->
+            @if ((Model.FavoriteDocuments != null && Model.FavoriteDocuments.Any()) ||
+                        (Model.FollowedCourses != null && Model.FollowedCourses.Any()))
+            {
+                <div class="lib-content-section">
+                    <div class="section-header">
+                        <h3 class="section-title">📊 Quick Stats</h3>
+                    </div>
+
+                    <div class="courses-grid">
+                        @if (Model.FavoriteDocuments != null && Model.FavoriteDocuments.Any())
+                        {
+                            <div class="course-card stats-card">
+                                <div class="course-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <h4 class="course-title" style="color: white;">Total Favorites</h4>
+                                </div>
+                                <div class="course-body" style="text-align: center;">
+                                    <div style="font-size: 48px; font-weight: 700; color: #667eea; margin: 20px 0;">
+                                        @Model.FavoriteDocuments.Count()
+                                    </div>
+                                    <p class="course-desc">Documents saved to your library</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.FollowedCourses != null && Model.FollowedCourses.Any())
+                        {
+                            <div class="course-card stats-card">
+                                <div class="course-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <h4 class="course-title" style="color: white;">Courses Following</h4>
+                                </div>
+                                <div class="course-body" style="text-align: center;">
+                                    <div style="font-size: 48px; font-weight: 700; color: #f5576c; margin: 20px 0;">
+                                        @Model.FollowedCourses.Count()
+                                    </div>
+                                    <p class="course-desc">Courses you're following</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.FavoriteDocuments != null && Model.FavoriteDocuments.Any())
+                        {
+                            var totalViews = Model.FavoriteDocuments.Sum(d => d.ViewCount);
+                            <div class="course-card stats-card">
+                                <div class="course-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <h4 class="course-title" style="color: white;">Total Views</h4>
+                                </div>
+                                <div class="course-body" style="text-align: center;">
+                                    <div style="font-size: 48px; font-weight: 700; color: #00f2fe; margin: 20px 0;">
+                                        @totalViews.ToString("N0")
+                                    </div>
+                                    <p class="course-desc">Combined views on favorites</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
