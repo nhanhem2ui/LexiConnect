@@ -271,29 +271,83 @@ namespace LexiConnect.Controllers
 
         // Document action methods
         [HttpPost]
-        public async Task<IActionResult> ApproveDocument(int id)
+        public async Task<IActionResult> ApproveDocument(int id, bool isPremiumOnly = false, int pointsAwarded = 0)
         {
-            var document = await _documentService.GetAsync(d => d.DocumentId == id);
-            if (document != null)
+            try
             {
-                document.Status = "approved";
-                document.ApprovedAt = DateTime.Now;
-                await _documentService.UpdateAsync(document);
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
+                if (document != null)
+                {
+                    // Validate points
+                    if (pointsAwarded < 0 || pointsAwarded > 1000)
+                    {
+                        TempData["Error"] = "Điểm phải trong khoảng 0-1000";
+                        return RedirectToAction(nameof(AdminManagement));
+                    }
+
+                    document.Status = "approved";
+                    document.ApprovedAt = DateTime.Now;
+                    document.IsPremiumOnly = isPremiumOnly;
+                    document.PointsAwarded = pointsAwarded;
+                    document.ApprovedBy = _userManager.GetUserId(User);
+                    document.UpdatedAt = DateTime.UtcNow;
+                    
+                    await _documentService.UpdateAsync(document);
+                    
+                    TempData["Success"] = "Tài liệu đã được phê duyệt thành công";
+                }
+                else
+                {
+                    TempData["Error"] = "Không tìm thấy tài liệu";
+                }
             }
-            return RedirectToAction(nameof(DocumentManagement));
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Có lỗi xảy ra khi phê duyệt tài liệu: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(AdminManagement));
         }
 
         [HttpPost]
         public async Task<IActionResult> RejectDocument(int id, string rejectionReason = "")
         {
-            var document = await _documentService.GetAsync(d => d.DocumentId == id);
-            if (document != null)
+            try
             {
-                document.Status = "rejected";
-                document.RejectionReason = rejectionReason;
-                await _documentService.UpdateAsync(document);
+                // Validate rejection reason
+                if (string.IsNullOrWhiteSpace(rejectionReason))
+                {
+                    TempData["Error"] = "Vui lòng nhập lý do từ chối";
+                    return RedirectToAction(nameof(AdminManagement));
+                }
+
+                if (rejectionReason.Length > 500)
+                {
+                    TempData["Error"] = "Lý do từ chối không được vượt quá 500 ký tự";
+                    return RedirectToAction(nameof(AdminManagement));
+                }
+
+                var document = await _documentService.GetAsync(d => d.DocumentId == id);
+                if (document != null)
+                {
+                    document.Status = "rejected";
+                    document.RejectionReason = rejectionReason.Trim();
+                    document.UpdatedAt = DateTime.UtcNow;
+                    await _documentService.UpdateAsync(document);
+                    
+                    TempData["Success"] = "Tài liệu đã bị từ chối";
+                }
+                else
+                {
+                    TempData["Error"] = "Không tìm thấy tài liệu";
+                }
             }
-            return RedirectToAction(nameof(DocumentManagement));
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Có lỗi xảy ra khi từ chối tài liệu: " + ex.Message;
+            }
+            
+            return RedirectToAction(nameof(AdminManagement));
         }
 
         [HttpPost]
