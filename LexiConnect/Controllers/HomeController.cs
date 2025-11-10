@@ -65,7 +65,6 @@ namespace LexiConnect.Controllers
         {
             var recentvieweds = _recentViewedService
                 .GetAllQueryable()
-                .Include(r => r.Document)
                 .OrderBy(u => Guid.NewGuid())
                 .Take(3);
 
