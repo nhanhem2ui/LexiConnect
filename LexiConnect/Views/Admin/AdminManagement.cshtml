@@ -156,12 +156,12 @@
                                         </div>
                                     </div>
                                     <div class="document-actions">
-                                        <a href="@Url.Action("DetailDocument", "Document", new { id = document.DocumentId })"
+                                        <a href="@Url.Action("ReviewDocument", "Admin", new { id = document.DocumentId })"
                                            class="btn-review">Review</a>
                                         @if (document.Status == "pending")
                                         {
-                                            @* <button onclick="approveDocument(@document.DocumentId)" class="btn-approve">✓ Approve</button>
-                                            <button onclick="rejectDocument(@document.DocumentId)" class="btn-reject">✗ Reject</button> *@
+                                            <button onclick="approveDocument(@document.DocumentId)" class="btn-approve">✓ Approve</button>
+                                            <button onclick="rejectDocument(@document.DocumentId)" class="btn-reject">✗ Reject</button>
                                         }
                                     </div>
                                 </div>

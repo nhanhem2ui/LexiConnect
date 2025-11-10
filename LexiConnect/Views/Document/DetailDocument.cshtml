@@ -1,4 +1,4 @@
-﻿    @model LexiConnect.Models.ViewModels.DetailDocumentViewModel
+﻿@model LexiConnect.Models.ViewModels.DetailDocumentViewModel
 @{
     ViewData["Title"] = "Document Detail";
 }
@@ -93,23 +93,6 @@
             </button>
 
             <button class="btn-outline"><i class="fa fa-share"></i></button>
-            
-            <!-- Admin Actions (only visible for admins) -->
-            @if (User.IsInRole("Admin"))
-            {
-                <button class="btn-outline btn-approve" 
-                        data-bs-toggle="modal"
-                        data-bs-target="#approveModal"
-                        data-document-id="@Model.Document.DocumentId">
-                    <i class="fa fa-check" style="color:green;"></i> Approve
-                </button>
-                <button class="btn-outline btn-deny" 
-                        data-bs-toggle="modal"
-                        data-bs-target="#denyModal"
-                        data-document-id="@Model.Document.DocumentId">
-                    <i class="fa fa-times" style="color:red;"></i> Deny
-                </button>
-            }
         </div>
 
         <!-- PDF Preview -->
@@ -183,104 +166,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Approve Document Modal -->
-<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="approveModalLabel">
-                    <i class="fa fa-check-circle me-2"></i>Approve Document
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="approveForm">
-                    <input type="hidden" id="approveDocumentId" name="id" />
-                    
-                    <!-- VIP Document Checkbox -->
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="isVipDocument" name="isPremiumOnly">
-                            <label class="form-check-label" for="isVipDocument">
-                                <strong>Tài liệu VIP</strong>
-                            </label>
-                        </div>
-                        <small class="text-muted">Đánh dấu nếu đây là tài liệu VIP (chỉ dành cho thành viên Premium)</small>
-                    </div>
-
-                    <!-- Points Input -->
-                    <div class="mb-3">
-                        <label for="pointsAwarded" class="form-label">
-                            <strong>Điểm cho tài liệu <span class="text-danger">*</span></strong>
-                        </label>
-                        <input type="number" 
-                               class="form-control" 
-                               id="pointsAwarded" 
-                               name="pointsAwarded" 
-                               min="0" 
-                               max="1000" 
-                               value="0" 
-                               required>
-                        <small class="text-muted">Nhập số điểm để đánh giá chất lượng tài liệu (0-1000)</small>
-                        <div class="invalid-feedback">
-                            Vui lòng nhập số điểm hợp lệ (0-1000)
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmApproveBtn">
-                    <i class="fa fa-check me-1"></i>Xác nhận
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Deny Document Modal -->
-<div class="modal fade" id="denyModal" tabindex="-1" aria-labelledby="denyModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title" id="denyModalLabel">
-                    <i class="fa fa-times-circle me-2"></i>Deny Document
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="denyForm">
-                    <input type="hidden" id="denyDocumentId" name="id" />
-                    
-                    <!-- Rejection Reason Textarea -->
-                    <div class="mb-3">
-                        <label for="rejectionReason" class="form-label">
-                            <strong>Lý do từ chối <span class="text-danger">*</span></strong>
-                        </label>
-                        <textarea class="form-control" 
-                                  id="rejectionReason" 
-                                  name="rejectionReason" 
-                                  rows="4" 
-                                  maxlength="500" 
-                                  placeholder="Nhập lý do từ chối tài liệu này..."
-                                  required></textarea>
-                        <small class="text-muted">Nhập lý do từ chối (tối đa 500 ký tự)</small>
-                        <div class="invalid-feedback">
-                            Vui lòng nhập lý do từ chối
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDenyBtn">
-                    <i class="fa fa-times me-1"></i>Xác nhận
-                </button>
             </div>
         </div>
     </div>
@@ -376,16 +261,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js"></script>
 
-<!-- Anti-forgery token form for JavaScript -->
-<form asp-antiforgery="true" style="display: none;"></form>
-
 <script>
     // Truyền các URL từ server xuống JS
     window.pdfFileUrl = '@Url.Content(Model.FileUrl)';
     window.toggleFavoriteUrl = '@Url.Action("ToggleFavorite", "Document")';
-    window.approveDocumentUrl = '@Url.Action("ApproveDocument", "Admin")';
-    window.rejectDocumentUrl = '@Url.Action("RejectDocument", "Admin")';
-    window.adminManagementUrl = '@Url.Action("AdminManagement", "Admin")';
 </script>
 
 <script src="~/js/Document/DetailDocument.js"></script>
