@@ -4,6 +4,7 @@ using LexiConnect.Libraries;
 using LexiConnect.Models;
 using LexiConnect.Services.Firebase;
 using LexiConnect.Services.Gemini;
+using LexiConnect.Services.Quizzes;
 using LexiConnect.Services.VnPay;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Http.Features;
@@ -40,6 +41,9 @@ builder.Services.AddScoped<IGenericDAO<PaymentRecord>, PaymentRecordDAO>();
 builder.Services.AddScoped<IGenericDAO<Users>, UserDAO>();
 builder.Services.AddScoped<IGenericDAO<UserFollowCourse>, UserFollowCourseDAO>();
 builder.Services.AddScoped<IGenericDAO<Chat>, ChatDAO>();
+builder.Services.AddScoped<IGenericDAO<Quiz>, QuizDAO>();
+builder.Services.AddScoped<IGenericDAO<QuizQuestion>, QuizQuestionDAO>();
+builder.Services.AddScoped<IGenericDAO<AIUsageLimit>, AIUsageLimitDAO>();
 
 //Repository
 builder.Services.AddScoped<IGenericRepository<Country>, CountryRepository>();
@@ -59,7 +63,9 @@ builder.Services.AddScoped<IGenericRepository<PaymentRecord>, PaymentRecordRepos
 builder.Services.AddScoped<IGenericRepository<Users>, UsersRepository>();
 builder.Services.AddScoped<IGenericRepository<UserFollowCourse>, UserFollowCourseRepository>();
 builder.Services.AddScoped<IGenericRepository<Chat>, ChatRepository>();
-
+builder.Services.AddScoped<IGenericRepository<Quiz>, QuizRepository>();
+builder.Services.AddScoped<IGenericRepository<QuizQuestion>, QuizQuestionRepository>();
+builder.Services.AddScoped<IGenericRepository<AIUsageLimit>, AIUsageLimitRepository>();
 //Service
 builder.Services.AddScoped<IGenericService<Country>, CountryService>();
 builder.Services.AddScoped<IGenericService<Course>, CourseService>();
@@ -78,13 +84,18 @@ builder.Services.AddScoped<IGenericService<PaymentRecord>, PaymentRecordService>
 builder.Services.AddScoped<IGenericService<Users>, UserService>();
 builder.Services.AddScoped<IGenericService<UserFollowCourse>, UserFollowCourseService>();
 builder.Services.AddScoped<IGenericService<Chat>, ChatService>();
+builder.Services.AddScoped<IGenericService<Quiz>, QuizService>();
+builder.Services.AddScoped<IGenericService<QuizQuestion>, QuizQuestionService>();
+builder.Services.AddScoped<IGenericService<AIUsageLimit>, AIUsageLimitService>();
 
 builder.Services.AddScoped<ISender, EmailSender>();
 
 //External
 builder.Services.AddScoped<IVnPayService, VnPayService>();
 builder.Services.AddSingleton<IFirebaseStorageService, FirebaseStorageService>();
+
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
+builder.Services.AddScoped<IQuizGenerationService, QuizGenerationService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
