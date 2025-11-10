@@ -275,7 +275,11 @@ namespace LexiConnect.Controllers
         {
             try
             {
-                var document = await _documentService.GetAsync(d => d.DocumentId == id);
+                // Get document with uploader included
+                var document = await _documentService.GetAllQueryable()
+                    .Include(d => d.Uploader)
+                    .FirstOrDefaultAsync(d => d.DocumentId == id);
+
                 if (document != null)
                 {
                     // Validate points
@@ -285,6 +289,10 @@ namespace LexiConnect.Controllers
                         return RedirectToAction(nameof(AdminManagement));
                     }
 
+                    // Check if document was previously approved to avoid adding points multiple times
+                    bool wasPreviouslyApproved = document.Status == "approved";
+
+                    // Update document
                     document.Status = "approved";
                     document.ApprovedAt = DateTime.Now;
                     document.IsPremiumOnly = isPremiumOnly;
@@ -293,8 +301,30 @@ namespace LexiConnect.Controllers
                     document.UpdatedAt = DateTime.UtcNow;
                     
                     await _documentService.UpdateAsync(document);
+
+                    // Update uploader's points only if document was not previously approved
+                    // This prevents adding points multiple times if admin re-approves the document
+                    if (document.Uploader != null && !wasPreviouslyApproved && pointsAwarded > 0)
+                    {
+                        // First time approval: add points to uploader
+                        document.Uploader.PointsBalance += pointsAwarded;
+                        document.Uploader.TotalPointsEarned += pointsAwarded;
+                        
+                        // Save uploader changes
+                        await _usersService.UpdateAsync(document.Uploader);
+                    }
                     
-                    TempData["Success"] = "Tài liệu đã được phê duyệt thành công";
+                    string successMessage = "Tài liệu đã được phê duyệt thành công";
+                    if (!wasPreviouslyApproved && pointsAwarded > 0)
+                    {
+                        successMessage += $" và {pointsAwarded} điểm đã được cộng cho người upload";
+                    }
+                    else if (wasPreviouslyApproved)
+                    {
+                        successMessage += " (đã được phê duyệt trước đó)";
+                    }
+                    
+                    TempData["Success"] = successMessage;
                 }
                 else
                 {

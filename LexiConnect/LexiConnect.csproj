@@ -143,6 +143,8 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\fonts\" />
+    <Folder Include="wwwroot\uploads\documents\" />
+    <Folder Include="wwwroot\uploads\pdf\" />
   </ItemGroup>
 
 </Project>
