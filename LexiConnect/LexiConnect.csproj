@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -143,6 +143,8 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\fonts\" />
+    <Folder Include="wwwroot\uploads\documents\" />
+    <Folder Include="wwwroot\uploads\pdf\" />
   </ItemGroup>
 
 </Project>

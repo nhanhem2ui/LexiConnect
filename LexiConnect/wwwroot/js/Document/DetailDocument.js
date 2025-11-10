@@ -442,3 +442,275 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 })();
 
+// Admin Approve/Deny Document Logic
+document.addEventListener('DOMContentLoaded', function () {
+    // Get modal elements
+    const approveModal = document.getElementById('approveModal');
+    const denyModal = document.getElementById('denyModal');
+    const approveForm = document.getElementById('approveForm');
+    const denyForm = document.getElementById('denyForm');
+    const confirmApproveBtn = document.getElementById('confirmApproveBtn');
+    const confirmDenyBtn = document.getElementById('confirmDenyBtn');
+    
+    // Get URLs from window (set in view)
+    const approveUrl = window.approveDocumentUrl;
+    const rejectUrl = window.rejectDocumentUrl;
+    const adminManagementUrl = window.adminManagementUrl;
+
+    // Handle Approve Modal Show
+    if (approveModal) {
+        approveModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const documentId = button.getAttribute('data-document-id');
+            
+            // Set document ID in form
+            const approveDocumentIdInput = document.getElementById('approveDocumentId');
+            if (approveDocumentIdInput) {
+                approveDocumentIdInput.value = documentId;
+            }
+            
+            // Reset form
+            if (approveForm) {
+                approveForm.reset();
+                // Remove validation classes
+                const pointsInput = document.getElementById('pointsAwarded');
+                if (pointsInput) {
+                    pointsInput.classList.remove('is-invalid', 'is-valid');
+                }
+            }
+        });
+    }
+
+    // Handle Deny Modal Show
+    if (denyModal) {
+        denyModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const documentId = button.getAttribute('data-document-id');
+            
+            // Set document ID in form
+            const denyDocumentIdInput = document.getElementById('denyDocumentId');
+            if (denyDocumentIdInput) {
+                denyDocumentIdInput.value = documentId;
+            }
+            
+            // Reset form
+            if (denyForm) {
+                denyForm.reset();
+                // Remove validation classes
+                const reasonTextarea = document.getElementById('rejectionReason');
+                if (reasonTextarea) {
+                    reasonTextarea.classList.remove('is-invalid', 'is-valid');
+                }
+            }
+        });
+    }
+
+    // Validate Approve Form
+    function validateApproveForm() {
+        const pointsInput = document.getElementById('pointsAwarded');
+        let isValid = true;
+
+        // Validate points
+        if (pointsInput) {
+            const points = parseInt(pointsInput.value);
+            if (isNaN(points) || points < 0 || points > 1000) {
+                pointsInput.classList.add('is-invalid');
+                pointsInput.classList.remove('is-valid');
+                isValid = false;
+            } else {
+                pointsInput.classList.remove('is-invalid');
+                pointsInput.classList.add('is-valid');
+            }
+        }
+
+        return isValid;
+    }
+
+    // Validate Deny Form
+    function validateDenyForm() {
+        const reasonTextarea = document.getElementById('rejectionReason');
+        let isValid = true;
+
+        // Validate rejection reason
+        if (reasonTextarea) {
+            const reason = reasonTextarea.value.trim();
+            if (!reason || reason.length === 0) {
+                reasonTextarea.classList.add('is-invalid');
+                reasonTextarea.classList.remove('is-valid');
+                isValid = false;
+            } else if (reason.length > 500) {
+                reasonTextarea.classList.add('is-invalid');
+                reasonTextarea.classList.remove('is-valid');
+                isValid = false;
+            } else {
+                reasonTextarea.classList.remove('is-invalid');
+                reasonTextarea.classList.add('is-valid');
+            }
+        }
+
+        return isValid;
+    }
+
+    // Real-time validation for points input
+    const pointsInput = document.getElementById('pointsAwarded');
+    if (pointsInput) {
+        pointsInput.addEventListener('input', function () {
+            validateApproveForm();
+        });
+
+        pointsInput.addEventListener('blur', function () {
+            validateApproveForm();
+        });
+    }
+
+    // Real-time validation for rejection reason
+    const reasonTextarea = document.getElementById('rejectionReason');
+    if (reasonTextarea) {
+        reasonTextarea.addEventListener('input', function () {
+            validateDenyForm();
+        });
+
+        reasonTextarea.addEventListener('blur', function () {
+            validateDenyForm();
+        });
+    }
+
+    // Handle Approve Form Submit
+    if (confirmApproveBtn) {
+        confirmApproveBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            if (!validateApproveForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi validation',
+                    text: 'Vui lòng kiểm tra lại các trường đã nhập'
+                });
+                return;
+            }
+
+            // Get form data
+            const documentId = document.getElementById('approveDocumentId').value;
+            const isPremiumOnly = document.getElementById('isVipDocument').checked;
+            const pointsAwarded = parseInt(document.getElementById('pointsAwarded').value) || 0;
+
+            // Get anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            // Show loading
+            Swal.fire({
+                title: 'Đang xử lý...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit form data
+            const formData = new URLSearchParams({
+                'id': documentId,
+                'isPremiumOnly': isPremiumOnly,
+                'pointsAwarded': pointsAwarded,
+                '__RequestVerificationToken': token || ''
+            });
+
+            fetch(approveUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData,
+                redirect: 'follow'
+            })
+                .then(response => {
+                    // Close modal
+                    const modalElement = document.getElementById('approveModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    // Redirect to admin management page
+                    window.location.href = adminManagementUrl;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Có lỗi xảy ra. Vui lòng thử lại.'
+                    });
+                });
+        });
+    }
+
+    // Handle Deny Form Submit
+    if (confirmDenyBtn) {
+        confirmDenyBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            if (!validateDenyForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi validation',
+                    text: 'Vui lòng nhập lý do từ chối (tối đa 500 ký tự)'
+                });
+                return;
+            }
+
+            // Get form data
+            const documentId = document.getElementById('denyDocumentId').value;
+            const rejectionReason = document.getElementById('rejectionReason').value.trim();
+
+            // Get anti-forgery token
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            // Show loading
+            Swal.fire({
+                title: 'Đang xử lý...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit form data
+            const formData = new URLSearchParams({
+                'id': documentId,
+                'rejectionReason': rejectionReason,
+                '__RequestVerificationToken': token || ''
+            });
+
+            fetch(rejectUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData,
+                redirect: 'follow'
+            })
+                .then(response => {
+                    // Close modal
+                    const modalElement = document.getElementById('denyModal');
+                    if (modalElement) {
+                        const modal = bootstrap.Modal.getInstance(modalElement);
+                        if (modal) {
+                            modal.hide();
+                        }
+                    }
+                    // Redirect to admin management page
+                    window.location.href = adminManagementUrl;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: 'Có lỗi xảy ra. Vui lòng thử lại.'
+                    });
+                });
+        });
+    }
+});
+
