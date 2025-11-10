@@ -383,6 +383,8 @@
     // Truyền các URL từ server xuống JS
     window.pdfFileUrl = '@Url.Content(Model.FileUrl)';
     window.toggleFavoriteUrl = '@Url.Action("ToggleFavorite", "Document")';
+    window.isPremiumOnly = @Model.IsPremiumOnly.ToString().ToLower(); // Thêm dòng này
+
     window.approveDocumentUrl = '@Url.Action("ApproveDocument", "Admin")';
     window.rejectDocumentUrl = '@Url.Action("RejectDocument", "Admin")';
     window.adminManagementUrl = '@Url.Action("AdminManagement", "Admin")';

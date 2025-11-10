@@ -71,6 +71,7 @@ namespace LexiConnect.Controllers
 
             var topdocuments = _documentService
                 .GetAllQueryable()
+                .Where(c=>c.Status=="approved")
                 .Include(c => c.Course)
                 .Include(c => c.Uploader)
                 .Include(c => c.ApprovedByUser)

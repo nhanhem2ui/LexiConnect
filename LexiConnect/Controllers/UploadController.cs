@@ -24,6 +24,7 @@ using SystemPath = System.IO.Path;
 using Table = iText.Layout.Element.Table;
 using Text = iText.Layout.Element.Text;
 
+
 namespace LexiConnect.Controllers
 {
     public class UploadController : Controller
@@ -265,11 +266,11 @@ namespace LexiConnect.Controllers
 
         // Add this API endpoint for university search
         [HttpGet]
-        public async Task<IActionResult> SearchUniversities(string query)
+        public async Task<IActionResult> SearchUniversities(string searchTerm)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(query))
+                if (string.IsNullOrWhiteSpace(searchTerm))
                 {
                     // Return top 50 universities if no search query
                     var allUniversities = _universityService.GetAllQueryable()
@@ -289,7 +290,7 @@ namespace LexiConnect.Controllers
                     return Json(allUniversities);
                 }
 
-                var searchQuery = query.ToLower().Trim();
+                var searchQuery = searchTerm.ToLower().Trim();
 
                 var universities = _universityService.GetAllQueryable(u =>
                     u.Name.ToLower().Contains(searchQuery) ||

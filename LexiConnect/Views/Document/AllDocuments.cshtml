@@ -1,0 +1,203 @@
+﻿@model LexiConnect.Models.ViewModels.AllDocumentsViewModel
+@{
+    ViewData["Title"] = "All Documents - LexiConnect";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/Document/AllDocuments.css" />
+</head>
+
+<div class="alldocs-dashboard-page">
+    <div class="alldocs-dashboard-container">
+        
+        <!-- Sidebar -->
+        <partial name="_Sidebar" />
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Discover Documents</h1>
+                <p class="subtitle">Explore @Model.TotalDocuments study materials and resources</p>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="search-filter-section">
+                <form method="get" class="search-form">
+                    <input type="text" 
+                           name="searchTerm" 
+                           value="@Model.SearchTerm" 
+                           placeholder="Search by title, course, or university..." 
+                           class="search-input" 
+                           autocomplete="off" />
+                    
+                    <select name="sortBy" class="sort-select">
+                        <option value="recent" selected="@(Model.SortBy == "recent")">📅 Most Recent</option>
+                        <option value="popular" selected="@(Model.SortBy == "popular")">🔥 Most Popular</option>
+                        <option value="views" selected="@(Model.SortBy == "views")">👁️ Most Viewed</option>
+                        <option value="downloads" selected="@(Model.SortBy == "downloads")">⬇️ Most Downloaded</option>
+                        <option value="title" selected="@(Model.SortBy == "title")">🔤 Title (A-Z)</option>
+                    </select>
+                    
+                    <button type="submit" class="btn-search">
+                        <svg viewBox="0 0 24 24" width="20" height="20" style="fill: white; vertical-align: middle; margin-right: 8px;">
+                            <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" />
+                        </svg>
+                        Search
+                    </button>
+                </form>
+            </div>
+
+            <!-- Documents Grid -->
+            @if (Model.Documents.Any())
+            {
+                <div class="documents-grid">
+                    @foreach (var doc in Model.Documents)
+                    {
+                        var isLiked = Model.UserLikedDocuments.ContainsKey(doc.DocumentId) 
+                                      && Model.UserLikedDocuments[doc.DocumentId];
+
+                        <div class="document-card" 
+                             onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = doc.DocumentId })'">
+                            
+                            <div class="document-preview">
+                                <div class="document-preview-title">
+                                    @doc.Title
+                                </div>
+                                <div class="document-type-badge">@doc.FileType.ToUpper()</div>
+                            </div>
+
+                            @if (User.Identity.IsAuthenticated)
+                            {
+                                <button class="like-button @(isLiked ? "liked" : "")" 
+                                        data-id="@doc.DocumentId"
+                                        onclick="event.stopPropagation();"
+                                        title="@(isLiked ? "Unlike" : "Like") this document">
+                                    @(isLiked ? "❤️" : "🤍")
+                                </button>
+                            }
+
+                            <div class="document-info">
+                                <h3 class="document-title">@doc.Title</h3>
+                                
+                                @if (!string.IsNullOrEmpty(doc.Description))
+                                {
+                                    <p class="document-description">
+                                        @(doc.Description?.Length > 100 
+                                          ? doc.Description.Substring(0, 100) + "..." 
+                                          : doc.Description)
+                                    </p>
+                                }
+
+                                <div class="document-meta">
+                                    @if (doc.Uploader != null)
+                                    {
+                                        <div class="meta-item">
+                                            <span class="icon">👤</span>
+                                            <span>@doc.Uploader.FullName</span>
+                                        </div>
+                                    }
+                                    
+                                    @if (doc.Uploader?.University != null)
+                                    {
+                                        <div class="meta-item">
+                                            <span class="icon">🏫</span>
+                                            <span>@doc.Uploader.University.Name</span>
+                                        </div>
+                                    }
+                                    
+                                    @if (doc.Course != null)
+                                    {
+                                        <div class="meta-item">
+                                            <span class="icon">📚</span>
+                                            <span>@doc.Course.CourseName</span>
+                                        </div>
+                                    }
+                                </div>
+
+                                <div class="document-stats">
+                                    <div class="stat-item" title="@doc.LikeCount likes">
+                                        <span>❤️</span>
+                                        <span>@doc.LikeCount</span>
+                                    </div>
+                                    <div class="stat-item" title="@doc.ViewCount views">
+                                        <span>👁️</span>
+                                        <span>@doc.ViewCount</span>
+                                    </div>
+                                    <div class="stat-item" title="@doc.DownloadCount downloads">
+                                        <span>⬇️</span>
+                                        <span>@doc.DownloadCount</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="documents-grid">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M20 6H12L10 4H4C2.9 4 2.01 4.9 2.01 6L2 18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V8C22 6.9 21.1 6 20 6ZM20 18H4V8H20V18Z"/>
+                        </svg>
+                        <h3>No Documents Found</h3>
+                        <p>Try adjusting your search or filters to find what you're looking for</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <div class="pagination">
+                    @if (Model.CurrentPage > 1)
+                    {
+                        <a href="@Url.Action("AllDocuments", new { 
+                            page = Model.CurrentPage - 1, 
+                            searchTerm = Model.SearchTerm, 
+                            sortBy = Model.SortBy 
+                        })" class="page-link" title="Previous page">
+                            ← Previous
+                        </a>
+                    }
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        if (i == 1 || i == Model.TotalPages || 
+                            (i >= Model.CurrentPage - 2 && i <= Model.CurrentPage + 2))
+                        {
+                            <a href="@Url.Action("AllDocuments", new { 
+                                page = i, 
+                                searchTerm = Model.SearchTerm, 
+                                sortBy = Model.SortBy 
+                            })" 
+                               class="page-link @(i == Model.CurrentPage ? "active" : "")"
+                               title="Page @i">
+                                @i
+                            </a>
+                        }
+                        else if (i == Model.CurrentPage - 3 || i == Model.CurrentPage + 3)
+                        {
+                            <span class="page-dots">...</span>
+                        }
+                    }
+
+                    @if (Model.CurrentPage < Model.TotalPages)
+                    {
+                        <a href="@Url.Action("AllDocuments", new { 
+                            page = Model.CurrentPage + 1, 
+                            searchTerm = Model.SearchTerm, 
+                            sortBy = Model.SortBy 
+                        })" class="page-link" title="Next page">
+                            Next →
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/js/Document/AllDocuments.js"></script>

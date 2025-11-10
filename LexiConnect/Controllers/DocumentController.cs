@@ -102,7 +102,8 @@ namespace LexiConnect.Controllers
                     FileUrl = viewFilePath, // This will be the PDF path if available
                     FilePDFpath = document.FilePDFpath,
                     CanDownload = await CanUserDownload(document),
-                    IsFavorited = isFavorited // Thêm trường này
+                    IsPremiumOnly = document.IsPremiumOnly, 
+                    IsFavorited = isFavorited 
                 };
 
                 return View(viewModel);
@@ -142,6 +143,93 @@ namespace LexiConnect.Controllers
                 await _recentViewedService.AddAsync(recentView);
             }
         }
+
+        // Thêm vào DocumentController.cs
+
+        [HttpGet]
+        public async Task<IActionResult> AllDocuments(string searchTerm = "", string sortBy = "recent", int page = 1, int pageSize = 12)
+        {
+            try
+            {
+                // Lấy tất cả documents với eager loading
+                var query = _documentService.GetAllQueryable()
+                    .Where(d=>d.Status== "approved")
+                    .Include(d => d.Course)
+                    .Include(d => d.Uploader)
+                    .Include(d => d.Uploader.University)
+                    .AsQueryable();
+
+                // Tìm kiếm nếu có
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    searchTerm = searchTerm.ToLower();
+                    query = query.Where(d =>
+                        d.Title.ToLower().Contains(searchTerm) ||
+                        d.Description.ToLower().Contains(searchTerm) ||
+                        d.Course.CourseName.ToLower().Contains(searchTerm));
+                }
+
+                // Sắp xếp
+                query = sortBy.ToLower() switch
+                {
+                    "popular" => query.OrderByDescending(d => d.LikeCount),
+                    "views" => query.OrderByDescending(d => d.ViewCount),
+                    "downloads" => query.OrderByDescending(d => d.DownloadCount),
+                    "title" => query.OrderBy(d => d.Title),
+                    _ => query.OrderByDescending(d => d.UpdatedAt) // recent
+                };
+
+                // Tính tổng số documents
+                int totalDocuments = await query.CountAsync();
+                int totalPages = (int)Math.Ceiling(totalDocuments / (double)pageSize);
+
+                // Phân trang
+                var documents = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                // Kiểm tra liked documents nếu user đã đăng nhập
+                Dictionary<int, bool> userLikedDocuments = new Dictionary<int, bool>();
+                if (User.Identity.IsAuthenticated)
+                {
+                    var currentUser = await _userManager.GetUserAsync(User);
+                    if (currentUser != null)
+                    {
+                        var documentIds = documents.Select(d => d.DocumentId).ToList();
+                        var likedDocs = await _documentLikeService.GetAllQueryable(
+                            dl => dl.UserId == currentUser.Id && documentIds.Contains(dl.DocumentId))
+                            .Select(dl => dl.DocumentId)
+                            .ToListAsync();
+
+                        userLikedDocuments = documentIds.ToDictionary(
+                            id => id,
+                            id => likedDocs.Contains(id));
+                    }
+                }
+
+                // Tạo view model
+                var viewModel = new AllDocumentsViewModel
+                {
+                    Documents = documents,
+                    UserLikedDocuments = userLikedDocuments,
+                    CurrentPage = page,
+                    TotalPages = totalPages,
+                    SearchTerm = searchTerm,
+                    SortBy = sortBy,
+                    TotalDocuments = totalDocuments
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error loading documents: {ex.Message}";
+                return RedirectToAction("Homepage", "Home");
+            }
+        }
+
+       
 
 
         public async Task<IActionResult> ViewFile(int id)

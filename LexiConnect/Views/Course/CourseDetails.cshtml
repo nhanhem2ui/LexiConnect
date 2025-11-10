@@ -127,7 +127,7 @@
                 <div class="trending-grid" id="trendingGrid">
                     @foreach (var doc in Model.TrendingDocuments)
                     {
-                        <a href="@Url.Action("ViewDocument", "Home", new { id = doc.DocumentId })" class="trending-card">
+                        <a href="@Url.Action("DetailDocument", "Document", new { id = doc.DocumentId })" class="trending-card">
                             <div class="document-thumbnail">
                                 @if (!string.IsNullOrEmpty(doc.ThumbnailUrl))
                                 {

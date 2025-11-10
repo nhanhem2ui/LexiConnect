@@ -13,6 +13,8 @@ namespace LexiConnect.Models.ViewModels
         public bool CanDownload { get; set; }
 
         public bool IsFavorited { get; set; }
+        public bool IsPremiumOnly { get; set; } // Thêm dòng này
+
         public List<CommentViewModel> Comments { get; set; } = new List<CommentViewModel>();
 
         // Helper property to check if viewing PDF version

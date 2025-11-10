@@ -58,7 +58,7 @@
                             </svg>
                             See All High Schools
                         </a>
-                        <a href="#" class="btn-see-all">
+                        <a href="@Url.Action("AllDocuments", "Document")" class="btn-see-all">
                             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
                                 <line x1="6.27" y1="14.86" x2="13.91" y2="14.86" stroke-width="1.91" />
                                 <line x1="6.27" y1="11.05" x2="13.91" y2="11.05" stroke-width="1.91" />
@@ -139,6 +139,12 @@
                                         @(isLiked ? "❤️" : "🤍")
                                     </button>
 
+                                    @if (doc.DownloadCount > 0)
+                                    {
+                                        <span class="stats-divider"></span>
+                                        <span>⬇️ @doc.DownloadCount</span>
+                                    }
+
                                     <div class="completion-badge">
                                         <i class="bi bi-heart-fill"></i>
                                         <span class="completion-percentage">@doc.LikeCount likes</span>
@@ -179,7 +185,6 @@
         }
     </div>
 </div>
-
 <style>
     /* Welcome Banner */
     .welcome-banner {
@@ -227,16 +232,13 @@
     }
 
     @@keyframes bounce {
-        0%, 100%
+        0%, 100% {
+            transform: translateY(0);
+        }
 
-    {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-10px);
-    }
-
+        50% {
+            transform: translateY(-10px);
+        }
     }
 
     .empty-state h3,
@@ -257,3 +259,4 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="~/js/Home/HomePage.js" asp-append-version="true"></script>
+
