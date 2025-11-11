@@ -26,7 +26,11 @@ namespace BusinessObjects
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<RecentViewed> RecentVieweds { get; set; }
         public DbSet<PaymentRecord> PaymentRecords { get; set; }
-        public DbSet<Chat> Chats { get; set; }
+        public DbSet<Chat> Chats { get; set; }        
+        public DbSet<AIUsageLimit> AIUsageLimits { get; set; }
+        public DbSet<Quiz> Quizzes { get; set; }
+        public DbSet<QuizQuestion> QuizQuestions { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -214,6 +218,39 @@ namespace BusinessObjects
                 .WithMany() // A User can receive many chats
                 .HasForeignKey(c => c.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // =============== AI USAGE RELATIONSHIPS ===============
+            modelBuilder.Entity<AIUsageLimit>()
+                .HasOne(aul => aul.User)
+                .WithMany()
+                .HasForeignKey(aul => aul.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =============== QUIZ RELATIONSHIPS ===============
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Creator)
+                .WithMany()
+                .HasForeignKey(q => q.CreatorId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.Course)
+                .WithMany()
+                .HasForeignKey(q => q.CourseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.University)
+                .WithMany()
+                .HasForeignKey(q => q.UniversityId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<QuizQuestion>()
+                .HasOne(qq => qq.Quiz)
+                .WithMany(q => q.Questions)
+                .HasForeignKey(qq => qq.QuizId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // =============== INDEXES ===============
             modelBuilder.Entity<Major>()
                 .HasIndex(m => new { m.Code, m.UniversityId })
