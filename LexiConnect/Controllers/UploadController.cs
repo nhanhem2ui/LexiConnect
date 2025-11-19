@@ -468,6 +468,25 @@ namespace LexiConnect.Controllers
                     document.ThumbnailUrl = await GeneratePdfThumbnail(filePath, thumbnailPath, uniqueFileName);
                 }
 
+                // Validate CourseId exists before saving
+                var courseExists = await _courseService.ExistsAsync(c => c.CourseId == document.CourseId);
+                if (!courseExists)
+                {
+                    // Try to get the first available course
+                    var firstCourse = await _courseService.GetAllQueryable().FirstOrDefaultAsync();
+                    if (firstCourse != null)
+                    {
+                        document.CourseId = firstCourse.CourseId;
+                        Console.WriteLine($"Warning: CourseId 1 not found. Using CourseId {firstCourse.CourseId} instead.");
+                    }
+                    else
+                    {
+                        result.Success = false;
+                        result.ErrorMessage = "No courses available in the database. Please add a course first.";
+                        return result;
+                    }
+                }
+
                 bool saved = await _documentService.AddAsync(document);
                 if (saved)
                 {
@@ -497,10 +516,51 @@ namespace LexiConnect.Controllers
                     }
                 }
             }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException dbEx)
+            {
+                result.Success = false;
+                var errorDetails = dbEx.InnerException?.Message ?? dbEx.Message;
+                
+                // Check for specific database errors
+                if (errorDetails.Contains("FOREIGN KEY constraint") || errorDetails.Contains("The INSERT statement conflicted"))
+                {
+                    if (errorDetails.Contains("CourseId") || errorDetails.Contains("Course"))
+                    {
+                        result.ErrorMessage = $"Database error: CourseId không tồn tại trong database. Vui lòng kiểm tra lại CourseId trong database Azure SQL.";
+                    }
+                    else if (errorDetails.Contains("UploaderId") || errorDetails.Contains("AspNetUsers"))
+                    {
+                        result.ErrorMessage = $"Database error: User không tồn tại trong database. Vui lòng đăng nhập lại.";
+                    }
+                    else
+                    {
+                        result.ErrorMessage = $"Database constraint error: {errorDetails}";
+                    }
+                }
+                else if (errorDetails.Contains("timeout") || errorDetails.Contains("Timeout"))
+                {
+                    result.ErrorMessage = $"Database timeout: Kết nối tới Azure SQL Database quá chậm. Vui lòng thử lại sau.";
+                }
+                else if (errorDetails.Contains("Cannot open database") || errorDetails.Contains("Login failed"))
+                {
+                    result.ErrorMessage = $"Database connection error: Không thể kết nối tới Azure SQL Database. Vui lòng kiểm tra connection string.";
+                }
+                else
+                {
+                    result.ErrorMessage = $"Database error khi upload {file.FileName}: {errorDetails}";
+                }
+                
+                Console.WriteLine($"Database error details: {dbEx}");
+                if (dbEx.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {dbEx.InnerException}");
+                }
+            }
             catch (Exception ex)
             {
                 result.Success = false;
                 result.ErrorMessage = $"Error uploading {file.FileName}: {ex.Message}";
+                Console.WriteLine($"Exception details: {ex}");
             }
 
             return result;
