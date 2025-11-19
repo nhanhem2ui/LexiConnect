@@ -79,6 +79,7 @@ namespace LexiConnect.Controllers
                 await _documentService.UpdateAsync(document);
 
                 bool isFavorited = false;
+                bool isLiked = false;
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentUser = await _userManager.GetUserAsync(User);
@@ -90,6 +91,10 @@ namespace LexiConnect.Controllers
                         // Kiểm tra xem đã favorite chưa
                         isFavorited = await _userFavoriteService.ExistsAsync(uf =>
                             uf.DocumentId == document.DocumentId && uf.UserId == currentUser.Id);
+
+                        // Kiểm tra đã like chưa
+                        isLiked = await _documentLikeService.ExistsAsync(dl =>
+                            dl.DocumentId == document.DocumentId && dl.UserId == currentUser.Id);
                     }
                 }
                 // Get uploader statistics
@@ -104,7 +109,8 @@ namespace LexiConnect.Controllers
                     FilePDFpath = document.FilePDFpath,
                     CanDownload = await CanUserDownload(document),
                     IsPremiumOnly = document.IsPremiumOnly, 
-                    IsFavorited = isFavorited 
+                    IsFavorited = isFavorited,
+                    IsLiked = isLiked
                 };
 
                 return View(viewModel);

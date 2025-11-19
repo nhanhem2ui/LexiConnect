@@ -205,6 +205,84 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             });
     }
+
+    // Like Toggle Logic
+    const likeBtn = document.getElementById('likeBtn');
+    const likeIcon = document.getElementById('likeIcon');
+    const likeText = document.getElementById('likeText');
+    const likeCount = document.getElementById('likeCount');
+
+    if (likeBtn) {
+        likeBtn.addEventListener('click', function () {
+            const documentId = this.getAttribute('data-document-id');
+            toggleLike(documentId);
+        });
+    }
+
+    function toggleLike(documentId) {
+        const url = window.toggleLikeUrl;
+
+        if (!url) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Configuration error. Please refresh the page.'
+            });
+            return;
+        }
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'id': documentId,
+                '__RequestVerificationToken': token || ''
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    if (typeof data.likeCount !== 'undefined' && likeCount) {
+                        likeCount.textContent = data.likeCount;
+                    }
+
+                    if (data.isLiked) {
+                        likeBtn?.classList.add('active');
+                        likeIcon?.classList.remove('fa-regular');
+                        likeIcon?.classList.add('fa-solid');
+                        if (likeText) likeText.textContent = 'Liked';
+                    } else {
+                        likeBtn?.classList.remove('active');
+                        likeIcon?.classList.remove('fa-solid');
+                        likeIcon?.classList.add('fa-regular');
+                        if (likeText) likeText.textContent = 'Like';
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'An error occurred'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred. Please try again.'
+                });
+            });
+    }
 });
 
 // AI Tools JavaScript for Document Detail
