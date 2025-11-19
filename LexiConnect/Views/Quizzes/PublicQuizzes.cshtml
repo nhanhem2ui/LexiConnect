@@ -1,0 +1,212 @@
+﻿@model IEnumerable<BusinessObjects.Quiz>
+@{
+    ViewData["Title"] = "Explore Public Quizzes";
+}
+
+<link rel="stylesheet" href="~/css/Quizzes/PublicQuizzes.css" />
+
+<div class="container mt-4 mb-5">
+    <!-- Page Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient mb-3">🌍 Explore Public Quizzes</h1>
+        <p class="lead text-muted mb-4">Discover and take quizzes created by the community</p>
+
+        <!-- Filter Pills -->
+        <div class="filter-pills mb-4">
+            <button class="filter-pill active" data-filter="all">
+                <i class="bi bi-grid-fill"></i> All Quizzes
+            </button>
+            <button class="filter-pill" data-filter="Easy">
+                <i class="bi bi-star"></i> Easy
+            </button>
+            <button class="filter-pill" data-filter="Medium">
+                <i class="bi bi-star-fill"></i> Medium
+            </button>
+            <button class="filter-pill" data-filter="Hard">
+                <i class="bi bi-fire"></i> Hard
+            </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search quizzes by title or subject...">
+            </div>
+        </div>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- Stats Overview -->
+        <div class="stats-row mb-5">
+            <div class="stat-item">
+                <div class="stat-value">@Model.Count()</div>
+                <div class="stat-label">Total Quizzes</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">@Model.Select(q => q.Subject).Distinct().Count()</div>
+                <div class="stat-label">Subjects</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">@Model.Count(q => q.CreatedAt >= DateTime.UtcNow.AddDays(-7))</div>
+                <div class="stat-label">New This Week</div>
+            </div>
+        </div>
+
+        <!-- Quizzes Grid -->
+        <div class="row g-4" id="quizzesGrid">
+            @foreach (var quiz in Model)
+            {
+                <div class="col-md-6 col-lg-4 quiz-item" data-difficulty="@quiz.Difficulty" data-title="@quiz.Title.ToLower()" data-subject="@quiz.Subject?.ToLower()">
+                    <div class="public-quiz-card">
+                        <!-- Card Header with Gradient -->
+                        <div class="card-gradient-header @GetGradientClass(quiz.Difficulty)">
+                            <div class="difficulty-badge">
+                                @if (quiz.Difficulty == "Easy")
+                                {
+                                    <i class="bi bi-star"></i>
+                                    <span>Easy</span>
+                                }
+                                else if (quiz.Difficulty == "Medium")
+                                {
+                                    <i class="bi bi-star-fill"></i>
+                                    <span>Medium</span>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-fire"></i>
+                                    <span>Hard</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="card-content">
+                            <div class="subject-tag">
+                                <i class="bi bi-bookmark-fill"></i>
+                                @quiz.Subject
+                            </div>
+
+                            <h5 class="card-title">@quiz.Title</h5>
+
+                            <p class="card-description">
+                                @(string.IsNullOrEmpty(quiz.Description) ? "Test your knowledge with this challenging quiz!" : quiz.Description)
+                            </p>
+
+                            <div class="card-meta">
+                                <div class="meta-group">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span>@(quiz.Creator?.FullName ?? "Anonymous")</span>
+                                </div>
+                                <div class="meta-group">
+                                    <i class="bi bi-calendar3"></i>
+                                    <span>@quiz.CreatedAt.ToLocalTime().ToString("MMM dd")</span>
+                                </div>
+                            </div>
+
+                            <a href="@Url.Action("TakeQuiz", "Quizzes", new { id = quiz.QuizId })"
+                               class="btn-take-quiz">
+                                <i class="bi bi-play-circle-fill"></i>
+                                <span>Take Quiz</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- No Results Message (Hidden by default) -->
+        <div id="noResults" class="no-results" style="display: none;">
+            <div class="empty-state-icon">
+                <i class="bi bi-search"></i>
+            </div>
+            <h4>No quizzes found</h4>
+            <p class="text-muted">Try adjusting your filters or search terms</p>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-globe"></i>
+            </div>
+            <h4 class="empty-state-title">No Public Quizzes Yet</h4>
+            <p class="empty-state-text">Be the first to create a public quiz and share it with the community!</p>
+            <a href="/AIAssistant/Question" class="btn btn-gradient btn-lg mt-3">
+                <i class="bi bi-sparkles"></i> Create Public Quiz
+            </a>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetGradientClass(string difficulty)
+    {
+        return difficulty switch
+        {
+            "Easy" => "gradient-easy",
+            "Medium" => "gradient-medium",
+            "Hard" => "gradient-hard",
+            _ => "gradient-medium"
+        };
+    }
+}
+
+<script>
+    // Filter functionality
+    const filterButtons = document.querySelectorAll('.filter-pill');
+    const quizItems = document.querySelectorAll('.quiz-item');
+    const searchInput = document.getElementById('searchInput');
+    const noResults = document.getElementById('noResults');
+    const quizzesGrid = document.getElementById('quizzesGrid');
+
+    let activeFilter = 'all';
+
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            activeFilter = button.dataset.filter;
+            applyFilters();
+        });
+    });
+
+    searchInput.addEventListener('input', () => {
+        applyFilters();
+    });
+
+    function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        let visibleCount = 0;
+
+        quizItems.forEach(item => {
+            const difficulty = item.dataset.difficulty;
+            const title = item.dataset.title;
+            const subject = item.dataset.subject;
+
+            const matchesFilter = activeFilter === 'all' || difficulty === activeFilter;
+            const matchesSearch = searchTerm === '' ||
+                                  title.includes(searchTerm) ||
+                                  (subject && subject.includes(searchTerm));
+
+            if (matchesFilter && matchesSearch) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Show/hide no results message
+        if (visibleCount === 0) {
+            quizzesGrid.style.display = 'none';
+            noResults.style.display = 'flex';
+        } else {
+            quizzesGrid.style.display = 'flex';
+            noResults.style.display = 'none';
+        }
+    }
+</script>
