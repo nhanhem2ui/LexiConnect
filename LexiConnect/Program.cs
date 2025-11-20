@@ -2,6 +2,7 @@ using BusinessObjects;
 using DataAccess;
 using LexiConnect.Libraries;
 using LexiConnect.Models;
+using LexiConnect.Services.Background;
 using LexiConnect.Services.Firebase;
 using LexiConnect.Services.Gemini;
 using LexiConnect.Services.Quizzes;
@@ -115,6 +116,9 @@ builder.Services.AddSingleton<IFirebaseStorageService, FirebaseStorageService>()
 
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 builder.Services.AddScoped<IQuizGenerationService, QuizGenerationService>();
+
+builder.Services.Configure<ChatCleanupOptions>(builder.Configuration.GetSection("ChatCleanup"));
+builder.Services.AddHostedService<ChatCleanupBackgroundService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
