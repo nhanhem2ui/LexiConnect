@@ -172,7 +172,7 @@ namespace LexiConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> AllUniversities(string search = "", string letter = "All")
         {
-            var query = _universityRepo.GetAllQueryable(u => u.IsVerified).Include(u => u.Country).AsQueryable();
+            var query = _universityRepo.GetAllQueryable(u => u.IsVerified && u.Id != 0).Include(u => u.Country).AsQueryable();
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(search))
@@ -186,7 +186,7 @@ namespace LexiConnect.Controllers
             // Apply letter filter
             if (letter != "All" && !string.IsNullOrEmpty(letter))
             {
-                query = query.Where(u => u.Name.StartsWith(letter));
+                query = query.Where(u => u.Name.Contains(letter));
             }
 
             // Order by name and take max 30
@@ -197,7 +197,7 @@ namespace LexiConnect.Controllers
 
             // Get popular universities (top 10 by document count)
             var popularUniversities = await _universityRepo.GetAllQueryable(
-                u => u.IsVerified,
+                u => u.IsVerified && u.Id != 0, 
                 asNoTracking: true)
                 .Include(u => u.Country)
                 .OrderBy(u => u.Name)

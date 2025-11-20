@@ -97,11 +97,11 @@
 
                 <!-- Alphabet Filter -->
                 <div class="alphabet-filter">
-                    <a href="@Url.Action("Index", new { search = Model.SearchQuery, letter = "All" })"
+                    <a href="@Url.Action("AllUniversities", new { search = Model.SearchQuery, letter = "All" })"
                        class="letter-btn @(Model.SelectedLetter == "All" ? "active" : "")">All</a>
                     @foreach (var letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZĐ")
                     {
-                        <a href="@Url.Action("Index", new { search = Model.SearchQuery, letter = letter.ToString() })"
+                        <a href="@Url.Action("AllUniversities", new { search = Model.SearchQuery, letter = letter.ToString() })"
                            class="letter-btn @(Model.SelectedLetter == letter.ToString() ? "active" : "")">@letter</a>
                     }
                 </div>
@@ -112,7 +112,7 @@
                     {
                         @foreach (var uni in Model.Universities)
                         {
-                            <a href="@Url.Action("Details", "University", new { id = uni.Id })" class="university-card">
+                            <a href="@Url.Action("UniversityDetails", "University", new { id = uni.Id })" class="university-card">
                                 <div class="card-icon">
                                     @if (!string.IsNullOrEmpty(uni.LogoUrl))
                                     {
