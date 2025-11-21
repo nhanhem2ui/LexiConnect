@@ -28,7 +28,7 @@
 
                 <!-- Action Buttons -->
                 <div class="action-buttons">
-                    <a href="#" class="btn-action">
+                    <a href="@Url.Action("UserQuizzes", "Quizzes")" class="btn-action">
                         <span>❓</span>
                         Create a quiz
                     </a>
@@ -36,7 +36,7 @@
                         <span>💬</span>
                         Ask a Question
                     </a>
-                    <a href="#" class="btn-action">
+                    <a href="@Url.Action("Question", "AIAssistant")" class="btn-action">
                         <span>📝</span>
                         Summarize Notes
                     </a>
@@ -77,13 +77,13 @@
                     <div class="content-section">
                         <div class="section-header">
                             <h2 class="section-title">Recently Viewed Documents</h2>
-                            <a asp-controller="Document" asp-action="Recent" class="see-all-link">
+                            <a asp-controller="Library" asp-action="Index" class="see-all-link">
                                 See all <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>
                         <div class="recently-viewed">
                             @foreach (var recent in Model.RecentVieweds)
-                            {
+                            {   
                                 <div class="top-document-card"
                                      onclick="location.href='@Url.Action("DetailDocument", "Document", new { id = recent.Document.DocumentId })'">
                                     <div class="document-preview">
@@ -114,7 +114,7 @@
                     <div class="content-section">
                         <div class="section-header">
                             <h2 class="section-title">Top Documents</h2>
-                            <a asp-controller="Document" asp-action="Top" class="see-all-link">
+                            <a asp-controller="Document" asp-action="AllDocuments" class="see-all-link">
                                 See all <i class="bi bi-arrow-right"></i>
                             </a>
                         </div>

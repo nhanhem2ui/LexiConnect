@@ -1,9 +1,11 @@
 ﻿using BusinessObjects;
+using LexiConnect.Libraries;
 using LexiConnect.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Services;
 using System.IO;
@@ -18,17 +20,20 @@ namespace LexiConnect.Controllers
         private readonly IGenericService<Users> _usersService;
         private readonly UserManager<Users> _userManager;
         private readonly IWebHostEnvironment _environment;
+        private readonly IHubContext<ChatHub> _hubContext;
         
         public AdminController(
             IGenericService<Document> documentService, 
             IGenericService<Users> userService, 
             UserManager<Users> userManager,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IHubContext<ChatHub> hubContext)
         {
             _documentService = documentService;
             _usersService = userService;
             _userManager = userManager;
             _environment = environment;
+            _hubContext = hubContext;
         }
 
         [HttpGet]
@@ -36,7 +41,8 @@ namespace LexiConnect.Controllers
         {
             var totalDocuments = _documentService.GetAllQueryable()
                 .Include(d => d.Course)
-                .Include(d => d.Uploader);
+                .Include(d => d.Uploader)
+                .OrderBy(d => d.CreatedAt);
 
             var users = _usersService.GetAllQueryable().Include(u => u.SubscriptionPlan);
             var pendingDocuments = totalDocuments.Where(d => d.Status == "pending" || d.Status == "processing");
@@ -321,6 +327,53 @@ namespace LexiConnect.Controllers
                         
                         // Save uploader changes
                         await _usersService.UpdateAsync(document.Uploader);
+                        
+                        // Send notification to user via SignalR
+                        try
+                        {
+                            var notification = new
+                            {
+                                type = "points_granted",
+                                title = "Points Granted",
+                                message = $"Your document '{document.Title}' has been approved and you received {pointsAwarded} points!",
+                                redirectUrl = $"/Document/Detail/{document.DocumentId}",
+                                documentId = document.DocumentId,
+                                documentTitle = document.Title,
+                                pointsAwarded = pointsAwarded,
+                                timestamp = DateTime.UtcNow.ToString("o")
+                            };
+
+                            // Find all connections for this user
+                            var userConnections = ChatHub.ConnectedUsers.Values
+                                .Where(u => u.UserId == document.Uploader.Id)
+                                .ToList();
+
+                            if (userConnections.Any())
+                            {
+                                foreach (var connection in userConnections)
+                                {
+                                    try
+                                    {
+                                        await _hubContext.Clients.Client(connection.ConnectionId).SendAsync("ReceiveNotification", notification);
+                                        Console.WriteLine($"Notification sent to user {document.Uploader.Id} via connection {connection.ConnectionId}");
+                                    }
+                                    catch (Exception connEx)
+                                    {
+                                        Console.WriteLine($"Failed to send notification to connection {connection.ConnectionId}: {connEx.Message}");
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine($"User {document.Uploader.Id} is not currently connected to SignalR. Notification will not be sent.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log but don't fail the approval if notification fails
+                            Console.WriteLine($"Failed to send notification: {ex.Message}");
+                            Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                        }
                     }
                     
                     string successMessage = "Tài liệu đã được phê duyệt thành công";

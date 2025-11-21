@@ -14,7 +14,10 @@ namespace LexiConnect.Libraries
         private readonly IGenericRepository<Users> _userRepository;
 
         //all connected users
-        private static readonly ConcurrentDictionary<string, ConnectedUser> ConnectedUsers = new();
+        public static readonly ConcurrentDictionary<string, ConnectedUser> ConnectedUsers = new();
+        
+        // Track which chat each user is currently viewing (userId -> receiverId they're chatting with)
+        private static readonly ConcurrentDictionary<string, string> UserCurrentChats = new();
 
         public ChatHub(IGenericRepository<Users> userRepository, IGenericRepository<Chat> chatRepository)
         {
@@ -85,6 +88,9 @@ namespace LexiConnect.Libraries
             {
                 if (ConnectedUsers.TryRemove(Context.ConnectionId, out var user))
                 {
+                    // Remove from current chats tracking
+                    UserCurrentChats.TryRemove(user.UserId, out _);
+                    
                     await Clients.All.SendAsync("UpdatedConnectedUsers", ConnectedUsers.Values.ToList());
                     await Clients.All.SendAsync("UserDisconnected", user.UserId, user.UserName);
                 }
@@ -132,8 +138,31 @@ namespace LexiConnect.Libraries
                 if (receiver != null)
                 {
                     Console.WriteLine($"Sending message to receiver: {receiver.UserName}");
-                    await Clients.Client(receiver.ConnectionId).SendAsync("ReceiveMessage",
-                        sender.UserId.ToString(), sender.UserName, message, chatMessage.Timestamp.ToString("o"));
+                    
+                    // Check if receiver is currently viewing this chat
+                    bool isViewingThisChat = UserCurrentChats.TryGetValue(receiverId, out var currentChat) && 
+                                            currentChat == sender.UserId;
+                    
+                    if (isViewingThisChat)
+                    {
+                        // Receiver is viewing this chat, send message directly
+                        await Clients.Client(receiver.ConnectionId).SendAsync("ReceiveMessage",
+                            sender.UserId.ToString(), sender.UserName, message, chatMessage.Timestamp.ToString("o"));
+                    }
+                    else
+                    {
+                        // Receiver is not viewing this chat, send notification
+                        await Clients.Client(receiver.ConnectionId).SendAsync("ReceiveNotification", new
+                        {
+                            type = "new_message",
+                            title = "New Message",
+                            message = $"{sender.UserName}: {message}",
+                            redirectUrl = $"/Chat/Chat/{sender.UserId}",
+                            senderId = sender.UserId,
+                            senderName = sender.UserName,
+                            timestamp = chatMessage.Timestamp.ToString("o")
+                        });
+                    }
                 }
                 else
                 {
@@ -149,6 +178,31 @@ namespace LexiConnect.Libraries
             {
                 Console.WriteLine($"SendMessage error: {ex.Message}");
                 await Clients.Caller.SendAsync("Error", $"Failed to send message: {ex.Message}");
+            }
+        }
+        
+        // Method to track which chat the user is currently viewing
+        public async Task SetCurrentChat(string receiverId)
+        {
+            try
+            {
+                if (!ConnectedUsers.TryGetValue(Context.ConnectionId, out var user))
+                {
+                    return;
+                }
+                
+                if (string.IsNullOrEmpty(receiverId))
+                {
+                    UserCurrentChats.TryRemove(user.UserId, out _);
+                }
+                else
+                {
+                    UserCurrentChats.AddOrUpdate(user.UserId, receiverId, (key, oldValue) => receiverId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SetCurrentChat error: {ex.Message}");
             }
         }
 
@@ -174,10 +228,10 @@ namespace LexiConnect.Libraries
             }
         }
 
-        private class ConnectedUser
+        public class ConnectedUser
         {
             public string ConnectionId { get; set; } = string.Empty;
-            public string UserId { get; set; }
+            public string UserId { get; set; } = string.Empty;
             public string UserName { get; set; } = string.Empty;
             public string PhoneNumber { get; set; } = string.Empty;
             public string UserAvatar { get; set; } = string.Empty;
