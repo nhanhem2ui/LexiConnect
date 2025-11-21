@@ -215,6 +215,15 @@
                 console.log('SignalR connected successfully');
                 showToast("Connected to chat server", "success");
 
+                // Notify SignalR about current chat if one is selected
+                if (currentReceiverId) {
+                    try {
+                        await connection.invoke("SetCurrentChat", currentReceiverId);
+                    } catch (error) {
+                        console.error('Error setting current chat:', error);
+                    }
+                }
+
                 // Monitor connection state
                 monitorConnectionState();
 
@@ -396,6 +405,15 @@
             //Clears message container
             const messagesContainer = document.getElementById('messagesContainer');
             messagesContainer.innerHTML = '';
+
+            // Notify SignalR that user is viewing this chat
+            if (connection && connection.state === signalR.HubConnectionState.Connected) {
+                try {
+                    await connection.invoke("SetCurrentChat", userId);
+                } catch (error) {
+                    console.error('Error setting current chat:', error);
+                }
+            }
 
             await loadChatHistoryAjax(userId);
 
