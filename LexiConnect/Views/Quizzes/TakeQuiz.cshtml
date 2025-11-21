@@ -3,67 +3,295 @@
     ViewData["Title"] = "Take Quiz - " + Model.Title;
 }
 
-<div class="container mt-4">
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0">@Model.Title</h5>
-            <small>@Model.Subject - @Model.Difficulty</small>
+<link rel="stylesheet" href="~/css/Quizzes/TakeQuiz.css" />
+
+<div class="quiz-container">
+    <!-- Quiz Header -->
+    <div class="quiz-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="quiz-header-title">@Model.Title</h2>
+                    <p class="quiz-header-meta">
+                        <span class="meta-badge">
+                            <i class="bi bi-book"></i> @Model.Subject
+                        </span>
+                        <span class="meta-badge">
+                            @if (Model.Difficulty == "Easy")
+                            {
+                                <i class="bi bi-star text-success"></i>
+                                <span class="text-success">Easy</span>
+                            }
+                            else if (Model.Difficulty == "Medium")
+                            {
+                                <i class="bi bi-star-fill text-warning"></i>
+                                <span class="text-warning">Medium</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-fire text-danger"></i>
+                                <span class="text-danger">Hard</span>
+                            }
+                        </span>
+                        <span class="meta-badge">
+                            <i class="bi bi-question-circle"></i> @Model.Questions.Count Questions
+                        </span>
+                    </p>
+                </div>
+                <div class="timer-display" id="timer">
+                    <i class="bi bi-clock"></i>
+                    <span id="timerValue">00:00</span>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <form id="quizForm">
-                @foreach (var q in Model.Questions)
-                {
-                    <div class="mb-4">
-                        <h6>@q.QuestionOrder. @q.QuestionText</h6>
-                        <div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="q@q.QuestionId" value="A" id="q@q.QuestionId-A">
-                                <label class="form-check-label" for="q@q.QuestionId-A">@q.OptionA</label>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="container">
+            <div class="progress-wrapper">
+                <div class="progress-bar-custom" id="progressBar" style="width: 0%"></div>
+            </div>
+            <div class="progress-text">
+                <span>Question <strong id="currentQ">1</strong> of <strong>@Model.Questions.Count</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Content -->
+    <div class="container mt-4 mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <form id="quizForm">
+                    @for (int i = 0; i < Model.Questions.Count; i++)
+                    {
+                        var q = Model.Questions[i];
+                        var isFirst = i == 0;
+                        <div class="question-card @(isFirst ? "active" : "")" data-question="@i">
+                            <div class="question-number">Question @q.QuestionOrder</div>
+                            <h4 class="question-text">@q.QuestionText</h4>
+
+                            <div class="options-container">
+                                <label class="option-card">
+                                    <input class="option-input" type="radio" name="q@q.QuestionId" value="A" data-qid="@q.QuestionId">
+                                    <div class="option-content">
+                                        <div class="option-letter">A</div>
+                                        <div class="option-text">@q.OptionA</div>
+                                        <div class="option-check"><i class="bi bi-check-circle-fill"></i></div>
+                                    </div>
+                                </label>
+
+                                <label class="option-card">
+                                    <input class="option-input" type="radio" name="q@q.QuestionId" value="B" data-qid="@q.QuestionId">
+                                    <div class="option-content">
+                                        <div class="option-letter">B</div>
+                                        <div class="option-text">@q.OptionB</div>
+                                        <div class="option-check"><i class="bi bi-check-circle-fill"></i></div>
+                                    </div>
+                                </label>
+
+                                @if (!string.IsNullOrEmpty(q.OptionC))
+                                {
+                                    <label class="option-card">
+                                        <input class="option-input" type="radio" name="q@q.QuestionId" value="C" data-qid="@q.QuestionId">
+                                        <div class="option-content">
+                                            <div class="option-letter">C</div>
+                                            <div class="option-text">@q.OptionC</div>
+                                            <div class="option-check"><i class="bi bi-check-circle-fill"></i></div>
+                                        </div>
+                                    </label>
+                                }
+
+                                @if (!string.IsNullOrEmpty(q.OptionD))
+                                {
+                                    <label class="option-card">
+                                        <input class="option-input" type="radio" name="q@q.QuestionId" value="D" data-qid="@q.QuestionId">
+                                        <div class="option-content">
+                                            <div class="option-letter">D</div>
+                                            <div class="option-text">@q.OptionD</div>
+                                            <div class="option-check"><i class="bi bi-check-circle-fill"></i></div>
+                                        </div>
+                                    </label>
+                                }
                             </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="q@q.QuestionId" value="B" id="q@q.QuestionId-B">
-                                <label class="form-check-label" for="q@q.QuestionId-B">@q.OptionB</label>
+
+                            <div class="question-navigation">
+                                @if (i > 0)
+                                {
+                                    <button type="button" class="btn btn-nav btn-prev" onclick="previousQuestion()">
+                                        <i class="bi bi-arrow-left"></i> Previous
+                                    </button>
+                                }
+                                @if (i < Model.Questions.Count - 1)
+                                {
+                                    <button type="button" class="btn btn-nav btn-next" onclick="nextQuestion()">
+                                        Next <i class="bi bi-arrow-right"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-submit" id="submitQuiz">
+                                        <i class="bi bi-check-circle"></i> Submit Quiz
+                                    </button>
+                                }
                             </div>
-                            @if (!string.IsNullOrEmpty(q.OptionC))
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="q@q.QuestionId" value="C" id="q@q.QuestionId-C">
-                                    <label class="form-check-label" for="q@q.QuestionId-C">@q.OptionC</label>
+                        </div>
+                    }
+                </form>
+
+                <!-- Results Modal -->
+                <div id="resultsModal" class="results-modal">
+                    <div class="results-content">
+                        <div class="results-header">
+                            <div id="scoreIcon" class="score-icon"></div>
+                            <h3 id="scoreTitle" class="score-title"></h3>
+                            <p class="score-subtitle">You completed the quiz!</p>
+                        </div>
+                        <div class="results-body">
+                            <div class="score-circle">
+                                <svg width="200" height="200">
+                                    <circle cx="100" cy="100" r="90" fill="none" stroke="#e5e7eb" stroke-width="12" />
+                                    <circle id="scoreCircle" cx="100" cy="100" r="90" fill="none" stroke="#10b981"
+                                            stroke-width="12" stroke-dasharray="565.48" stroke-dashoffset="565.48"
+                                            transform="rotate(-90 100 100)" stroke-linecap="round" />
+                                </svg>
+                                <div class="score-text">
+                                    <div class="score-percentage" id="scorePercentage">0%</div>
+                                    <div class="score-fraction" id="scoreFraction">0/0</div>
                                 </div>
-                            }
-                            @if (!string.IsNullOrEmpty(q.OptionD))
-                            {
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="q@q.QuestionId" value="D" id="q@q.QuestionId-D">
-                                    <label class="form-check-label" for="q@q.QuestionId-D">@q.OptionD</label>
-                                </div>
-                            }
+                            </div>
+                            <div class="time-taken">
+                                <i class="bi bi-clock-history"></i>
+                                <span>Time Taken: <strong id="timeTaken">00:00</strong></span>
+                            </div>
+                        </div>
+                        <div class="results-footer">
+                            <a href="@Url.Action("UserQuizzes", "Quizzes")" class="btn btn-secondary-action">
+                                <i class="bi bi-arrow-left"></i> Back to My Quizzes
+                            </a>
+                            <button type="button" class="btn btn-primary-action" onclick="retakeQuiz()">
+                                <i class="bi bi-arrow-clockwise"></i> Retake Quiz
+                            </button>
                         </div>
                     </div>
-                }
-
-                <button type="button" class="btn btn-primary" id="submitQuiz">Submit</button>
-            </form>
-
-            <div id="result" class="mt-4"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.getElementById("submitQuiz").addEventListener("click", function () {
+    let currentQuestion = 0;
+    let startTime = new Date();
+    let timerInterval;
+    const totalQuestions = @Model.Questions.Count;
+    const correctAnswers = @Html.Raw(Json.Serialize(Model.Questions.ToDictionary(q => q.QuestionId, q => q.CorrectAnswer)));
+
+    // Timer
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            const elapsed = Math.floor((new Date() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timerValue').textContent = `${minutes}:${seconds}`;
+        }, 1000);
+    }
+
+    // Progress
+    function updateProgress() {
+        const progress = ((currentQuestion + 1) / totalQuestions) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('currentQ').textContent = currentQuestion + 1;
+    }
+
+    // Navigation
+    function showQuestion(index) {
+        document.querySelectorAll('.question-card').forEach((card, i) => {
+            card.classList.toggle('active', i === index);
+        });
+        currentQuestion = index;
+        updateProgress();
+    }
+
+    function nextQuestion() {
+        if (currentQuestion < totalQuestions - 1) {
+            showQuestion(currentQuestion + 1);
+        }
+    }
+
+    function previousQuestion() {
+        if (currentQuestion > 0) {
+            showQuestion(currentQuestion - 1);
+        }
+    }
+
+    // Submit Quiz
+    document.getElementById('submitQuiz').addEventListener('click', function() {
+        clearInterval(timerInterval);
+
         let correct = 0;
-        let total = @Model.Questions.Count;
+        const userAnswers = {};
+
         @foreach (var q in Model.Questions)
         {
                 <text>
-                    const selected_@q.QuestionId = document.querySelector('input[name="q@q.QuestionId"]:checked');
-                    if (selected_@q.QuestionId && selected_@q.QuestionId === "@q.CorrectAnswer") {
+                const selected_@q.QuestionId = document.querySelector('input[name="q@q.QuestionId"]:checked');
+                if (selected_@q.QuestionId) {
+                    const answer = selected_@q.QuestionId;
+                    userAnswers[@q.QuestionId] = answer;
+                    if (answer === correctAnswers[@q.QuestionId]) {
                         correct++;
                     }
+                }
                 </text>
         }
-        document.getElementById("result").innerHTML =
-            `<div class='alert alert-info'><strong>Result:</strong> ${correct} / ${total} correct</div>`;
+
+        showResults(correct, totalQuestions);
     });
+
+    function showResults(correct, total) {
+        const percentage = Math.round((correct / total) * 100);
+        const elapsed = Math.floor((new Date() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const seconds = (elapsed % 60).toString().padStart(2, '0');
+
+        // Update results
+        document.getElementById('scorePercentage').textContent = percentage + '%';
+        document.getElementById('scoreFraction').textContent = `${correct}/${total}`;
+        document.getElementById('timeTaken').textContent = `${minutes}:${seconds}`;
+
+        // Score animation
+        const circumference = 565.48;
+        const offset = circumference - (percentage / 100) * circumference;
+        document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+
+        // Score icon and message
+        const scoreIcon = document.getElementById('scoreIcon');
+        const scoreTitle = document.getElementById('scoreTitle');
+        const scoreCircle = document.getElementById('scoreCircle');
+
+        if (percentage >= 80) {
+            scoreIcon.innerHTML = '<i class="bi bi-trophy-fill"></i>';
+            scoreTitle.textContent = 'Excellent Work!';
+            scoreCircle.style.stroke = '#10b981';
+        } else if (percentage >= 60) {
+            scoreIcon.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i>';
+            scoreTitle.textContent = 'Good Job!';
+            scoreCircle.style.stroke = '#3b82f6';
+        } else {
+            scoreIcon.innerHTML = '<i class="bi bi-arrow-repeat"></i>';
+            scoreTitle.textContent = 'Keep Practicing!';
+            scoreCircle.style.stroke = '#f59e0b';
+        }
+
+        document.getElementById('resultsModal').style.display = 'flex';
+    }
+
+    function retakeQuiz() {
+        location.reload();
+    }
+
+    // Initialize
+    startTimer();
+    updateProgress();
 </script>

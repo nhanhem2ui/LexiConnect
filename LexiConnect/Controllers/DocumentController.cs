@@ -79,16 +79,22 @@ namespace LexiConnect.Controllers
                 await _documentService.UpdateAsync(document);
 
                 bool isFavorited = false;
+                bool isLiked = false;
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentUser = await _userManager.GetUserAsync(User);
                     if (currentUser != null)
                     {
-                        await AddOrUpdateRecentViewed(document.DocumentId, currentUser.Id);
+                        // Pass document object to avoid re-querying and ensure CourseId is available
+                        await AddOrUpdateRecentViewed(document, currentUser.Id);
 
                         // Kiểm tra xem đã favorite chưa
                         isFavorited = await _userFavoriteService.ExistsAsync(uf =>
                             uf.DocumentId == document.DocumentId && uf.UserId == currentUser.Id);
+
+                        // Kiểm tra đã like chưa
+                        isLiked = await _documentLikeService.ExistsAsync(dl =>
+                            dl.DocumentId == document.DocumentId && dl.UserId == currentUser.Id);
                     }
                 }
                 // Get uploader statistics
@@ -103,7 +109,8 @@ namespace LexiConnect.Controllers
                     FilePDFpath = document.FilePDFpath,
                     CanDownload = await CanUserDownload(document),
                     IsPremiumOnly = document.IsPremiumOnly, 
-                    IsFavorited = isFavorited 
+                    IsFavorited = isFavorited,
+                    IsLiked = isLiked
                 };
 
                 return View(viewModel);
@@ -115,32 +122,52 @@ namespace LexiConnect.Controllers
             }
         }
 
-        private async Task AddOrUpdateRecentViewed(int documentId, string userId)
+        private async Task AddOrUpdateRecentViewed(Document document, string userId)
         {
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId) || document == null)
                 return;
 
-            // Kiểm tra xem user đã xem document này chưa
-            var existingView = await _recentViewedService.GetAsync(rv =>
-                rv.UserId == userId && rv.DocumentId == documentId);
-
-            if (existingView != null)
+            try
             {
-                // Nếu đã tồn tại, cập nhật thời gian xem
-                existingView.ViewedAt = DateTime.UtcNow;
-                await _recentViewedService.UpdateAsync(existingView);
-            }
-            else
-            {
-                // Nếu chưa tồn tại, tạo mới
-                var recentView = new RecentViewed
+                // Validate CourseId is available
+                if (document.CourseId == 0)
                 {
-                    DocumentId = documentId,
+                    Console.WriteLine($"Warning: Document {document.DocumentId} has invalid CourseId (0). Cannot add RecentViewed.");
+                    return;
+                }
 
-                    UserId = userId,
-                    ViewedAt = DateTime.UtcNow
-                };
-                await _recentViewedService.AddAsync(recentView);
+                // Kiểm tra xem user đã xem document này chưa
+                var existingView = await _recentViewedService.GetAsync(rv =>
+                    rv.UserId == userId && rv.DocumentId == document.DocumentId);
+
+                if (existingView != null)
+                {
+                    // Nếu đã tồn tại, cập nhật thời gian xem và CourseId (nếu thay đổi)
+                    existingView.ViewedAt = DateTime.UtcNow;
+                    existingView.CourseId = document.CourseId; // Update CourseId in case it changed
+                    await _recentViewedService.UpdateAsync(existingView);
+                }
+                else
+                {
+                    // Nếu chưa tồn tại, tạo mới với CourseId từ document
+                    var recentView = new RecentViewed
+                    {
+                        DocumentId = document.DocumentId,
+                        CourseId = document.CourseId, // Set CourseId from document - REQUIRED
+                        UserId = userId,
+                        ViewedAt = DateTime.UtcNow
+                    };
+                    await _recentViewedService.AddAsync(recentView);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't throw - we don't want to break document viewing if RecentViewed fails
+                Console.WriteLine($"Error adding/updating RecentViewed for DocumentId {document.DocumentId}, UserId {userId}: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                }
             }
         }
 

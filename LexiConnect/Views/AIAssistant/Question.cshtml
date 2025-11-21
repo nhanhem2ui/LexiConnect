@@ -312,13 +312,23 @@
         }
 
         function updateUsageDisplay(data) {
-            if (data.isUnlimited) {
-                usageDisplay.innerHTML = '<span class="badge bg-success">Unlimited (Premium)</span>';
-            } else {
-                const remaining = data.remaining || 0;
-                const badgeClass = remaining > 3 ? 'bg-success' : remaining > 0 ? 'bg-warning' : 'bg-danger';
-                usageDisplay.innerHTML = `<span class="badge ${badgeClass}">${remaining}/${data.total} remaining</span>`;
+            if (!data) {
+                usageDisplay.textContent = 'Unavailable';
+                return;
             }
+
+            const isUnlimited = data.isUnlimited === true || data.total === null || typeof data.total === 'undefined';
+
+            if (isUnlimited) {
+                usageDisplay.innerHTML = '<span class="badge bg-success">Unlimited (Premium)</span>';
+                return;
+            }
+
+            const remaining = typeof data.remaining === 'number'
+                ? data.remaining
+                : Math.max((data.total ?? 0) - (data.used ?? 0), 0);
+            const badgeClass = remaining > 3 ? 'bg-success' : remaining > 0 ? 'bg-warning' : 'bg-danger';
+            usageDisplay.innerHTML = `<span class="badge ${badgeClass}">${remaining}/${data.total} remaining</span>`;
         }
 
         attachFileBtn.addEventListener('click', () => fileInput.click());
@@ -347,12 +357,16 @@
             filePreview.style.display = 'none';
         });
 
+        function resetChatHistory() {
+            const messages = chatContainer.querySelectorAll('.message');
+            messages.forEach((msg, index) => {
+                if (index > 0) msg.remove();
+            });
+        }
+
         clearChatBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to clear the chat history?')) {
-                const messages = chatContainer.querySelectorAll('.message');
-                messages.forEach((msg, index) => {
-                    if (index > 0) msg.remove();
-                });
+                resetChatHistory();
             }
         });
 
@@ -368,6 +382,7 @@
                 e.preventDefault();
                 return;
             }
+            resetChatHistory();
             addMessage(question, 'user', selectedFile);
             currentTypingId = showTypingIndicator();
             const tempFile = selectedFile;

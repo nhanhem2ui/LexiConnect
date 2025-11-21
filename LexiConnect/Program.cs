@@ -2,6 +2,7 @@ using BusinessObjects;
 using DataAccess;
 using LexiConnect.Libraries;
 using LexiConnect.Models;
+using LexiConnect.Services.Background;
 using LexiConnect.Services.Firebase;
 using LexiConnect.Services.Gemini;
 using LexiConnect.Services.Quizzes;
@@ -21,7 +22,26 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    
+    // Configure for Azure SQL Database with connection resiliency
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+        sqlOptions.CommandTimeout(60); // Increase command timeout to 60 seconds
+    });
+    
+    // Enable sensitive data logging in development
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging();
+        options.EnableDetailedErrors();
+    }
+});
 
 //DAO
 builder.Services.AddScoped<IGenericDAO<Country>, CountryDAO>();
@@ -96,6 +116,9 @@ builder.Services.AddSingleton<IFirebaseStorageService, FirebaseStorageService>()
 
 builder.Services.AddHttpClient<IGeminiService, GeminiService>();
 builder.Services.AddScoped<IQuizGenerationService, QuizGenerationService>();
+
+builder.Services.Configure<ChatCleanupOptions>(builder.Configuration.GetSection("ChatCleanup"));
+builder.Services.AddHostedService<ChatCleanupBackgroundService>();
 
 // Configure Identity
 builder.Services.AddIdentity<Users, IdentityRole>(options =>
