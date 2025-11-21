@@ -336,7 +336,7 @@ namespace LexiConnect.Controllers
                                 type = "points_granted",
                                 title = "Points Granted",
                                 message = $"Your document '{document.Title}' has been approved and you received {pointsAwarded} points!",
-                                redirectUrl = $"/Document/Detail/{document.DocumentId}",
+                                redirectUrl = Url.Action("DetailDocument", "Document", new { id = document.DocumentId }) ?? $"/Document/DetailDocument/{document.DocumentId}",
                                 documentId = document.DocumentId,
                                 documentTitle = document.Title,
                                 pointsAwarded = pointsAwarded,
