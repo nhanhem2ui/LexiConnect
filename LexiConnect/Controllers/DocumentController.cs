@@ -256,6 +256,102 @@ namespace LexiConnect.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AllRecentVieweds(string searchTerm = "", string sortBy = "recent", int page = 1, int pageSize = 12)
+        {
+            try
+            {
+                // Kiểm tra user đã đăng nhập
+                if (!User.Identity.IsAuthenticated)
+                {
+                    TempData["Error"] = "Please login to view your recent viewed documents.";
+                    return RedirectToAction("Signin", "Auth");
+                }
+
+                var currentUser = await _userManager.GetUserAsync(User);
+                if (currentUser == null)
+                {
+                    TempData["Error"] = "User not found.";
+                    return RedirectToAction("Homepage", "Home");
+                }
+
+                // Lấy tất cả RecentVieweds của user với eager loading
+                var query = _recentViewedService.GetAllQueryable()
+                    .Where(rv => rv.UserId == currentUser.Id && rv.Document != null && rv.Document.Status == "approved")
+                    .Include(rv => rv.Document)
+                        .ThenInclude(d => d.Course)
+                    .Include(rv => rv.Document)
+                        .ThenInclude(d => d.Uploader)
+                            .ThenInclude(u => u.University)
+                    .AsQueryable();
+
+                // Tìm kiếm nếu có
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    searchTerm = searchTerm.ToLower();
+                    query = query.Where(rv =>
+                        rv.Document.Title.ToLower().Contains(searchTerm) ||
+                        (rv.Document.Description != null && rv.Document.Description.ToLower().Contains(searchTerm)) ||
+                        (rv.Document.Course != null && rv.Document.Course.CourseName.ToLower().Contains(searchTerm)));
+                }
+
+                // Sắp xếp
+                query = sortBy.ToLower() switch
+                {
+                    "popular" => query.OrderByDescending(rv => rv.Document.LikeCount),
+                    "views" => query.OrderByDescending(rv => rv.Document.ViewCount),
+                    "downloads" => query.OrderByDescending(rv => rv.Document.DownloadCount),
+                    "title" => query.OrderBy(rv => rv.Document.Title),
+                    "oldest" => query.OrderBy(rv => rv.ViewedAt),
+                    _ => query.OrderByDescending(rv => rv.ViewedAt) // recent (most recently viewed first)
+                };
+
+                // Tính tổng số RecentVieweds
+                int totalRecentVieweds = await query.CountAsync();
+                int totalPages = (int)Math.Ceiling(totalRecentVieweds / (double)pageSize);
+
+                // Phân trang
+                var recentVieweds = await query
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                // Kiểm tra liked documents
+                Dictionary<int, bool> userLikedDocuments = new Dictionary<int, bool>();
+                if (recentVieweds.Any())
+                {
+                    var documentIds = recentVieweds.Where(rv => rv.Document != null).Select(rv => rv.Document.DocumentId).ToList();
+                    var likedDocs = await _documentLikeService.GetAllQueryable(
+                        dl => dl.UserId == currentUser.Id && documentIds.Contains(dl.DocumentId))
+                        .Select(dl => dl.DocumentId)
+                        .ToListAsync();
+
+                    userLikedDocuments = documentIds.ToDictionary(
+                        id => id,
+                        id => likedDocs.Contains(id));
+                }
+
+                // Tạo view model
+                var viewModel = new AllRecentViewedsViewModel
+                {
+                    RecentVieweds = recentVieweds,
+                    UserLikedDocuments = userLikedDocuments,
+                    CurrentPage = page,
+                    TotalPages = totalPages,
+                    SearchTerm = searchTerm,
+                    SortBy = sortBy,
+                    TotalRecentVieweds = totalRecentVieweds
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Error loading recent viewed documents: {ex.Message}";
+                return RedirectToAction("Homepage", "Home");
+            }
+        }
+
        
 
 
